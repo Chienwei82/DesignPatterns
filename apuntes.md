@@ -26,13 +26,18 @@ Proyecto educativo instalado en **devbox** (192.168.64.199)
 │   ├── Decorator.cs              ← Anyadir funcionalidad dinamicamente
 │   ├── Facade.cs                 ← Fachada para subsistemas complejos
 │   ├── Proxy.cs                  ← Control de acceso / cache
-│   └── Composite.cs              ← Estructuras arbol (organigrama)
+│   ├── Composite.cs              ← Estructuras arbol (organigrama)
+│   ├── Bridge.cs                 ← Abstraccion e implementacion independientes
+│   └── Flyweight.cs              ← Compartir objetos en gran cantidad
 └── Behavioral/
     ├── Strategy.cs               ← Algoritmos intercambiables (impuestos)
     ├── Observer.cs               ← Suscripcion / notificaciones
     ├── Command.cs                ← Comandos con UNDO/REDO
     ├── TemplateMethod.cs         ← Esqueleto de algoritmo
-    └── State.cs                  ← Maquina de estados (pedidos)
+    ├── State.cs                  ← Maquina de estados (pedidos)
+    ├── Mediator.cs               ← Comunicacion centralizada (chat)
+    ├── Memento.cs                ← Guardar/restaurar estado (checkpoints)
+    └── ChainOfResponsibility.cs  ← Cadena de manejadores (soporte)
 ```
 
 ## Como usar
@@ -42,14 +47,15 @@ cd ~/mycode/DesignPatterns
 dotnet run
 ```
 
-Sale un menu interactivo donde eliges que patron ver (1-15).
+Sale un menu interactivo donde eliges que patron ver (1-20).
 
 Para ejecutar un patron directo sin menu:
 
 ```bash
 echo 1 | dotnet run   # Singleton
 echo 7 | dotnet run   # Decorator
-echo 13 | dotnet run  # Command
+echo 15 | dotnet run  # Command
+echo 20 | dotnet run  # Chain of Responsibility
 ```
 
 ## Resumen de patrones
@@ -78,11 +84,16 @@ echo 13 | dotnet run  # Command
 
 | # | Patron | Que resuelve |
 |---|--------|-------------|
-| 11 | Strategy | Algoritmos intercambiables (impuestos por pais) |
-| 12 | Observer | Suscripcion 1 a muchos (noticias, eventos) |
-| 13 | Command | Comandos como objetos con UNDO/REDO (editor texto) |
-| 14 | Template Method | Esqueleto de algoritmo (procesar CSV/JSON/PDF) |
-| 15 | State | Maquina de estados (ciclo de vida de pedidos) |
+| 11 | Bridge | Abstraccion e implementacion independientes (control remoto + TV) |
+| 12 | Flyweight | Compartir objetos masivos (bosque con pocos tipos de arbol) |
+| 13 | Strategy | Algoritmos intercambiables (impuestos por pais) |
+| 14 | Observer | Suscripcion 1 a muchos (noticias, eventos) |
+| 15 | Command | Comandos como objetos con UNDO/REDO (editor texto) |
+| 16 | Template Method | Esqueleto de algoritmo (procesar CSV/JSON/PDF) |
+| 17 | State | Maquina de estados (ciclo de vida de pedidos) |
+| 18 | Mediator | Comunicacion centralizada (sala de chat grupal) |
+| 19 | Memento | Guardar/restaurar estado sin romper encapsulamiento (checkpoints) |
+| 20 | Chain of Responsibility | Cadena de manejadores escalable (soporte tecnico) |
 
 ## Ambiente
 

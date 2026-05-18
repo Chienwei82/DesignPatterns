@@ -67,22 +67,10 @@ public class Departamento : IComponenteOrganigrama
         _subordinados.Remove(componente);
     }
 
-    // El compuesto delega a sus hijos y suma resultados
-    public decimal GetCostoTotal()
-    {
-        var total = 0m;
-        foreach (var sub in _subordinados)
-            total += sub.GetCostoTotal();
-        return total;
-    }
+    // El compuesto delega a sus hijos y suma resultados (LINQ)
+    public decimal GetCostoTotal() => _subordinados.Sum(s => s.GetCostoTotal());
 
-    public int GetPersonasContadas()
-    {
-        var count = 0;
-        foreach (var sub in _subordinados)
-            count += sub.GetPersonasContadas();
-        return count;
-    }
+    public int GetPersonasContadas() => _subordinados.Sum(s => s.GetPersonasContadas());
 
     public void Mostrar(int indentacion = 0)
     {

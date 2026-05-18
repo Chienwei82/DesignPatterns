@@ -4,42 +4,28 @@ using DesignPatterns.Behavioral;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 
-var patterns = new Dictionary<string, (string Category, Action Demo)>
+var patterns = new Dictionary<string, (string Category, string Name, Action Demo)>
 {
-    ["1"]  = ("Creacionales",    SingletonDemo.Run),
-    ["2"]  = ("Creacionales",    FactoryMethodDemo.Run),
-    ["3"]  = ("Creacionales",    AbstractFactoryDemo.Run),
-    ["4"]  = ("Creacionales",    BuilderDemo.Run),
-    ["5"]  = ("Creacionales",    PrototypeDemo.Run),
-    ["6"]  = ("Estructurales",   AdapterDemo.Run),
-    ["7"]  = ("Estructurales",   DecoratorDemo.Run),
-    ["8"]  = ("Estructurales",   FacadeDemo.Run),
-    ["9"]  = ("Estructurales",   ProxyDemo.Run),
-    ["10"] = ("Estructurales",   CompositeDemo.Run),
-    ["11"] = ("Comportamiento",  StrategyDemo.Run),
-    ["12"] = ("Comportamiento",  ObserverDemo.Run),
-    ["13"] = ("Comportamiento",  CommandDemo.Run),
-    ["14"] = ("Comportamiento",  TemplateMethodDemo.Run),
-    ["15"] = ("Comportamiento",  StateDemo.Run),
-};
-
-var patternNames = new Dictionary<string, string>
-{
-    ["1"]  = "Singleton",
-    ["2"]  = "Factory Method",
-    ["3"]  = "Abstract Factory",
-    ["4"]  = "Builder",
-    ["5"]  = "Prototype",
-    ["6"]  = "Adapter",
-    ["7"]  = "Decorator",
-    ["8"]  = "Facade",
-    ["9"]  = "Proxy",
-    ["10"] = "Composite",
-    ["11"] = "Strategy",
-    ["12"] = "Observer",
-    ["13"] = "Command",
-    ["14"] = "Template Method",
-    ["15"] = "State",
+    ["1"]  = ("Creacionales",    "Singleton",          SingletonDemo.Run),
+    ["2"]  = ("Creacionales",    "Factory Method",   FactoryMethodDemo.Run),
+    ["3"]  = ("Creacionales",    "Abstract Factory", AbstractFactoryDemo.Run),
+    ["4"]  = ("Creacionales",    "Builder",          BuilderDemo.Run),
+    ["5"]  = ("Creacionales",    "Prototype",        PrototypeDemo.Run),
+    ["6"]  = ("Estructurales",   "Adapter",          AdapterDemo.Run),
+    ["7"]  = ("Estructurales",   "Decorator",        DecoratorDemo.Run),
+    ["8"]  = ("Estructurales",   "Facade",           FacadeDemo.Run),
+    ["9"]  = ("Estructurales",   "Proxy",            ProxyDemo.Run),
+    ["10"] = ("Estructurales",   "Composite",        CompositeDemo.Run),
+    ["11"] = ("Estructurales",   "Bridge",           BridgeDemo.Run),
+    ["12"] = ("Estructurales",   "Flyweight",        FlyweightDemo.Run),
+    ["13"] = ("Comportamiento",  "Strategy",         StrategyDemo.Run),
+    ["14"] = ("Comportamiento",  "Observer",         ObserverDemo.Run),
+    ["15"] = ("Comportamiento",  "Command",          CommandDemo.Run),
+    ["16"] = ("Comportamiento",  "Template Method",  TemplateMethodDemo.Run),
+    ["17"] = ("Comportamiento",  "State",            StateDemo.Run),
+    ["18"] = ("Comportamiento",  "Mediator",         MediatorDemo.Run),
+    ["19"] = ("Comportamiento",  "Memento",          MementoDemo.Run),
+    ["20"] = ("Comportamiento",  "Chain of Responsibility", ChainOfResponsibilityDemo.Run),
 };
 
 while (true)
@@ -51,19 +37,19 @@ while (true)
     Console.WriteLine();
 
     string? lastCategory = null;
-    foreach (var (key, (category, _)) in patterns)
+    foreach (var (key, (category, name, _)) in patterns)
     {
         if (category != lastCategory)
         {
             Console.WriteLine($"  ─── {category.ToUpper()} ───");
             lastCategory = category;
         }
-        Console.WriteLine($"  [{key.PadLeft(2)}] {patternNames[key]}");
+        Console.WriteLine($"  [{key.PadLeft(2)}] {name}");
     }
     Console.WriteLine();
     Console.WriteLine("  [Q] Salir");
     Console.WriteLine();
-    Console.Write("Selecciona un patrón (1-15): ");
+    Console.Write($"Selecciona un patrón (1-{patterns.Count}): ");
     var input = Console.ReadLine()?.Trim().ToUpper();
 
     if (input is "Q" or "SALIR") break;
@@ -71,7 +57,7 @@ while (true)
     if (input != null && patterns.TryGetValue(input, out var selected))
     {
         Console.Clear();
-        Console.WriteLine($"\n  >>> {patternNames[input]} <<<\n");
+        Console.WriteLine($"\n  >>> {selected.Name} <<<\n");
         Console.WriteLine(new string('─', 60));
         selected.Demo();
         Console.WriteLine(new string('─', 60));

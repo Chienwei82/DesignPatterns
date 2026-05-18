@@ -14,9 +14,9 @@ namespace DesignPatterns.Behavioral;
 // --- Clase abstracta con Template Method ---
 public abstract class ProcesadorArchivo
 {
-    /// Template Method — define la estructura del algoritmo
-    /// Las subclases NO pueden sobrescribir este método (en C# usamos sealed)
-    /// pero en este demo lo dejamos como virtual para simplicidad educativa.
+    /// Template Method — define la estructura del algoritmo.
+    /// NO es virtual ni abstract, por lo que las subclases NO pueden
+    /// sobrescribirlo. Esto garantiza que el flujo siempre sea el mismo.
     public void Procesar(string rutaArchivo)
     {
         Console.WriteLine("\n  ⚙️  Iniciando procesamiento...\n");

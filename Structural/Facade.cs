@@ -75,10 +75,26 @@ public class SubsistemaNotificaciones
 // --- FACADE: la interfaz simple que el cliente usa ---
 public class FacadePedido
 {
-    private readonly SubsistemaInventario _inventario = new();
-    private readonly SubsistemaPagos _pagos = new();
-    private readonly SubsistemaEnvios _envios = new();
-    private readonly SubsistemaNotificaciones _notificaciones = new();
+    private readonly SubsistemaInventario _inventario;
+    private readonly SubsistemaPagos _pagos;
+    private readonly SubsistemaEnvios _envios;
+    private readonly SubsistemaNotificaciones _notificaciones;
+
+    // Constructor por defecto (conveniencia educativa)
+    public FacadePedido()
+        : this(new SubsistemaInventario(), new SubsistemaPagos(),
+               new SubsistemaEnvios(), new SubsistemaNotificaciones())
+    { }
+
+    // Constructor con inyección de dependencias (desacoplamiento real)
+    public FacadePedido(SubsistemaInventario inventario, SubsistemaPagos pagos,
+                        SubsistemaEnvios envios, SubsistemaNotificaciones notificaciones)
+    {
+        _inventario = inventario;
+        _pagos = pagos;
+        _envios = envios;
+        _notificaciones = notificaciones;
+    }
 
     // Un solo método que orquesta todo el proceso complejo
     public string RealizarPedido(string cliente, string producto, int cantidad,

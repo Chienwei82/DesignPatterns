@@ -30,6 +30,15 @@ public class EditorTexto
         Console.WriteLine($"    📝 Insertado: \"{texto}\"");
     }
 
+    public void InsertarEn(int posicion, string texto)
+    {
+        if (posicion >= 0 && posicion <= _contenido.Length)
+        {
+            _contenido = _contenido.Insert(posicion, texto);
+            Console.WriteLine($"    📝 Insertado en pos {posicion}: \"{texto}\"");
+        }
+    }
+
     public void Borrar(int cantidad)
     {
         if (cantidad <= _contenido.Length)
@@ -90,6 +99,7 @@ public class ComandoCortar : IComando
     private readonly EditorTexto _editor;
     private readonly int _desde;
     private readonly int _hasta;
+    private string _textoCortado = "";
     public string Nombre => $"Cortar [{_desde}..{_hasta}]";
 
     public ComandoCortar(EditorTexto editor, int desde, int hasta)
@@ -99,25 +109,43 @@ public class ComandoCortar : IComando
         _hasta = hasta;
     }
 
-    public void Ejecutar() => _editor.Cortar(_desde, _hasta);
+    public void Ejecutar()
+    {
+        // Guardar el texto antes de cortar para poder deshacer
+        var contenidoPrevio = _editor.Contenido;
+        _editor.Cortar(_desde, _hasta);
+        // El texto cortado queda en el portapapeles del editor
+        // Calculamos qué se cortó comparando antes y después
+        if (_hasta <= contenidoPrevio.Length && _desde < _hasta)
+            _textoCortado = contenidoPrevio[_desde.._hasta];
+    }
 
-    // Deshacer cortar = pegar de vuelta (simplificado)
-    public void Deshacer() { /* versión completa omitida por brevedad */ }
+    public void Deshacer()
+    {
+        Console.WriteLine($"    ↩️ [Undo] Restaurando texto cortado...");
+        _editor.InsertarEn(_desde, _textoCortado);
+    }
 }
 
 public class ComandoPegar : IComando
 {
     private readonly EditorTexto _editor;
+    private int _longitudPegada = 0;
     public string Nombre => "Pegar";
 
     public ComandoPegar(EditorTexto editor) => _editor = editor;
 
-    public void Ejecutar() => _editor.Pegar();
+    public void Ejecutar()
+    {
+        var textoPrevio = _editor.Contenido;
+        _editor.Pegar();
+        _longitudPegada = _editor.Contenido.Length - textoPrevio.Length;
+    }
 
     public void Deshacer()
     {
-        Console.WriteLine("    ↩️  [Undo] Despegando último texto...");
-        // Simplificado: borraría el último pegado
+        Console.WriteLine($"    ↩️ [Undo] Despegando {_longitudPegada} caracteres...");
+        _editor.Borrar(_longitudPegada);
     }
 }
 
@@ -175,30 +203,34 @@ public static class CommandDemo
         var historial = new HistorialComandos();
 
         // Secuencia de edición
-        historial.Ejecutar(new ComandoInsertar(editor, "Hola "));
+        historial.Ejecutar(new ComandoInsertar(editor, "Hola mundo cruel"));
         editor.Mostrar();
         Console.WriteLine();
 
-        historial.Ejecutar(new ComandoInsertar(editor, "mundo"));
+        // Cortar "mundo " (posiciones 5 a 11)
+        historial.Ejecutar(new ComandoCortar(editor, 5, 11));
         editor.Mostrar();
         Console.WriteLine();
 
-        historial.Ejecutar(new ComandoInsertar(editor, "!"));
+        // Pegar al final
+        historial.Ejecutar(new ComandoPegar(editor));
         editor.Mostrar();
         Console.WriteLine();
 
-        // Undo
-        Console.WriteLine("  ── Deshacer (Ctrl+Z) ──");
+        // Undo pegar
+        Console.WriteLine("  ── Deshacer Pegar (Ctrl+Z) ──");
         historial.Deshacer();
         editor.Mostrar();
         Console.WriteLine();
 
+        // Undo cortar
+        Console.WriteLine("  ── Deshacer Cortar (Ctrl+Z) ──");
         historial.Deshacer();
         editor.Mostrar();
         Console.WriteLine();
 
-        // Redo
-        Console.WriteLine("  ── Rehacer (Ctrl+Y) ──");
+        // Redo cortar
+        Console.WriteLine("  ── Rehacer Cortar (Ctrl+Y) ──");
         historial.Rehacer();
         editor.Mostrar();
         Console.WriteLine();

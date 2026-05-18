@@ -112,16 +112,17 @@ public class DirectorPedidos
     }
 
     // Recipe predefinida: pedido simple sin registro
-    public void ConstruirPedidoSimple(string cliente, string producto, string direccion)
+    public PedidoComplejo ConstruirPedidoSimple(string cliente, string producto, string direccion)
     {
         _builder.AgregarCliente(cliente);
         _builder.AgregarProducto(producto);
         _builder.AgregarDireccion(direccion);
         _builder.SeleccionarPago("Tarjeta");
+        return _builder.Construir();
     }
 
     // Recipe predefinida: pedido premium con regalo
-    public void ConstruirPedidoPremium(string cliente, string[] productos, string direccion)
+    public PedidoComplejo ConstruirPedidoPremium(string cliente, string[] productos, string direccion)
     {
         _builder.AgregarCliente(cliente);
         foreach (var p in productos) _builder.AgregarProducto(p);
@@ -129,6 +130,7 @@ public class DirectorPedidos
         _builder.ConfigurarEnvioExprés();
         _builder.ConfigurarRegalo();
         _builder.SeleccionarPago("PayPal");
+        return _builder.Construir();
     }
 }
 
@@ -154,13 +156,13 @@ public static class BuilderDemo
         // ── Pedido premium (usando Director con recipe predefinida) ──
         Console.WriteLine("  ── Pedido Premium (vía Director) ──");
         var director = new DirectorPedidos(new PedidoBuilder());
-        director.ConstruirPedidoPremium(
+        var pedido2 = director.ConstruirPedidoPremium(
             "Carlos Méndez",
             ["Monitor 27\"", "Teclado Mecánico", "Mouse Inalámbrico"],
             "Heredia, Santo Domingo"
         );
-        // Podemos recuperar el resultado del builder
-        // (en este ejemplo, el director lo construye internamente)
+        Console.WriteLine();
+        pedido2.Resumen();
         Console.WriteLine();
 
         Console.WriteLine("  ✅ El Builder permite crear objetos con diferentes");
