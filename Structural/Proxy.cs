@@ -30,7 +30,7 @@ public class ServicioDatosRemoto : IServicioDatos
 public class ProxyCache : IServicioDatos
 {
     private readonly ServicioDatosRemoto _real = new();
-    private readonly Dictionary<int, (string datos, DateTime timestamp)> _cache = new();
+    private readonly Dictionary<int, (string datos, DateTimeOffset timestamp)> _cache = new();
     private readonly TimeSpan _tiempoExpiracion = TimeSpan.FromSeconds(30);
 
     public string ObtenerDatos(int id)
@@ -38,7 +38,7 @@ public class ProxyCache : IServicioDatos
         // Verificar caché
         if (_cache.TryGetValue(id, out var entry))
         {
-            if (DateTime.Now - entry.timestamp < _tiempoExpiracion)
+            if (DateTimeOffset.UtcNow - entry.timestamp < _tiempoExpiracion)
             {
                 Console.WriteLine($"  [Proxy-Cache] 🟢 Cache HIT para ID={id}");
                 return $" [CACHE] {entry.datos}";
@@ -58,7 +58,7 @@ public class ProxyCache : IServicioDatos
         var resultado = _real.ObtenerDatos(id);
 
         // Guardar en caché
-        _cache[id] = (resultado, DateTime.Now);
+        _cache[id] = (resultado, DateTimeOffset.UtcNow);
         return resultado;
     }
 }
@@ -68,30 +68,24 @@ public class ProxySeguridad : IServicioDatos
 {
     private readonly ServicioDatosRemoto _real = new();
     private readonly string _rolPermitido;
+    private readonly string _rolUsuario;
 
-    public ProxySeguridad(string rolPermitido)
+    public ProxySeguridad(string rolPermitido, string rolUsuario = "Usuario")
     {
         _rolPermitido = rolPermitido;
+        _rolUsuario = rolUsuario;
     }
 
     public string ObtenerDatos(int id)
     {
-        var rolUsuario = ObtenerRolActual();
-
-        if (rolUsuario != _rolPermitido)
+        if (_rolUsuario != _rolPermitido)
         {
-            Console.WriteLine($"  [Proxy-Seguridad] 🚫 Acceso DENEGADO: rol '{rolUsuario}' no autorizado. Se requiere '{_rolPermitido}'");
+            Console.WriteLine($"  [Proxy-Seguridad] 🚫 Acceso DENEGADO: rol '{_rolUsuario}' no autorizado. Se requiere '{_rolPermitido}'");
             return $" [DENEGADO] No tienes permisos para acceder al registro #{id}";
         }
 
-        Console.WriteLine($"  [Proxy-Seguridad] ✅ Acceso PERMITIDO: rol '{rolUsuario}'");
+        Console.WriteLine($"  [Proxy-Seguridad] ✅ Acceso PERMITIDO: rol '{_rolUsuario}'");
         return _real.ObtenerDatos(id);
-    }
-
-    private string ObtenerRolActual()
-    {
-        // Simula autenticación
-        return "Usuario";
     }
 }
 
@@ -121,9 +115,16 @@ public static class ProxyDemo
 
         // ── Proxy de Seguridad ──
         Console.WriteLine("  ── Proxy de Seguridad ──");
-        var proxySeg = new ProxySeguridad("Administrador");
-        var resultado = proxySeg.ObtenerDatos(7);
-        Console.WriteLine($"  Resultado: {resultado}");
+
+        // Usuario normal intentando acceder a datos de administrador
+        var proxySegDenegado = new ProxySeguridad("Administrador", rolUsuario: "Usuario");
+        var resultadoDenegado = proxySegDenegado.ObtenerDatos(7);
+        Console.WriteLine($"  Resultado: {resultadoDenegado}\n");
+
+        // Administrador con acceso permitido
+        var proxySegPermitido = new ProxySeguridad("Administrador", rolUsuario: "Administrador");
+        var resultadoPermitido = proxySegPermitido.ObtenerDatos(8);
+        Console.WriteLine($"  Resultado: {resultadoPermitido}");
         Console.WriteLine();
 
         Console.WriteLine("  ✅ El Proxy evita llamar al objeto real si no es necesario.");

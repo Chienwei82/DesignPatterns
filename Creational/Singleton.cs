@@ -65,8 +65,8 @@ public static class SingletonDemo
 
         Console.WriteLine();
         Console.WriteLine($"  3. ¿Es la misma instancia? {ReferenceEquals(cfg1, cfg2)}");
-        Console.WriteLine($"     HashCode #1: {cfg1.GetHashCode()}");
-        Console.WriteLine($"     HashCode #2: {cfg2.GetHashCode()}");
+        Console.WriteLine($"     RuntimeHelpers.GetHashCode #1: {System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(cfg1)}");
+        Console.WriteLine($"     RuntimeHelpers.GetHashCode #2: {System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(cfg2)}");
         Console.WriteLine();
         Console.WriteLine("  ✅ Conclusión: Solo se creó UNA vez, ambas variables");
         Console.WriteLine("     apuntan al mismo objeto en memoria.");

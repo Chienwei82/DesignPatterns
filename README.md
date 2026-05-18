@@ -8,13 +8,13 @@
 
 ## ¿Qué es esto?
 
-Una aplicación de consola interactiva en **.NET 10** que demuestra los **15 patrones de diseño GoF** organizados por categoría:
+Una aplicación de consola interactiva en **.NET 10** que demuestra **20 patrones de diseño GoF** organizados por categoría:
 
 | Categoría | Patrones |
 |-----------|----------|
 | **Creacionales** | Singleton, Factory Method, Abstract Factory, Builder, Prototype |
-| **Estructurales** | Adapter, Decorator, Facade, Proxy, Composite |
-| **De Comportamiento** | Strategy, Observer, Command, Template Method, State |
+| **Estructurales** | Adapter, Decorator, Facade, Proxy, Composite, Bridge, Flyweight |
+| **De Comportamiento** | Strategy, Observer, Command, Template Method, State, Mediator, Memento, Chain of Responsibility |
 
 Cada patrón incluye una implementación mínima y un caso de uso ilustrativo (siempre en español).
 
@@ -38,7 +38,7 @@ dotnet run
 echo 13 | dotnet run
 ```
 
-> Los números `1`–`15` corresponden al orden del menú.
+> Los números `1`–`20` corresponden al orden del menú.
 
 ---
 
@@ -59,13 +59,18 @@ DesignPatterns/
 │   ├── Decorator.cs
 │   ├── Facade.cs
 │   ├── Proxy.cs
-│   └── Composite.cs
+│   ├── Composite.cs
+│   ├── Bridge.cs
+│   └── Flyweight.cs
 └── Behavioral/
     ├── Strategy.cs
     ├── Observer.cs
     ├── Command.cs
     ├── TemplateMethod.cs
-    └── State.cs
+    ├── State.cs
+    ├── Mediator.cs
+    ├── Memento.cs
+    └── ChainOfResponsibility.cs
 ```
 
 ---

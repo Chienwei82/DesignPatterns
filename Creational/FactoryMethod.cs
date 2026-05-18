@@ -62,17 +62,47 @@ public abstract class NotificadorFactory
 // --- Creators concretos ---
 public class FactoryEmail : NotificadorFactory
 {
-    public override Notificador CrearNotificador() => new NotificadorEmail();
+    private readonly string _smtpServer;
+    public FactoryEmail(string smtpServer = "smtp.gmail.com")
+    {
+        _smtpServer = smtpServer;
+    }
+
+    public override Notificador CrearNotificador()
+    {
+        Console.WriteLine($"    [FactoryEmail] Configurando servidor SMTP: {_smtpServer}");
+        return new NotificadorEmail();
+    }
 }
 
 public class FactorySMS : NotificadorFactory
 {
-    public override Notificador CrearNotificador() => new NotificadorSMS();
+    private readonly string _numeroOrigen;
+    public FactorySMS(string numeroOrigen = "+5068000-1234")
+    {
+        _numeroOrigen = numeroOrigen;
+    }
+
+    public override Notificador CrearNotificador()
+    {
+        Console.WriteLine($"    [FactorySMS] Número de origen: {_numeroOrigen}");
+        return new NotificadorSMS();
+    }
 }
 
 public class FactoryPush : NotificadorFactory
 {
-    public override Notificador CrearNotificador() => new NotificadorPush();
+    private readonly string _appId;
+    public FactoryPush(string appId = "com.miempresa.app")
+    {
+        _appId = appId;
+    }
+
+    public override Notificador CrearNotificador()
+    {
+        Console.WriteLine($"    [FactoryPush] App ID: {_appId}");
+        return new NotificadorPush();
+    }
 }
 
 public static class FactoryMethodDemo
@@ -85,9 +115,9 @@ public static class FactoryMethodDemo
         // El cliente no sabe qué clase concreta se crea
         var factories = new NotificadorFactory[]
         {
-            new FactoryEmail(),
-            new FactorySMS(),
-            new FactoryPush()
+            new FactoryEmail("smtp.outlook.com"),
+            new FactorySMS("+5068888-9999"),
+            new FactoryPush("com.empresa.notifications")
         };
 
         string[] canales = { "Email", "SMS", "Push" };

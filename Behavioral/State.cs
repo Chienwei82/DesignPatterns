@@ -31,7 +31,7 @@ public class Pedido
     {
         Id = id;
         Producto = producto;
-        Estado = new EstadoNuevo(); // Estado inicial
+        Estado = EstadoNuevo.Instancia; // Estado inicial (singleton)
     }
 
     // Los métodos delegan al estado actual
@@ -45,12 +45,13 @@ public class Pedido
 
 public class EstadoNuevo : IEstadoPedido
 {
+    public static readonly EstadoNuevo Instancia = new();
     public string Nombre => "🆕 Nuevo";
 
     public void Pagar(Pedido pedido)
     {
         Console.WriteLine($"  💳 Pedido #{pedido.Id}: Pago confirmado");
-        pedido.Estado = new EstadoPagado();
+        pedido.Estado = EstadoPagado.Instancia;
     }
 
     public void Enviar(Pedido pedido)
@@ -66,12 +67,13 @@ public class EstadoNuevo : IEstadoPedido
     public void Cancelar(Pedido pedido)
     {
         Console.WriteLine($"  ❌ Pedido #{pedido.Id}: Cancelado por el cliente");
-        pedido.Estado = new EstadoCancelado();
+        pedido.Estado = EstadoCancelado.Instancia;
     }
 }
 
 public class EstadoPagado : IEstadoPedido
 {
+    public static readonly EstadoPagado Instancia = new();
     public string Nombre => "💰 Pagado";
 
     public void Pagar(Pedido pedido)
@@ -82,7 +84,7 @@ public class EstadoPagado : IEstadoPedido
     public void Enviar(Pedido pedido)
     {
         Console.WriteLine($"  📦 Pedido #{pedido.Id}: Enviado al domicilio");
-        pedido.Estado = new EstadoEnviado();
+        pedido.Estado = EstadoEnviado.Instancia;
     }
 
     public void Entregar(Pedido pedido)
@@ -93,12 +95,13 @@ public class EstadoPagado : IEstadoPedido
     public void Cancelar(Pedido pedido)
     {
         Console.WriteLine($"  ↩️  Pedido #{pedido.Id}: Cancelado — reembolso procesado");
-        pedido.Estado = new EstadoCancelado();
+        pedido.Estado = EstadoCancelado.Instancia;
     }
 }
 
 public class EstadoEnviado : IEstadoPedido
 {
+    public static readonly EstadoEnviado Instancia = new();
     public string Nombre => "🚚 Enviado";
 
     public void Pagar(Pedido pedido)
@@ -114,18 +117,19 @@ public class EstadoEnviado : IEstadoPedido
     public void Entregar(Pedido pedido)
     {
         Console.WriteLine($"  ✅ Pedido #{pedido.Id}: ENTREGADO — ¡Gracias por su compra!");
-        pedido.Estado = new EstadoEntregado();
+        pedido.Estado = EstadoEntregado.Instancia;
     }
 
     public void Cancelar(Pedido pedido)
     {
         Console.WriteLine($"  ↩️  Pedido #{pedido.Id}: Cancelado durante envío (devolución en tránsito)");
-        pedido.Estado = new EstadoCancelado();
+        pedido.Estado = EstadoCancelado.Instancia;
     }
 }
 
 public class EstadoEntregado : IEstadoPedido
 {
+    public static readonly EstadoEntregado Instancia = new();
     public string Nombre => "✅ Entregado";
 
     public void Pagar(Pedido pedido) =>
@@ -143,6 +147,7 @@ public class EstadoEntregado : IEstadoPedido
 
 public class EstadoCancelado : IEstadoPedido
 {
+    public static readonly EstadoCancelado Instancia = new();
     public string Nombre => "❌ Cancelado";
 
     public void Pagar(Pedido pedido) =>
