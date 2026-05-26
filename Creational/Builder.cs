@@ -37,13 +37,13 @@ public class PedidoComplejo
 // --- Builder ---
 public interface IPedidoBuilder
 {
-    void AgregarCliente(string nombre);
-    void AgregarProducto(string producto);
-    void AgregarDireccion(string direccion);
-    void ConfigurarEnvioExprés();
-    void ConfigurarRegalo();
-    void AgregarNotas(string notas);
-    void SeleccionarPago(string metodo);
+    IPedidoBuilder AgregarCliente(string nombre);
+    IPedidoBuilder AgregarProducto(string producto);
+    IPedidoBuilder AgregarDireccion(string direccion);
+    IPedidoBuilder ConfigurarEnvioExprés();
+    IPedidoBuilder ConfigurarRegalo();
+    IPedidoBuilder AgregarNotas(string notas);
+    IPedidoBuilder SeleccionarPago(string metodo);
     PedidoComplejo Construir();
 }
 
@@ -52,46 +52,53 @@ public class PedidoBuilder : IPedidoBuilder
 {
     private PedidoComplejo _pedido = new();
 
-    public void AgregarCliente(string nombre)
+    public IPedidoBuilder AgregarCliente(string nombre)
     {
         _pedido.Cliente = nombre;
         Console.WriteLine($"  📝 Cliente registrado: {nombre}");
+        return this;
     }
 
-    public void AgregarProducto(string producto)
+    public IPedidoBuilder AgregarProducto(string producto)
     {
         _pedido.Productos.Add(producto);
         Console.WriteLine($"  📦 Producto agregado: {producto}");
+        return this;
     }
 
-    public void AgregarDireccion(string direccion)
+    public IPedidoBuilder AgregarDireccion(string direccion)
     {
         _pedido.DireccionEnvio = direccion;
         Console.WriteLine($"  📍 Dirección: {direccion}");
+        return this;
     }
 
-    public void ConfigurarEnvioExprés()
+    public IPedidoBuilder ConfigurarEnvioExprés()
     {
         _pedido.EnvioExprés = true;
         Console.WriteLine($"  ⚡ Envío exprés activado");
+        return this;
     }
 
-    public void ConfigurarRegalo()
+    public IPedidoBuilder ConfigurarRegalo()
     {
         _pedido.EnvolverParaRegalo = true;
         Console.WriteLine($"  🎁 Envoltura para regalo");
+        return this;
     }
 
-    public void AgregarNotas(string notas)
+    public IPedidoBuilder AgregarNotas(string notas)
     {
         _pedido.Notas = notas;
         Console.WriteLine($"  📌 Notas: {notas}");
+        return this;
     }
 
-    public void SeleccionarPago(string metodo)
+    public IPedidoBuilder SeleccionarPago(string metodo)
     {
         _pedido.MetodoPago = metodo;
         Console.WriteLine($"  💳 Método de pago: {metodo}");
+        return this;
     }
 
     public PedidoComplejo Construir()
@@ -143,14 +150,14 @@ public static class BuilderDemo
         Console.WriteLine("  🧱 BUILDER — Objetos complejos paso a paso\n");
         Console.WriteLine("  Escenario: Sistema de pedidos con múltiples configuraciones\n");
 
-        // ── Pedido simple (cliente usa el builder directamente) ──
-        Console.WriteLine("  ── Pedido Simple ──");
-        var builder = new PedidoBuilder();
-        builder.AgregarCliente("Ana López");
-        builder.AgregarProducto("Laptop HP");
-        builder.AgregarDireccion("San José, Rohrmoser");
-        builder.SeleccionarPago("Tarjeta");
-        var pedido1 = builder.Construir();
+        // ── Pedido simple (API fluent / encadenamiento) ──
+        Console.WriteLine("  ── Pedido Simple (fluent API) ──");
+        var pedido1 = new PedidoBuilder()
+            .AgregarCliente("Ana López")
+            .AgregarProducto("Laptop HP")
+            .AgregarDireccion("San José, Rohrmoser")
+            .SeleccionarPago("Tarjeta")
+            .Construir();
         Console.WriteLine();
         pedido1.Resumen();
         Console.WriteLine();
