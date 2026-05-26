@@ -18,28 +18,47 @@ public abstract class Notificador
 // --- Productos concretos ---
 public class NotificadorEmail : Notificador
 {
+    private readonly string _smtpServer;
+
+    public NotificadorEmail(string smtpServer = "smtp.gmail.com")
+    {
+        _smtpServer = smtpServer;
+    }
+
     public override void Enviar(string mensaje)
     {
+        Console.WriteLine($"  ✉️ [EMAIL]    Conectando a {_smtpServer}...");
         Console.WriteLine($"  ✉️ [EMAIL]    Enviando correo a usuarios: \"{mensaje}\"");
-        // Aquí iría SmtpClient.Send(...)
     }
 }
 
 public class NotificadorSMS : Notificador
 {
+    private readonly string _numeroOrigen;
+
+    public NotificadorSMS(string numeroOrigen = "+5068000-1234")
+    {
+        _numeroOrigen = numeroOrigen;
+    }
+
     public override void Enviar(string mensaje)
     {
-        Console.WriteLine($"  📱 [SMS]      Enviando mensaje de texto: \"{mensaje}\"");
-        // Aquí iría Twilio API
+        Console.WriteLine($"  📱 [SMS]      Enviando desde {_numeroOrigen}: \"{mensaje}\"");
     }
 }
 
 public class NotificadorPush : Notificador
 {
+    private readonly string _appId;
+
+    public NotificadorPush(string appId = "com.miempresa.app")
+    {
+        _appId = appId;
+    }
+
     public override void Enviar(string mensaje)
     {
-        Console.WriteLine($"  🔔 [PUSH]     Notificación push enviada: \"{mensaje}\"");
-        // Aquí iría Firebase Cloud Messaging
+        Console.WriteLine($"  🔔 [PUSH]     App {_appId}: Notificación push enviada: \"{mensaje}\"");
     }
 }
 
@@ -71,7 +90,7 @@ public class FactoryEmail : NotificadorFactory
     public override Notificador CrearNotificador()
     {
         Console.WriteLine($"    [FactoryEmail] Configurando servidor SMTP: {_smtpServer}");
-        return new NotificadorEmail();
+        return new NotificadorEmail(_smtpServer);
     }
 }
 
@@ -86,7 +105,7 @@ public class FactorySMS : NotificadorFactory
     public override Notificador CrearNotificador()
     {
         Console.WriteLine($"    [FactorySMS] Número de origen: {_numeroOrigen}");
-        return new NotificadorSMS();
+        return new NotificadorSMS(_numeroOrigen);
     }
 }
 
@@ -101,7 +120,7 @@ public class FactoryPush : NotificadorFactory
     public override Notificador CrearNotificador()
     {
         Console.WriteLine($"    [FactoryPush] App ID: {_appId}");
-        return new NotificadorPush();
+        return new NotificadorPush(_appId);
     }
 }
 

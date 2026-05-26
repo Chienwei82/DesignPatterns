@@ -1,5 +1,14 @@
 # Guía Completa de Patrones de Diseño GoF — Material para NotebookLM
 
+<!--
+title: Guía de Patrones GoF - C# 10
+author: Chienwei82
+updated: 2026-05-26
+version: 2.0
+patterns: 20 de 23 GoF
+language: es
+-->
+
 > Este documento resume los 23 patrones clásicos del libro *Design Patterns: Elements of Reusable Object-Oriented Software* (Gang of Four), implementados en C# 10/.NET 10. Está optimizado para ingestión por herramientas de IA como NotebookLM.
 
 ---
@@ -762,3 +771,102 @@ Todos manejan estructuras de objetos, pero:
 ---
 
 > Documento generado para consumo por IA / NotebookLM. Contiene 20 patrones GoF implementados en C# 10 con casos de uso en español.
+
+---
+
+## 11. Ejercicios prácticos
+
+> Usa estos ejercicios para practicar. Puedes pedirle a NotebookLM que te evalúe, te dé pistas o te explique conceptos mientras los resuelves.
+
+### Ejercicio 1: Sistema de reservas de hotel (Builder + Factory Method)
+
+**Objetivo:** Implementar un sistema que cree reservas de hotel con diferentes tipos de habitación.
+
+**Requisitos:**
+- Usa **Builder** para construir una reserva paso a paso: tipo de habitación, noches, servicios adicionales (desayuno, spa, parking).
+- Usa **Factory Method** para crear diferentes tipos de habitación (`HabitacionEstandar`, `HabitacionSuite`, `HabitacionPresidencial`).
+- Cada tipo de habitación tiene un precio base diferente y amenidades distintas.
+- El demo debe mostrar al menos 3 reservas con configuraciones diferentes.
+
+**Preguntas de reflexión:**
+- ¿Por qué Builder es mejor que un constructor con 8 parámetros?
+- ¿Qué pasaría si agregaras un nuevo tipo de habitación? ¿Necesitas modificar el Builder?
+
+---
+
+### Ejercicio 2: Sistema de alertas de monitoreo (Observer + Strategy)
+
+**Objetivo:** Crear un sistema de alertas donde diferentes canales reciben notificaciones según la severidad del evento.
+
+**Requisitos:**
+- Usa **Observer** para que un `MonitorSistema` notifique a múltiples canales: email, SMS, Slack, PagerDuty.
+- Usa **Strategy** para calcular el nivel de severidad: `SeveridadBaja` (CPU < 70%), `SeveridadMedia` (CPU 70-90%), `SeveridadCritica` (CPU > 90%).
+- Los observadores con filtro solo reaccionan a ciertas severidades (ej. PagerDuty solo recibe críticas).
+- El demo debe simular 3 escenarios: carga normal, pico moderado y caída del servidor.
+
+**Preguntas de reflexión:**
+- ¿Qué patrón se encarga de la comunicación (Observer) y cuál de la lógica de decisión (Strategy)?
+- ¿Cómo agregarías un nuevo canal de alerta sin modificar el MonitorSistema?
+
+---
+
+### Ejercicio 3: Pipeline de procesamiento de imágenes (Chain of Responsibility + Decorator)
+
+**Objetivo:** Crear un pipeline donde una imagen pasa por una cadena de filtros opcionales.
+
+**Requisitos:**
+- Usa **Chain of Responsibility** para una cadena de filtros: `FiltroRedimensionar`, `FiltroBrillo`, `FiltroContraste`, `FiltroMarcaAgua`.
+- Cada filtro decide si aplica su transformación según las propiedades de la imagen (ej. no redimensionar si ya es del tamaño correcto).
+- Usa **Decorator** para envolver la imagen con metadatos: `ImagenConEXIF`, `ImagenConMarcaAgua`.
+- El demo debe procesar 3 imágenes con diferentes configuraciones de filtros.
+
+**Preguntas de reflexión:**
+- ¿En qué se diferencia la cadena de filtros (Chain) del apilamiento de decoradores (Decorator)?
+- ¿Podrías reordenar los filtros en tiempo de ejecución? ¿Cómo?
+
+---
+
+### Ejercicio 4: Juego de cartas con undo (Command + Memento + State)
+
+**Objetivo:** Implementar un juego de cartas simple donde cada jugada se puede deshacer.
+
+**Requisitos:**
+- Usa **State** para modelar los turnos del juego: `EstadoEsperandoJugada`, `EstadoJugadaRealizada`, `EstadoFinTurno`, `EstadoFinPartida`.
+- Usa **Command** para cada acción: `ComandoRobarCarta`, `ComandoJugarCarta`, `ComandoDescartar`.
+- Usa **Memento** para guardar el estado del mazo y las manos de los jugadores antes de cada jugada.
+- El demo debe mostrar: robar carta, jugar carta, deshacer la jugada, y verificar que el estado se restauró correctamente.
+
+**Preguntas de reflexión:**
+- ¿Por qué necesitas tanto Command como Memento para el undo? ¿No basta con uno solo?
+- ¿Qué información guarda el Memento que el Command no podría guardar por sí solo?
+
+---
+
+### Ejercicio 5: Sistema de mensajería multi-plataforma (Bridge + Mediator + Abstract Factory)
+
+**Objetivo:** Crear un sistema de mensajería que funcione con diferentes plataformas y protocolos.
+
+**Requisitos:**
+- Usa **Bridge** para separar el tipo de mensaje (`MensajeTexto`, `MensajeImagen`, `MensajeVoz`) de la plataforma de envío (`WhatsApp`, `Telegram`, `Signal`).
+- Usa **Mediator** para una sala de chat grupal donde los mensajes se enrutan entre participantes.
+- Usa **Abstract Factory** para crear familias de UI según la plataforma: `UIWhatsApp` (burbuja verde), `UITelegram` (burbuja azul), `UISignal` (burbuja gris).
+- El demo debe mostrar un chat grupal donde 3 usuarios envían diferentes tipos de mensaje a través de distintas plataformas.
+
+**Preguntas de reflexión:**
+- ¿Cuántos patrones interactúan en este ejercicio? ¿Es excesivo o justificado?
+- Si agregaras una nueva plataforma (ej. Discord), ¿qué patrones necesitas modificar y cuáles no?
+
+---
+
+### Ejercicio 6: Comparativa de patrones (análisis conceptual)
+
+**Objetivo:** Responder preguntas que contrastan patrones similares.
+
+**Preguntas:**
+1. Tienes un sistema de pagos que acepta Visa, Mastercard y PayPal. ¿Usarías **Strategy**, **Factory Method** o **Abstract Factory**? Justifica tu respuesta.
+2. Un editor de texto necesita: (a) formatear texto en negrita/cursiva/color, (b) guardar/deshacer cambios, (c) notificar a plugins cuando el documento cambia. ¿Qué patrón usarías para cada caso?
+3. ¿Por qué **Template Method** usa herencia y **Strategy** usa composición? ¿Cuál es más flexible y por qué?
+4. Si tuvieras 100,000 partículas en un videojuego (cada una con posición, velocidad, color), ¿qué patrón usarías para optimizar memoria? ¿Y si cada partícula tiene un comportamiento diferente (explosión, gravedad, rebote)?
+5. Diseña un sistema de semáforos inteligentes que cambian según el tráfico. ¿Usarías **State** o **Strategy**? ¿Puede un semáforo usar ambos?
+
+---

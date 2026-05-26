@@ -35,19 +35,19 @@ public class Factura : ICloneable
     // Los objetos de referencia (List, DatosFiscales) se COMPARTEN
     public object Clone()
     {
-        return this.MemberwiseClone();
+        return MemberwiseClone();
     }
 
     // DeepClone() crea una copia profunda — TODO es nuevo
     public Factura DeepClone()
     {
-        var copia = (Factura)this.MemberwiseClone();
-        copia.Lineas = new List<string>(this.Lineas);
+        var copia = (Factura)MemberwiseClone();
+        copia.Lineas = new List<string>(Lineas);
         copia.DatosFiscales = new DatosFiscales
         {
-            Cedula = this.DatosFiscales.Cedula,
-            Nombre = this.DatosFiscales.Nombre,
-            Telefono = this.DatosFiscales.Telefono
+            Cedula = DatosFiscales.Cedula,
+            Nombre = DatosFiscales.Nombre,
+            Telefono = DatosFiscales.Telefono
         };
         return copia;
     }
