@@ -25,7 +25,7 @@ public class Pedido
 {
     public int Id { get; }
     public string Producto { get; }
-    public IEstadoPedido Estado { get; set; }
+    public IEstadoPedido Estado { get; private set; }
 
     public Pedido(int id, string producto)
     {
@@ -33,6 +33,9 @@ public class Pedido
         Producto = producto;
         Estado = EstadoNuevo.Instancia; // Estado inicial (singleton)
     }
+
+    // Solo el propio Pedido (o clases del mismo assembly) pueden cambiar el estado
+    internal void CambiarEstado(IEstadoPedido nuevoEstado) => Estado = nuevoEstado;
 
     // Los métodos delegan al estado actual
     public void Pagar() => Estado.Pagar(this);
@@ -51,7 +54,7 @@ public class EstadoNuevo : IEstadoPedido
     public void Pagar(Pedido pedido)
     {
         Console.WriteLine($"  💳 Pedido #{pedido.Id}: Pago confirmado");
-        pedido.Estado = EstadoPagado.Instancia;
+        pedido.CambiarEstado(EstadoPagado.Instancia);
     }
 
     public void Enviar(Pedido pedido)
@@ -67,7 +70,7 @@ public class EstadoNuevo : IEstadoPedido
     public void Cancelar(Pedido pedido)
     {
         Console.WriteLine($"  ❌ Pedido #{pedido.Id}: Cancelado por el cliente");
-        pedido.Estado = EstadoCancelado.Instancia;
+        pedido.CambiarEstado(EstadoCancelado.Instancia);
     }
 }
 
@@ -84,7 +87,7 @@ public class EstadoPagado : IEstadoPedido
     public void Enviar(Pedido pedido)
     {
         Console.WriteLine($"  📦 Pedido #{pedido.Id}: Enviado al domicilio");
-        pedido.Estado = EstadoEnviado.Instancia;
+        pedido.CambiarEstado(EstadoEnviado.Instancia);
     }
 
     public void Entregar(Pedido pedido)
@@ -95,7 +98,7 @@ public class EstadoPagado : IEstadoPedido
     public void Cancelar(Pedido pedido)
     {
         Console.WriteLine($"  ↩️  Pedido #{pedido.Id}: Cancelado — reembolso procesado");
-        pedido.Estado = EstadoCancelado.Instancia;
+        pedido.CambiarEstado(EstadoCancelado.Instancia);
     }
 }
 
@@ -117,13 +120,13 @@ public class EstadoEnviado : IEstadoPedido
     public void Entregar(Pedido pedido)
     {
         Console.WriteLine($"  ✅ Pedido #{pedido.Id}: ENTREGADO — ¡Gracias por su compra!");
-        pedido.Estado = EstadoEntregado.Instancia;
+        pedido.CambiarEstado(EstadoEntregado.Instancia);
     }
 
     public void Cancelar(Pedido pedido)
     {
         Console.WriteLine($"  ↩️  Pedido #{pedido.Id}: Cancelado durante envío (devolución en tránsito)");
-        pedido.Estado = EstadoCancelado.Instancia;
+        pedido.CambiarEstado(EstadoCancelado.Instancia);
     }
 }
 
