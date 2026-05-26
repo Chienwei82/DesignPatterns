@@ -63,12 +63,7 @@ public class Factura : ICloneable
     }
 }
 
-public class DatosFiscales
-{
-    public string Cedula { get; set; } = "";
-    public string Nombre { get; set; } = "";
-    public string Telefono { get; set; } = "";
-}
+public record DatosFiscales(string Cedula = "", string Nombre = "", string Telefono = "");
 
 public static class PrototypeDemo
 {

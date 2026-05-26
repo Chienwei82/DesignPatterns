@@ -11,30 +11,7 @@ namespace DesignPatterns.Behavioral;
 ///           de configuraciones.
 
 // --- Memento: almacena el estado (inmutable desde fuera) ---
-public class EstadoJuego
-{
-    public string Nivel { get; }
-    public int Vidas { get; }
-    public int Puntaje { get; }
-    public decimal PosicionX { get; }
-    public decimal PosicionY { get; }
-    public DateTime GuardadoEn { get; }
-
-    public EstadoJuego(string nivel, int vidas, int puntaje, decimal x, decimal y)
-    {
-        Nivel = nivel;
-        Vidas = vidas;
-        Puntaje = puntaje;
-        PosicionX = x;
-        PosicionY = y;
-        GuardadoEn = DateTime.Now;
-    }
-
-    public void Mostrar()
-    {
-        Console.WriteLine($"    🎮 {Nivel} | Vidas: {Vidas} | Puntaje: {Puntaje} | Pos: [{PosicionX:F1}, {PosicionY:F1}] | Guardado: {GuardadoEn:HH:mm:ss}");
-    }
-}
+public record EstadoJuego(string Nivel, int Vidas, int Puntaje, decimal PosicionX, decimal PosicionY, DateTimeOffset GuardadoEn);
 
 // --- Originator: el objeto cuyo estado se guarda ---
 public class Partida
@@ -48,12 +25,12 @@ public class Partida
     public EstadoJuego Guardar()
     {
         Console.WriteLine($"  💾 Guardando partida en {Nivel}...");
-        return new EstadoJuego(Nivel, Vidas, Puntaje, PosicionX, PosicionY);
+        return new EstadoJuego(Nivel, Vidas, Puntaje, PosicionX, PosicionY, DateTimeOffset.UtcNow);
     }
 
     public void Restaurar(EstadoJuego estado)
     {
-        Console.WriteLine($"  ⏪ Restaurando partida desde {estado.GuardadoEn:HH:mm:ss}...");
+        Console.WriteLine($"  ⏪ Restaurando partida desde {estado.GuardadoEn:HH:mm:ss}Z...");
         Nivel = estado.Nivel;
         Vidas = estado.Vidas;
         Puntaje = estado.Puntaje;

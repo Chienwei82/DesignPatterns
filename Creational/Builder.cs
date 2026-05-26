@@ -50,7 +50,7 @@ public interface IPedidoBuilder
 // --- Builder concreto ---
 public class PedidoBuilder : IPedidoBuilder
 {
-    private readonly PedidoComplejo _pedido = new();
+    private PedidoComplejo _pedido = new();
 
     public void AgregarCliente(string nombre)
     {
@@ -97,7 +97,9 @@ public class PedidoBuilder : IPedidoBuilder
     public PedidoComplejo Construir()
     {
         Console.WriteLine($"  🏁 Pedido construido exitosamente");
-        return _pedido;
+        var resultado = _pedido;
+        _pedido = new PedidoComplejo(); // Reset para permitir reutilización
+        return resultado;
     }
 }
 

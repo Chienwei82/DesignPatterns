@@ -33,26 +33,22 @@ public abstract class SoporteHandler
     }
 }
 
-public class TicketSoporte
+public enum SeveridadTicket
 {
-    public int Id { get; }
-    public string Titulo { get; }
-    public int Severidad { get; } // 1=Leve, 2=Moderada, 3=Crítica, 4=Empresarial
-
-    public TicketSoporte(int id, string titulo, int severidad)
-    {
-        Id = id;
-        Titulo = titulo;
-        Severidad = severidad;
-    }
+    Leve = 1,
+    Moderada,
+    Critica,
+    Empresarial
 }
+
+public record TicketSoporte(int Id, string Titulo, SeveridadTicket Severidad);
 
 // --- Handlers concretos ---
 public class SoporteNivel1 : SoporteHandler
 {
     public override void Manejar(TicketSoporte ticket)
     {
-        if (ticket.Severidad <= 1)
+        if (ticket.Severidad <= SeveridadTicket.Leve)
         {
             Console.WriteLine($"    ✅ [Nivel 1] Ticket #{ticket.Id}: '{ticket.Titulo}' resuelto (FAQ + reboot)");
         }
@@ -68,7 +64,7 @@ public class SoporteNivel2 : SoporteHandler
 {
     public override void Manejar(TicketSoporte ticket)
     {
-        if (ticket.Severidad <= 2)
+        if (ticket.Severidad <= SeveridadTicket.Moderada)
         {
             Console.WriteLine($"    ✅ [Nivel 2] Ticket #{ticket.Id}: '{ticket.Titulo}' resuelto (configuración avanzada)");
         }
@@ -84,7 +80,7 @@ public class SoporteNivel3 : SoporteHandler
 {
     public override void Manejar(TicketSoporte ticket)
     {
-        if (ticket.Severidad <= 3)
+        if (ticket.Severidad <= SeveridadTicket.Critica)
         {
             Console.WriteLine($"    ✅ [Nivel 3] Ticket #{ticket.Id}: '{ticket.Titulo}' resuelto (hotfix de emergencia)");
         }
@@ -124,10 +120,10 @@ public static class ChainOfResponsibilityDemo
         // Tickets de prueba
         var tickets = new TicketSoporte[]
         {
-            new(101, "¿Cómo reinicio mi contraseña?", 1),
-            new(102, "La VPN no conecta desde casa", 2),
-            new(103, "Servidor de producción caído", 3),
-            new(104, "Ciberataque en curso — datos expuestos", 4),
+            new(101, "¿Cómo reinicio mi contraseña?", SeveridadTicket.Leve),
+            new(102, "La VPN no conecta desde casa", SeveridadTicket.Moderada),
+            new(103, "Servidor de producción caído", SeveridadTicket.Critica),
+            new(104, "Ciberataque en curso — datos expuestos", SeveridadTicket.Empresarial),
         };
 
         foreach (var ticket in tickets)

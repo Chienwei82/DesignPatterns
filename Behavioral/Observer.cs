@@ -49,7 +49,14 @@ public class AgenciaNoticias : ISujetoNoticias
 
         foreach (var suscriptor in _suscriptores)
         {
-            suscriptor.RecibirNoticia(categoria, titular);
+            try
+            {
+                suscriptor.RecibirNoticia(categoria, titular);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"    ⚠️  Error notificando a {suscriptor.Nombre}: {ex.Message}");
+            }
         }
         Console.WriteLine();
     }
