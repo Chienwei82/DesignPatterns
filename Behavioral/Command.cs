@@ -111,13 +111,11 @@ public class ComandoCortar : IComando
 
     public void Ejecutar()
     {
-        // Guardar el texto antes de cortar para poder deshacer
-        var contenidoPrevio = _editor.Contenido;
+        var contenido = _editor.Contenido;
+        if (_desde < 0 || _desde >= _hasta || _hasta > contenido.Length)
+            return;
+        _textoCortado = contenido[_desde.._hasta];
         _editor.Cortar(_desde, _hasta);
-        // El texto cortado queda en el portapapeles del editor
-        // Calculamos qué se cortó comparando antes y después
-        if (_hasta <= contenidoPrevio.Length && _desde < _hasta)
-            _textoCortado = contenidoPrevio[_desde.._hasta];
     }
 
     public void Deshacer()

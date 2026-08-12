@@ -40,7 +40,7 @@ public class PagoAdapter : IPagoProcesador
 
     public bool Cobrar(string numeroTarjeta, decimal monto, string moneda)
     {
-        Console.WriteLine($"  [Adapter] Conviniendo solicitud...");
+        Console.WriteLine($"  [Adapter] Convirtiendo solicitud...");
 
         // 1. Normalizar datos
         var token = $"tok_{numeroTarjeta[^4..]}"; // simula tokenización

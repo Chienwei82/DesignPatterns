@@ -35,29 +35,20 @@ public class ProxyCache : IServicioDatos
 
     public string ObtenerDatos(int id)
     {
-        // Verificar caché
-        if (_cache.TryGetValue(id, out var entry))
+        // Cache HIT: devolver si aún no expiró
+        if (_cache.TryGetValue(id, out var entry) &&
+            DateTimeOffset.UtcNow - entry.timestamp < _tiempoExpiracion)
         {
-            if (DateTimeOffset.UtcNow - entry.timestamp < _tiempoExpiracion)
-            {
-                Console.WriteLine($"  [Proxy-Cache] 🟢 Cache HIT para ID={id}");
-                return $" [CACHE] {entry.datos}";
-            }
-            else
-            {
-                Console.WriteLine($"  [Proxy-Cache] 🟡 Cache EXPIRADO para ID={id}");
-                _cache.Remove(id);
-            }
-        }
-        else
-        {
-            Console.WriteLine($"  [Proxy-Cache] 🔴 Cache MISS para ID={id}");
+            Console.WriteLine($"  [Proxy-Cache] 🟢 Cache HIT para ID={id}");
+            return $" [CACHE] {entry.datos}";
         }
 
-        // Llamar al servicio real
+        Console.WriteLine(_cache.ContainsKey(id)
+            ? $"  [Proxy-Cache] 🟡 Cache EXPIRADO para ID={id}"
+            : $"  [Proxy-Cache] 🔴 Cache MISS para ID={id}");
+        _cache.Remove(id);
+
         var resultado = _real.ObtenerDatos(id);
-
-        // Guardar en caché
         _cache[id] = (resultado, DateTimeOffset.UtcNow);
         return resultado;
     }

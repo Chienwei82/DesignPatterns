@@ -52,7 +52,7 @@ while (true)
     Console.Write($"Selecciona un patrón (1-{patterns.Count}): ");
     var input = Console.ReadLine()?.Trim().ToUpper();
 
-    if (input is "Q" or "SALIR") break;
+    if (input is null or "Q" or "SALIR") break;
 
     if (input != null && patterns.TryGetValue(input, out var selected))
     {

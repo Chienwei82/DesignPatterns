@@ -132,18 +132,18 @@ public static class FactoryMethodDemo
         Console.WriteLine("  Escenario: Sistema de notificaciones multicanal\n");
 
         // El cliente no sabe qué clase concreta se crea
-        var factories = new NotificadorFactory[]
+        var canales = new (string nombre, NotificadorFactory factory)[]
         {
-            new FactoryEmail("smtp.outlook.com"),
-            new FactorySMS("+5068888-9999"),
-            new FactoryPush("com.empresa.notifications")
+            ("Email", new FactoryEmail("smtp.outlook.com")),
+            ("SMS", new FactorySMS("+5068888-9999")),
+            ("Push", new FactoryPush("com.empresa.notifications"))
         };
 
-        string[] canales = { "Email", "SMS", "Push" };
-        for (int i = 0; i < factories.Length; i++)
+        int numero = 1;
+        foreach (var (nombre, factory) in canales)
         {
-            Console.WriteLine($"  [{i + 1}] Usando canal: {canales[i]}");
-            factories[i].Notificar("Su pedido ha sido enviado 🎉");
+            Console.WriteLine($"  [{numero++}] Usando canal: {nombre}");
+            factory.Notificar("Su pedido ha sido enviado 🎉");
             Console.WriteLine();
         }
 
