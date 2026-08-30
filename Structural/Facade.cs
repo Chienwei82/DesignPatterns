@@ -155,9 +155,21 @@ public static class FacadeDemo
             Console.WriteLine($"\n  🎉 Pedido completado. Guía: {guia}");
         }
 
+        // ── Pedido que falla: la fachada también orquesta el camino de error ──
+        Console.WriteLine("\n  ── Pedido con producto agotado ──");
+        tienda.RealizarPedido(
+            cliente: "Pedro Gómez",
+            producto: "Teclado",
+            cantidad: 100,   // solo hay 20 en stock
+            precio: 25_000m,
+            metodoPago: "Tarjeta",
+            direccion: "Cartago, Centro"
+        );
+
         Console.WriteLine();
         Console.WriteLine("  ✅ El cliente solo ve 1 método.");
         Console.WriteLine("     La complejidad del inventario, pagos, envíos y");
-        Console.WriteLine("     notificaciones queda oculta tras la fachada.");
+        Console.WriteLine("     notificaciones queda oculta tras la fachada...");
+        Console.WriteLine("     incluso cuando el pedido falla.");
     }
 }

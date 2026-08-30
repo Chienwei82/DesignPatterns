@@ -76,7 +76,7 @@ public class PedidoBuilder : IPedidoBuilder
     public IPedidoBuilder ConfigurarEnvioExprés()
     {
         _pedido.EnvioExprés = true;
-        Console.WriteLine($"  ⚡ Envío exprés activado");
+        Console.WriteLine("  ⚡ Envío exprés activado");
         return this;
     }
 
@@ -103,7 +103,7 @@ public class PedidoBuilder : IPedidoBuilder
 
     public PedidoComplejo Construir()
     {
-        Console.WriteLine($"  🏁 Pedido construido exitosamente");
+        Console.WriteLine("  🏁 Pedido construido exitosamente");
         var resultado = _pedido;
         _pedido = new PedidoComplejo(); // Reset para permitir reutilización
         return resultado;
@@ -120,7 +120,7 @@ public class DirectorPedidos
         _builder = builder;
     }
 
-    // Recipe predefinida: pedido simple sin registro
+    // Receta predefinida: pedido básico, sin extras
     public PedidoComplejo ConstruirPedidoSimple(string cliente, string producto, string direccion)
     {
         _builder.AgregarCliente(cliente);
@@ -130,7 +130,7 @@ public class DirectorPedidos
         return _builder.Construir();
     }
 
-    // Recipe predefinida: pedido premium con regalo
+    // Receta predefinida: pedido premium con regalo y envío exprés
     public PedidoComplejo ConstruirPedidoPremium(string cliente, string[] productos, string direccion)
     {
         _builder.AgregarCliente(cliente);
@@ -150,8 +150,8 @@ public static class BuilderDemo
         Console.WriteLine("  🧱 BUILDER — Objetos complejos paso a paso\n");
         Console.WriteLine("  Escenario: Sistema de pedidos con múltiples configuraciones\n");
 
-        // ── Pedido simple (API fluent / encadenamiento) ──
-        Console.WriteLine("  ── Pedido Simple (fluent API) ──");
+        // ── Pedido a medida: el cliente encadena los pasos (API fluent) ──
+        Console.WriteLine("  ── Pedido a medida (fluent API) ──");
         var pedido1 = new PedidoBuilder()
             .AgregarCliente("Ana López")
             .AgregarProducto("Laptop HP")
@@ -162,19 +162,27 @@ public static class BuilderDemo
         pedido1.Resumen();
         Console.WriteLine();
 
-        // ── Pedido premium (usando Director con recipe predefinida) ──
-        Console.WriteLine("  ── Pedido Premium (vía Director) ──");
+        // ── El Director encapsula recetas predefinidas que reutilizan el builder ──
         var director = new DirectorPedidos(new PedidoBuilder());
-        var pedido2 = director.ConstruirPedidoPremium(
+
+        Console.WriteLine("  ── Pedido Simple (vía Director) ──");
+        var pedido2 = director.ConstruirPedidoSimple("Luis Rojas", "Monitor 24\"", "Alajuela, Centro");
+        Console.WriteLine();
+        pedido2.Resumen();
+        Console.WriteLine();
+
+        Console.WriteLine("  ── Pedido Premium (vía Director) ──");
+        var pedido3 = director.ConstruirPedidoPremium(
             "Carlos Méndez",
             ["Monitor 27\"", "Teclado Mecánico", "Mouse Inalámbrico"],
             "Heredia, Santo Domingo"
         );
         Console.WriteLine();
-        pedido2.Resumen();
+        pedido3.Resumen();
         Console.WriteLine();
 
         Console.WriteLine("  ✅ El Builder permite crear objetos con diferentes");
         Console.WriteLine("     configuraciones sin constructores gigantes.");
+        Console.WriteLine("     El Director reutiliza el mismo builder con recetas distintas.");
     }
 }

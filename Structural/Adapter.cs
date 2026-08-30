@@ -25,13 +25,13 @@ public class GatewayPagoInternacional
         // Simula procesamiento
         Thread.Sleep(50);
 
-        // Genera un ID de transacción simulado, ej. "TX-3F8A12B4C5"
+        // Genera un ID de transacción simulado, ej. "TX-3F8A12B4C"
         var guid = Guid.NewGuid().ToString("N").ToUpper();
         return $"TX-{guid[..9]}";
     }
 }
 
-// --- Adapter: convierte IPagoProcesador -> GatewayPagoInternacional ---
+// --- Adapter: adapta GatewayPagoInternacional -> IPagoProcesador (Target) ---
 public class PagoAdapter : IPagoProcesador
 {
     private readonly GatewayPagoInternacional _gateway;

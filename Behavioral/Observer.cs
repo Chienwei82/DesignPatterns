@@ -6,9 +6,9 @@ namespace DesignPatterns.Behavioral;
 /// cuando UN objeto cambia su estado, TODOS sus dependientes son
 /// notificados automáticamente. Es como un sistema de suscripción.
 ///
-/// USO REAL: Eventos en UI (click, keypress), sistemas de colas,
-///           notificaciones push, actualización de vistas en MVVM,
-///           el patrón event/delegate de C#.
+/// USO REAL: Eventos en UI (click, keypress), cotizaciones de bolsa
+///           en tiempo real, notificaciones push, actualización de
+///           vistas en MVVM, el patrón event/delegate de C#.
 
 // --- Sujeto (observable) ---
 public interface ISujetoNoticias

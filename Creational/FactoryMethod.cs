@@ -72,7 +72,7 @@ public abstract class NotificadorFactory
     public void Notificar(string mensaje)
     {
         var notificador = CrearNotificador();
-        Console.WriteLine($"  Preparando envío...");
+        Console.WriteLine("  Preparando envío...");
         Thread.Sleep(100);
         notificador.Enviar(mensaje);
     }

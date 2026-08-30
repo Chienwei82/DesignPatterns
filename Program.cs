@@ -30,7 +30,7 @@ var patterns = new Dictionary<string, (string Category, string Name, Action Demo
 
 while (true)
 {
-    Console.Clear();
+    if (!Console.IsOutputRedirected) Console.Clear();
     Console.WriteLine("╔════════════════════════════════════════════╗");
     Console.WriteLine("║   PATRONES DE DISEÑO — .NET 10             ║");
     Console.WriteLine("╚════════════════════════════════════════════╝");
@@ -56,7 +56,7 @@ while (true)
 
     if (patterns.TryGetValue(input, out var selected))
     {
-        Console.Clear();
+        if (!Console.IsOutputRedirected) Console.Clear();
         Console.WriteLine($"\n  >>> {selected.Name} <<<\n");
         Console.WriteLine(new string('─', 60));
         selected.Demo();

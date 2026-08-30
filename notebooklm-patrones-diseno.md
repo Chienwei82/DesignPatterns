@@ -9,7 +9,7 @@ patterns: 20 de 23 GoF
 language: es
 -->
 
-> Este documento resume los 23 patrones clásicos del libro *Design Patterns: Elements of Reusable Object-Oriented Software* (Gang of Four), implementados en C# 14/.NET 10. Está optimizado para ingestión por herramientas de IA como NotebookLM.
+> Este documento resume los 23 patrones clásicos del libro *Design Patterns: Elements of Reusable Object-Oriented Software* (Gang of Four); 20 de ellos están implementados en este proyecto con C# 14/.NET 10. Está optimizado para ingestión por herramientas de IA como NotebookLM.
 
 ---
 

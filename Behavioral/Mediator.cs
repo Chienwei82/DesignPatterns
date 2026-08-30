@@ -16,7 +16,7 @@ public interface ISalaChat
     void RegistrarUsuario(Usuario usuario);
 }
 
-// --- Colleague ---
+// --- Colega ---
 public class Usuario
 {
     public string Nombre { get; }
@@ -46,7 +46,7 @@ public class Usuario
     }
 }
 
-// --- Concrete Mediator ---
+// --- Mediador concreto ---
 public class SalaChatGrupal : ISalaChat
 {
     private readonly List<Usuario> _usuarios = [];

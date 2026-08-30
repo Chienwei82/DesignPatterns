@@ -95,7 +95,7 @@ public class ProcesadorCSV : ProcesadorArchivo
 
     protected override void GuardarResultado(string contenido)
     {
-        Console.WriteLine($"  [CSV] Guardando como CSV procesado...");
+        Console.WriteLine("  [CSV] Guardando como CSV procesado...");
         Console.WriteLine($"  [CSV] Resultado: {contenido}");
     }
 
@@ -124,7 +124,7 @@ public class ProcesadorJSON : ProcesadorArchivo
 
     protected override void GuardarResultado(string contenido)
     {
-        Console.WriteLine($"  [JSON] Guardando como JSON procesado...");
+        Console.WriteLine("  [JSON] Guardando como JSON procesado...");
         Console.WriteLine($"  [JSON] Resultado: {contenido}");
     }
 
@@ -157,7 +157,7 @@ public class ProcesadorPDF : ProcesadorArchivo
 
     protected override void GuardarResultado(string contenido)
     {
-        Console.WriteLine($"  [PDF] Exportando resultado como PDF procesado...");
+        Console.WriteLine("  [PDF] Exportando resultado como PDF procesado...");
         Console.WriteLine($"  [PDF] Contenido extraído: {contenido}");
     }
 }

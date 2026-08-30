@@ -8,8 +8,9 @@ namespace DesignPatterns.Creational;
 /// USO REAL: Logger, manejador de configuración, pool de conexiones,
 ///           caché en memoria.
 ///
-/// ⚠️ PELIGROS: No es thread-safe por defecto; difícil de testear
-///    (inyección de dependencias es mejor alternativa).
+/// ⚠️ CUIDADO: las implementaciones ingenuas NO son thread-safe;
+///    por eso esta versión usa Lazy<T>. También dificulta los tests
+///    (la inyección de dependencias suele ser mejor alternativa).
 
 // --- Versión thread-safe con Lazy<T> ---
 public sealed class ConfiguracionApp
