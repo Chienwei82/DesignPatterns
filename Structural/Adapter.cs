@@ -24,7 +24,10 @@ public class GatewayPagoInternacional
     {
         // Simula procesamiento
         Thread.Sleep(50);
-        return $"TX-{Guid.NewGuid():N}".ToUpper()[..12];
+
+        // Genera un ID de transacción simulado, ej. "TX-3F8A12B4C5"
+        var guid = Guid.NewGuid().ToString("N").ToUpper();
+        return $"TX-{guid[..9]}";
     }
 }
 

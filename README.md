@@ -18,6 +18,8 @@ Una aplicación de consola interactiva en **.NET 10** que demuestra **20 patrone
 
 Cada patrón incluye una implementación mínima y un caso de uso ilustrativo (siempre en español).
 
+> **Nota:** los 23 patrones GoF originales incluyen también **Interpreter**, **Iterator** y **Visitor**. Se omiten a propósito: Iterator y Visitor ya los cubre C# (`IEnumerable`/LINQ), y Interpreter es raro en la práctica.
+
 ---
 
 ## Requisitos
@@ -47,7 +49,8 @@ echo 13 | dotnet run
 ```
 DesignPatterns/
 ├── Program.cs              # Menú interactivo
-├── apuntes.md              # Resumen con casos de uso reales
+├── apuntes.md              # Apuntes de estudio: intención, analogía, cuándo usar/no
+├── notebooklm-patrones-diseno.md  # Guía GoF extendida para NotebookLM
 ├── Creational/
 │   ├── Singleton.cs
 │   ├── FactoryMethod.cs

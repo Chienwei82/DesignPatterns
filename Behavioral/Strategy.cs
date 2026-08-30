@@ -112,6 +112,12 @@ public static class StrategyDemo
         facturador.Facturar("Laptop", 650_000m);
         Console.WriteLine();
 
+        // Zona franca — sin impuesto
+        facturador.CambiarEstrategia(new ImpuestoSinImpuesto());
+        Console.WriteLine("  ── Factura #4: 🏢 Cliente en Zona Franca ──");
+        facturador.Facturar("Servidor", 1_200_000m);
+        Console.WriteLine();
+
         Console.WriteLine("  ✅ Sin Strategy: if/else por cada país.");
         Console.WriteLine("     Con Strategy: cada país es una clase separada.");
         Console.WriteLine("     Fácil de extender — solo agregas una clase más.");

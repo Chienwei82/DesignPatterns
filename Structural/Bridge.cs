@@ -86,6 +86,7 @@ public class ControlBasico : ControlRemoto
 
 public class ControlAvanzado : ControlRemoto
 {
+    private int _canalActual = 1;
     private int _canalAnterior = 1;
 
     public ControlAvanzado(IPlataformaTV tv) : base(tv) { }
@@ -104,15 +105,17 @@ public class ControlAvanzado : ControlRemoto
 
     public override void CambiarCanal(int canal)
     {
-        _canalAnterior = canal;
+        _canalAnterior = _canalActual; // recuerda dónde estábamos
+        _canalActual = canal;
         Console.WriteLine($"  [Control Avanzado] Cambiando a canal {canal} (guardado en favoritos)");
         _tv.SintonizarCanal(canal);
     }
 
     public void VolverCanalAnterior()
     {
-        Console.WriteLine($"  [Control Avanzado] Volviendo al canal {_canalAnterior}");
-        _tv.SintonizarCanal(_canalAnterior);
+        (_canalActual, _canalAnterior) = (_canalAnterior, _canalActual); // intercambia
+        Console.WriteLine($"  [Control Avanzado] Volviendo al canal {_canalActual}");
+        _tv.SintonizarCanal(_canalActual);
     }
 }
 
@@ -146,7 +149,8 @@ public static class BridgeDemo
         var controlAvanzado = new ControlAvanzado(new LgTV());
         controlAvanzado.Encender();
         controlAvanzado.CambiarCanal(42);
-        controlAvanzado.VolverCanalAnterior();
+        controlAvanzado.CambiarCanal(7);
+        controlAvanzado.VolverCanalAnterior(); // regresa al canal 42
         controlAvanzado.Apagar();
         Console.WriteLine();
 

@@ -31,9 +31,9 @@ var patterns = new Dictionary<string, (string Category, string Name, Action Demo
 while (true)
 {
     Console.Clear();
-    Console.WriteLine("╔══════════════════════════════════════════╗");
-    Console.WriteLine("║   PATRONES DE DISEÑO — .NET 10          ║");
-    Console.WriteLine("╚══════════════════════════════════════════╝");
+    Console.WriteLine("╔════════════════════════════════════════════╗");
+    Console.WriteLine("║   PATRONES DE DISEÑO — .NET 10             ║");
+    Console.WriteLine("╚════════════════════════════════════════════╝");
     Console.WriteLine();
 
     string? lastCategory = null;
@@ -54,7 +54,7 @@ while (true)
 
     if (input is null or "Q" or "SALIR") break;
 
-    if (input != null && patterns.TryGetValue(input, out var selected))
+    if (patterns.TryGetValue(input, out var selected))
     {
         Console.Clear();
         Console.WriteLine($"\n  >>> {selected.Name} <<<\n");
@@ -62,6 +62,11 @@ while (true)
         selected.Demo();
         Console.WriteLine(new string('─', 60));
         Console.WriteLine("\nPresiona ENTER para volver al menú...");
+        Console.ReadLine();
+    }
+    else
+    {
+        Console.WriteLine($"\n  ⚠️  Opción no válida: \"{input}\". Presiona ENTER para reintentar...");
         Console.ReadLine();
     }
 }

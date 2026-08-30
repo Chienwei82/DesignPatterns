@@ -49,14 +49,17 @@ public class EditorTexto
         }
     }
 
-    public void Cortar(int desde, int hasta)
+    // Corta el rango indicado, lo guarda en el portapapeles y lo devuelve.
+    // Si el rango es inválido, no modifica nada y devuelve "".
+    public string Cortar(int desde, int hasta)
     {
-        if (desde >= 0 && hasta <= _contenido.Length && desde < hasta)
-        {
-            _portapapeles = _contenido[desde..hasta];
-            _contenido = _contenido[..desde] + _contenido[hasta..];
-            Console.WriteLine($"    ✂️  Cortado: \"{_portapapeles}\"");
-        }
+        if (desde < 0 || desde >= hasta || hasta > _contenido.Length)
+            return "";
+
+        _portapapeles = _contenido[desde..hasta];
+        _contenido = _contenido[..desde] + _contenido[hasta..];
+        Console.WriteLine($"    ✂️  Cortado: \"{_portapapeles}\"");
+        return _portapapeles;
     }
 
     public void Pegar()
@@ -109,14 +112,7 @@ public class ComandoCortar : IComando
         _hasta = hasta;
     }
 
-    public void Ejecutar()
-    {
-        var contenido = _editor.Contenido;
-        if (_desde < 0 || _desde >= _hasta || _hasta > contenido.Length)
-            return;
-        _textoCortado = contenido[_desde.._hasta];
-        _editor.Cortar(_desde, _hasta);
-    }
+    public void Ejecutar() => _textoCortado = _editor.Cortar(_desde, _hasta);
 
     public void Deshacer()
     {

@@ -1,15 +1,15 @@
 # Guía Completa de Patrones de Diseño GoF — Material para NotebookLM
 
 <!--
-title: Guía de Patrones GoF - C# 10
+title: Guía de Patrones GoF - C# 14 / .NET 10
 author: Chienwei82
-updated: 2026-05-26
-version: 2.0
+updated: 2026-08-30
+version: 2.1
 patterns: 20 de 23 GoF
 language: es
 -->
 
-> Este documento resume los 23 patrones clásicos del libro *Design Patterns: Elements of Reusable Object-Oriented Software* (Gang of Four), implementados en C# 10/.NET 10. Está optimizado para ingestión por herramientas de IA como NotebookLM.
+> Este documento resume los 23 patrones clásicos del libro *Design Patterns: Elements of Reusable Object-Oriented Software* (Gang of Four), implementados en C# 14/.NET 10. Está optimizado para ingestión por herramientas de IA como NotebookLM.
 
 ---
 
@@ -770,7 +770,7 @@ Todos manejan estructuras de objetos, pero:
 
 ---
 
-> Documento generado para consumo por IA / NotebookLM. Contiene 20 patrones GoF implementados en C# 10 con casos de uso en español.
+> Documento generado para consumo por IA / NotebookLM. Contiene 20 patrones GoF implementados en C# 14 con casos de uso en español.
 
 ---
 

@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 namespace DesignPatterns.Structural;
 
 /// PATRÓN PROXY
@@ -91,7 +93,7 @@ public static class ProxyDemo
         Console.WriteLine("  ── Proxy de Caché ──");
         var proxyCache = new ProxyCache();
 
-        var sw = System.Diagnostics.Stopwatch.StartNew();
+        var sw = Stopwatch.StartNew();
         var r1 = proxyCache.ObtenerDatos(42);
         sw.Stop();
         Console.WriteLine($"  Resultado: {r1}");
