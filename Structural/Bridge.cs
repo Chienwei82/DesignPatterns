@@ -11,111 +11,68 @@ namespace DesignPatterns.Structural;
 ///             controles UI multiplataforma, APIs de pago.
 
 // --- Implementación (la parte que varía) ---
-public interface IPlataformaTV
+public interface IMetodoCoccion
 {
-    string Marca { get; }
-    void Encender();
-    void Apagar();
-    void SintonizarCanal(int canal);
+    string Nombre { get; }
+    void Cocinar(string alimento);
 }
 
-public class SamsungTV : IPlataformaTV
+public class Horno : IMetodoCoccion
 {
-    public string Marca => "Samsung";
+    public string Nombre => "Horno";
 
-    public void Encender() => Console.WriteLine("    [Samsung] Smart Hub iniciado. Bienvenido.");
-    public void Apagar() => Console.WriteLine("    [Samsung] Smart Hub cerrado.");
-    public void SintonizarCanal(int canal) => Console.WriteLine($"    [Samsung] Sintonizando canal {canal} via Tizen OS");
+    public void Cocinar(string alimento) =>
+        Console.WriteLine($"    [Horno] {alimento} horneado a 180°C por 25 min");
 }
 
-public class LgTV : IPlataformaTV
+public class Freidora : IMetodoCoccion
 {
-    public string Marca => "LG";
+    public string Nombre => "Freidora";
 
-    public void Encender() => Console.WriteLine("    [LG] webOS iniciado. Hola.");
-    public void Apagar() => Console.WriteLine("    [LG] webOS cerrado.");
-    public void SintonizarCanal(int canal) => Console.WriteLine($"    [LG] Sintonizando canal {canal} via webOS");
+    public void Cocinar(string alimento) =>
+        Console.WriteLine($"    [Freidora] {alimento} frito en aceite bien caliente");
 }
 
-public class SonyTV : IPlataformaTV
+public class Parrilla : IMetodoCoccion
 {
-    public string Marca => "Sony";
+    public string Nombre => "Parrilla";
 
-    public void Encender() => Console.WriteLine("    [Sony] Google TV iniciado.");
-    public void Apagar() => Console.WriteLine("    [Sony] Google TV cerrado.");
-    public void SintonizarCanal(int canal) => Console.WriteLine($"    [Sony] Sintonizando canal {canal} via Google TV");
+    public void Cocinar(string alimento) =>
+        Console.WriteLine($"    [Parrilla] {alimento} asado a la llama con marcas doradas");
 }
 
 // --- Abstracción (la parte que el cliente usa) ---
-public abstract class ControlRemoto
+public abstract class RecetaBase
 {
-    protected IPlataformaTV _tv;
+    protected readonly IMetodoCoccion _metodo;
 
-    protected ControlRemoto(IPlataformaTV tv)
+    protected RecetaBase(IMetodoCoccion metodo)
     {
-        _tv = tv;
+        _metodo = metodo;
     }
 
-    public abstract void Encender();
-    public abstract void Apagar();
-    public abstract void CambiarCanal(int canal);
+    public abstract void Preparar();
 }
 
-public class ControlBasico : ControlRemoto
+public class RecetaCasera : RecetaBase
 {
-    public ControlBasico(IPlataformaTV tv) : base(tv) { }
+    public RecetaCasera(IMetodoCoccion metodo) : base(metodo) { }
 
-    public override void Encender()
+    public override void Preparar()
     {
-        Console.WriteLine($"  [Control Básico] Encendiendo {_tv.Marca}...");
-        _tv.Encender();
-    }
-
-    public override void Apagar()
-    {
-        Console.WriteLine($"  [Control Básico] Apagando {_tv.Marca}...");
-        _tv.Apagar();
-    }
-
-    public override void CambiarCanal(int canal)
-    {
-        Console.WriteLine($"  [Control Básico] Canal {canal}");
-        _tv.SintonizarCanal(canal);
+        Console.WriteLine($"  [Receta Casera] Sazonando con sal y limón");
+        _metodo.Cocinar("Papa");
     }
 }
 
-public class ControlAvanzado : ControlRemoto
+public class RecetaGourmet : RecetaBase
 {
-    private int _canalActual = 1;
-    private int _canalAnterior = 1;
+    public RecetaGourmet(IMetodoCoccion metodo) : base(metodo) { }
 
-    public ControlAvanzado(IPlataformaTV tv) : base(tv) { }
-
-    public override void Encender()
+    public override void Preparar()
     {
-        Console.WriteLine($"  [Control Avanzado] Encendiendo {_tv.Marca} con voz...");
-        _tv.Encender();
-    }
-
-    public override void Apagar()
-    {
-        Console.WriteLine($"  [Control Avanzado] Apagando {_tv.Marca} con voz...");
-        _tv.Apagar();
-    }
-
-    public override void CambiarCanal(int canal)
-    {
-        _canalAnterior = _canalActual; // recuerda dónde estábamos
-        _canalActual = canal;
-        Console.WriteLine($"  [Control Avanzado] Cambiando a canal {canal} (guardado en favoritos)");
-        _tv.SintonizarCanal(canal);
-    }
-
-    public void VolverCanalAnterior()
-    {
-        (_canalActual, _canalAnterior) = (_canalAnterior, _canalActual); // intercambia
-        Console.WriteLine($"  [Control Avanzado] Volviendo al canal {_canalActual}");
-        _tv.SintonizarCanal(_canalActual);
+        Console.WriteLine($"  [Receta Gourmet] Marinando con hierbas finas");
+        _metodo.Cocinar("Salmón");
     }
 }
 
@@ -124,37 +81,31 @@ public static class BridgeDemo
     public static void Run()
     {
         Console.WriteLine("  🌉 BRIDGE — Abstracción e implementación independientes\n");
-        Console.WriteLine("  Escenario: Controles remotos para distintas marcas de TV\n");
+        Console.WriteLine("  Escenario: Recetas × métodos de cocción\n");
 
-        var tvs = new IPlataformaTV[]
+        var metodos = new IMetodoCoccion[]
         {
-            new SamsungTV(),
-            new LgTV(),
-            new SonyTV()
+            new Horno(),
+            new Freidora(),
+            new Parrilla()
         };
 
-        foreach (var tv in tvs)
+        foreach (var metodo in metodos)
         {
-            Console.WriteLine($"  ── TV: {tv.Marca} ──");
+            Console.WriteLine($"  ── Método: {metodo.Nombre} ──");
 
-            // Mismo control básico, distinta implementación
-            var controlBasico = new ControlBasico(tv);
-            controlBasico.Encender();
-            controlBasico.CambiarCanal(7);
-            controlBasico.Apagar();
+            // La misma receta casera funciona con cualquier método
+            var casera = new RecetaCasera(metodo);
+            casera.Preparar();
             Console.WriteLine();
         }
 
-        Console.WriteLine("  ── Control Avanzado en LG ──");
-        var controlAvanzado = new ControlAvanzado(new LgTV());
-        controlAvanzado.Encender();
-        controlAvanzado.CambiarCanal(42);
-        controlAvanzado.CambiarCanal(7);
-        controlAvanzado.VolverCanalAnterior(); // regresa al canal 42
-        controlAvanzado.Apagar();
+        Console.WriteLine("  ── Receta gourmet en horno ──");
+        var gourmet = new RecetaGourmet(new Horno());
+        gourmet.Preparar();
         Console.WriteLine();
 
-        Console.WriteLine("  ✅ Agregar una nueva marca de TV NO requiere cambiar los controles.");
-        Console.WriteLine("     Agregar un nuevo tipo de control NO requiere cambiar las TVs.");
+        Console.WriteLine("  ✅ Agregar un método de cocción NO requiere cambiar las recetas.");
+        Console.WriteLine("     Agregar una receta NO requiere cambiar los métodos.");
     }
 }

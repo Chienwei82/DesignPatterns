@@ -11,159 +11,102 @@ namespace DesignPatterns.Behavioral;
 ///           proceso de pedidos, conexiones TCP.
 
 // --- State ---
-public interface IEstadoPedido
+public interface IEstadoAnimo
 {
     string Nombre { get; }
-    void Pagar(Pedido pedido);
-    void Enviar(Pedido pedido);
-    void Entregar(Pedido pedido);
-    void Cancelar(Pedido pedido);
+    void RecibirPedido(Chef chef);
+    void Cocinar(Chef chef);
+    void Descansar(Chef chef);
 }
 
 // --- Context ---
-public class Pedido
+public class Chef
 {
-    public int Id { get; }
-    public string Producto { get; }
-    public IEstadoPedido Estado { get; private set; }
+    public string Nombre { get; }
+    public IEstadoAnimo Estado { get; private set; }
 
-    public Pedido(int id, string producto)
+    public Chef(string nombre)
     {
-        Id = id;
-        Producto = producto;
-        Estado = EstadoNuevo.Instancia; // Estado inicial (singleton)
+        Nombre = nombre;
+        Estado = ChefFeliz.Instancia; // Estado inicial (singleton)
     }
 
-    // Solo el propio Pedido (o clases del mismo assembly) pueden cambiar el estado
-    internal void CambiarEstado(IEstadoPedido nuevoEstado) => Estado = nuevoEstado;
+    // Solo el propio Chef (o clases del mismo assembly) pueden cambiar de humor
+    internal void CambiarEstado(IEstadoAnimo nuevoEstado) => Estado = nuevoEstado;
 
     // Los métodos delegan al estado actual
-    public void Pagar() => Estado.Pagar(this);
-    public void Enviar() => Estado.Enviar(this);
-    public void Entregar() => Estado.Entregar(this);
-    public void Cancelar() => Estado.Cancelar(this);
+    public void RecibirPedido() => Estado.RecibirPedido(this);
+    public void Cocinar() => Estado.Cocinar(this);
+    public void Descansar() => Estado.Descansar(this);
 }
 
 // --- Estados concretos ---
 
-public class EstadoNuevo : IEstadoPedido
+public class ChefFeliz : IEstadoAnimo
 {
-    public static readonly EstadoNuevo Instancia = new();
-    public string Nombre => "🆕 Nuevo";
+    public static readonly ChefFeliz Instancia = new();
+    public string Nombre => "😄 Feliz";
 
-    public void Pagar(Pedido pedido)
+    public void RecibirPedido(Chef chef)
     {
-        Console.WriteLine($"  💳 Pedido #{pedido.Id}: Pago confirmado");
-        pedido.CambiarEstado(EstadoPagado.Instancia);
+        Console.WriteLine($"  {chef.Nombre} sonríe: \"¡Con gusto, un pedido más!\"");
     }
 
-    public void Enviar(Pedido pedido)
+    public void Cocinar(Chef chef)
     {
-        Console.WriteLine($"  ⚠️  Pedido #{pedido.Id}: No se puede enviar — aún no se ha pagado");
+        Console.WriteLine($"  {chef.Nombre} cocina con pasión... pero la presión empieza a sentirse");
+        chef.CambiarEstado(ChefEstresado.Instancia);
     }
 
-    public void Entregar(Pedido pedido)
+    public void Descansar(Chef chef)
     {
-        Console.WriteLine($"  ⚠️  Pedido #{pedido.Id}: No se puede entregar — aún no se ha pagado");
-    }
-
-    public void Cancelar(Pedido pedido)
-    {
-        Console.WriteLine($"  ❌ Pedido #{pedido.Id}: Cancelado por el cliente");
-        pedido.CambiarEstado(EstadoCancelado.Instancia);
+        Console.WriteLine($"  {chef.Nombre} se toma un café tranquilo");
     }
 }
 
-public class EstadoPagado : IEstadoPedido
+public class ChefEstresado : IEstadoAnimo
 {
-    public static readonly EstadoPagado Instancia = new();
-    public string Nombre => "💰 Pagado";
+    public static readonly ChefEstresado Instancia = new();
+    public string Nombre => "😰 Estresado";
 
-    public void Pagar(Pedido pedido)
+    public void RecibirPedido(Chef chef)
     {
-        Console.WriteLine($"  ⚠️  Pedido #{pedido.Id}: Ya está pagado");
+        Console.WriteLine($"  {chef.Nombre} aprieta los dientes: \"¡¿OTRO pedido?!\"");
+        chef.CambiarEstado(ChefEnojado.Instancia);
     }
 
-    public void Enviar(Pedido pedido)
+    public void Cocinar(Chef chef)
     {
-        Console.WriteLine($"  📦 Pedido #{pedido.Id}: Enviado al domicilio");
-        pedido.CambiarEstado(EstadoEnviado.Instancia);
+        Console.WriteLine($"  {chef.Nombre} cocina rapidísimo, sin perder la técnica");
     }
 
-    public void Entregar(Pedido pedido)
+    public void Descansar(Chef chef)
     {
-        Console.WriteLine($"  ⚠️  Pedido #{pedido.Id}: No se puede entregar — no se ha enviado aún");
-    }
-
-    public void Cancelar(Pedido pedido)
-    {
-        Console.WriteLine($"  ↩️  Pedido #{pedido.Id}: Cancelado — reembolso procesado");
-        pedido.CambiarEstado(EstadoCancelado.Instancia);
+        Console.WriteLine($"  {chef.Nombre} respira hondo y recupera la calma");
+        chef.CambiarEstado(ChefFeliz.Instancia);
     }
 }
 
-public class EstadoEnviado : IEstadoPedido
+public class ChefEnojado : IEstadoAnimo
 {
-    public static readonly EstadoEnviado Instancia = new();
-    public string Nombre => "🚚 Enviado";
+    public static readonly ChefEnojado Instancia = new();
+    public string Nombre => "😡 Enojado";
 
-    public void Pagar(Pedido pedido)
+    public void RecibirPedido(Chef chef)
     {
-        Console.WriteLine($"  ⚠️  Pedido #{pedido.Id}: Ya está pagado y enviado");
+        Console.WriteLine($"  {chef.Nombre} golpea la mesa: \"¡Ni un pedido más!\"");
     }
 
-    public void Enviar(Pedido pedido)
+    public void Cocinar(Chef chef)
     {
-        Console.WriteLine($"  ⚠️  Pedido #{pedido.Id}: Ya fue enviado");
+        Console.WriteLine($"  {chef.Nombre} cocina quemando el aceite de puro coraje");
     }
 
-    public void Entregar(Pedido pedido)
+    public void Descansar(Chef chef)
     {
-        Console.WriteLine($"  ✅ Pedido #{pedido.Id}: ENTREGADO — ¡Gracias por su compra!");
-        pedido.CambiarEstado(EstadoEntregado.Instancia);
+        Console.WriteLine($"  {chef.Nombre} se toma cinco minutos y vuelve a sonreír");
+        chef.CambiarEstado(ChefFeliz.Instancia);
     }
-
-    public void Cancelar(Pedido pedido)
-    {
-        Console.WriteLine($"  ↩️  Pedido #{pedido.Id}: Cancelado durante envío (devolución en tránsito)");
-        pedido.CambiarEstado(EstadoCancelado.Instancia);
-    }
-}
-
-public class EstadoEntregado : IEstadoPedido
-{
-    public static readonly EstadoEntregado Instancia = new();
-    public string Nombre => "✅ Entregado";
-
-    public void Pagar(Pedido pedido) =>
-        Console.WriteLine($"  ⚠️  Pedido #{pedido.Id}: Pedido completado");
-
-    public void Enviar(Pedido pedido) =>
-        Console.WriteLine($"  ⚠️  Pedido #{pedido.Id}: Pedido completado");
-
-    public void Entregar(Pedido pedido) =>
-        Console.WriteLine($"  ⚠️  Pedido #{pedido.Id}: Ya fue entregado");
-
-    public void Cancelar(Pedido pedido) =>
-        Console.WriteLine($"  ⚠️  Pedido #{pedido.Id}: No se puede cancelar — ya entregado");
-}
-
-public class EstadoCancelado : IEstadoPedido
-{
-    public static readonly EstadoCancelado Instancia = new();
-    public string Nombre => "❌ Cancelado";
-
-    public void Pagar(Pedido pedido) =>
-        Console.WriteLine($"  ⚠️  Pedido #{pedido.Id}: Fue cancelado. No se puede pagar");
-
-    public void Enviar(Pedido pedido) =>
-        Console.WriteLine($"  ⚠️  Pedido #{pedido.Id}: Fue cancelado. No se puede enviar");
-
-    public void Entregar(Pedido pedido) =>
-        Console.WriteLine($"  ⚠️  Pedido #{pedido.Id}: Fue cancelado. No se puede entregar");
-
-    public void Cancelar(Pedido pedido) =>
-        Console.WriteLine($"  ⚠️  Pedido #{pedido.Id}: Ya está cancelado");
 }
 
 public static class StateDemo
@@ -171,43 +114,36 @@ public static class StateDemo
     public static void Run()
     {
         Console.WriteLine("  🔄 STATE — Comportamiento que cambia según el estado\n");
-        Console.WriteLine("  Escenario: Ciclo de vida de un pedido (Nuevo→Pagado→Enviado→Entregado)\n");
+        Console.WriteLine("  Escenario: El humor del chef cambia con la presión del servicio\n");
 
-        var pedido = new Pedido(1001, "Laptop Dell XPS 15");
+        var chef = new Chef("Chef Ramírez");
 
-        // Mostrar estado inicial
-        Console.WriteLine($"  🏁 Estado inicial: {pedido.Estado.Nombre}");
+        Console.WriteLine($"  🏁 Estado inicial: {chef.Estado.Nombre}");
         Console.WriteLine();
 
-        // Secuencia correcta
-        Console.WriteLine("  ── Flujo normal ──");
-        pedido.Pagar();
-        Console.WriteLine($"     Estado ahora: {pedido.Estado.Nombre}\n");
+        // El servicio avanza y el humor cambia solo
+        Console.WriteLine("  ── Llega un pedido ──");
+        chef.RecibirPedido();
+        Console.WriteLine($"     Humor ahora: {chef.Estado.Nombre}\n");
 
-        pedido.Enviar();
-        Console.WriteLine($"     Estado ahora: {pedido.Estado.Nombre}\n");
+        Console.WriteLine("  ── A cocinar ──");
+        chef.Cocinar();
+        Console.WriteLine($"     Humor ahora: {chef.Estado.Nombre}\n");
 
-        pedido.Entregar();
-        Console.WriteLine($"     Estado ahora: {pedido.Estado.Nombre}\n");
+        Console.WriteLine("  ── Llega otro pedido con el chef estresado ──");
+        chef.RecibirPedido();
+        Console.WriteLine($"     Humor ahora: {chef.Estado.Nombre}\n");
 
-        // Intentar acciones inválidas (el estado actual las rechaza)
-        Console.WriteLine("  ── Acciones inválidas (el estado las rechaza) ──");
-        pedido.Enviar();   // Ya entregado, no se puede
-        pedido.Cancelar(); // Ya entregado, no se puede
-        Console.WriteLine();
+        Console.WriteLine("  ── Cocinar enojado ──");
+        chef.Cocinar();
+        Console.WriteLine($"     Humor ahora: {chef.Estado.Nombre}\n");
 
-        // Segundo pedido para mostrar cancelación
-        Console.WriteLine("  ── Cancelación en estado Pagado ──");
-        var pedido2 = new Pedido(1002, "Mouse Inalámbrico");
+        Console.WriteLine("  ── Un merecido descanso ──");
+        chef.Descansar();
+        Console.WriteLine($"     Humor ahora: {chef.Estado.Nombre}\n");
 
-        pedido2.Pagar();
-        Console.WriteLine($"     Estado: {pedido2.Estado.Nombre}");
-        pedido2.Cancelar(); // Reembolso
-        Console.WriteLine($"     Estado: {pedido2.Estado.Nombre}");
-
-        Console.WriteLine();
-        Console.WriteLine("  ✅ Cada estado define QUÉ se puede hacer y QUÉ no.");
+        Console.WriteLine("  ✅ Cada humor define CÓMO reacciona el chef.");
         Console.WriteLine("     Sin State: if/else gigante con flags y validaciones.");
-        Console.WriteLine("     Con State: cada estado es una clase independiente.");
+        Console.WriteLine("     Con State: cada humor es una clase independiente.");
     }
 }

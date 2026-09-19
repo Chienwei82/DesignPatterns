@@ -62,7 +62,7 @@ Antes de estudiar cada uno, estos son los conceptos transversales que aparecen e
 
 **Analogía:** El presidente de un país. Solo puede haber uno en ejercicio, y todos los ciudadanos (objetos) se dirigen a esa única figura.
 
-**Ejemplo real del proyecto:** Una clase `ConfiguracionApp` que carga parámetros desde un archivo JSON. Usar `Lazy<T>` asegura que, aunque dos hilos la soliciten simultáneamente, solo se crea una vez.
+**Ejemplo real del proyecto:** Una clase `DespensaCentral` que carga el inventario del restaurante. Usar `Lazy<T>` asegura que, aunque dos cocineros la soliciten simultáneamente, solo se crea una vez.
 
 **Relaciones:** A menudo se usa con **Factory Method** (la factory puede ser Singleton) o **Abstract Factory**.
 
@@ -91,7 +91,7 @@ Antes de estudiar cada uno, estos son los conceptos transversales que aparecen e
 
 **Analogía:** Una fábrica de muebles que tiene una línea de producción estándar. Las sucursales específicas (Madrid, Barcelona) deciden si usan madera de roble o pino, pero el proceso general es el mismo.
 
-**Ejemplo real del proyecto:** Un sistema de notificaciones donde `NotificadorFactory` es la clase abstracta y existen `FactoryEmail`, `FactorySMS` y `FactoryPush`. Cada una configura parámetros específicos (servidor SMTP, número origen, App ID) antes de devolver el notificador concreto.
+**Ejemplo real del proyecto:** La cocina con estaciones donde `EstacionCocina` es la clase abstracta y existen `EstacionParrilla`, `EstacionPasteleria` y `EstacionBar`. Cada estación decide qué platillo concreto crear (`CostillaBBQ`, `Pastel` o `Limonada`) antes de servirlo.
 
 **Relaciones:** Se combina frecuentemente con **Singleton** (la factory puede ser única) o con **Strategy** (los productos creados suelen ser estrategias intercambiables).
 
@@ -101,7 +101,7 @@ Antes de estudiar cada uno, estos son los conceptos transversales que aparecen e
 
 **Definición:** Proporciona una interfaz para crear **familias de objetos relacionados** sin especificar sus clases concretas.
 
-**Propósito:** Asegurar que los productos creados sean compatibles entre sí. Si creas un botón de un tema oscuro, la ventana también debe ser oscura.
+**Propósito:** Asegurar que los productos creados sean compatibles entre sí. Si pides una entrada italiana, el plato fuerte también debe ser italiano.
 
 **Cuándo usarlo:**
 - Tu sistema debe ser independiente de cómo se crean, componen y representan sus productos.
@@ -120,7 +120,7 @@ Antes de estudiar cada uno, estos son los conceptos transversales que aparecen e
 
 **Analogía:** Un restaurante de comida rápida con menús para niños y adultos. El menú infantil siempre incluye: hamburguesa pequeña, papas pequeñas y juguete. El menú adulto incluye: hamburguesa grande, papas grandes y bebida. Nunca mezclas papas pequeñas con hamburguesa grande.
 
-**Ejemplo real del proyecto:** `IUIFactory` con métodos `CrearBoton()` y `CrearVentana()`. Las implementaciones `TemaClaroFactory`, `TemaOscuroFactory` y `TemaAltoContrasteFactory` garantizan que botón y ventana siempre vayan del mismo tema.
+**Ejemplo real del proyecto:** `IMenuFactory` con métodos `CrearEntrada()` y `CrearPlatoFuerte()`. Las implementaciones `MenuItalianoFactory` (Bruschetta + Pizza) y `MenuMexicanoFactory` (Nachos + Tacos) garantizan que los platillos de cada cocina siempre combinen entre sí.
 
 **Relaciones:** Abstract Factory suele implementarse con **Factory Methods** (cada método de la factory es un factory method). A menudo la Abstract Factory misma es un **Singleton**.
 
@@ -144,13 +144,13 @@ Antes de estudiar cada uno, estos son los conceptos transversales que aparecen e
 
 **Flujo típico:**
 1. Creas un `ConcreteBuilder`.
-2. Opcionalmente, pasas un `Director` con una receta predefinida (ej. "pedido premium").
-3. El director llama a los pasos en orden: `AgregarCliente()`, `AgregarProducto()`, etc.
+2. Opcionalmente, pasas un `Director` con una receta predefinida (ej. "la monstruosa").
+3. El director llama a los pasos en orden: `ConPan()`, `ConCarne()`, `AgregarExtra()`, etc.
 4. Finalmente se llama `Construir()` para obtener el producto terminado.
 
 **Analogía:** Un chef en un restaurante. El cliente puede pedir paso a paso: base de masa, salsa, queso, pepperoni, orégano. O puede pedir "pizza pepperoni" que el chef (Director) sabe cómo armar.
 
-**Ejemplo real del proyecto:** `PedidoBuilder` construye un `PedidoComplejo` paso a paso. `DirectorPedidos` tiene recetas como `ConstruirPedidoSimple()` y `ConstruirPedidoPremium()`. Tras `Construir()`, el builder se resetea automáticamente para poder reutilizarse.
+**Ejemplo real del proyecto:** `HamburguesaBuilder` construye una `Hamburguesa` paso a paso. `ChefDirector` tiene recetas como `PrepararClasica()` y `PrepararMonstruosa()`. Tras `Construir()`, el builder se resetea automáticamente para poder reutilizarse.
 
 **Relaciones:** A menudo se usa junto a **Composite** (el producto final es una estructura compuesta) o **Bridge** (el producto puede usar diferentes implementaciones).
 
@@ -179,7 +179,7 @@ Antes de estudiar cada uno, estos son los conceptos transversales que aparecen e
 
 **Analogía:** Un formulario pre-llenado. En vez de pedirle a un usuario que llene todos los campos desde cero, le das una copia de otro formulario similar y solo cambia los datos que difieren.
 
-**Ejemplo real del proyecto:** `Factura` implementa `ICloneable`. Se demuestra la diferencia entre `Clone()` (shallow copy, comparte la `List<string>` y `DatosFiscales`) y `DeepClone()` (copia profunda, todo es independiente). `DatosFiscales` se implementó como un `record` inmutable.
+**Ejemplo real del proyecto:** `Receta` implementa `ICloneable`. Se demuestra la diferencia entre `Clone()` (shallow copy, comparte la `List<string>` de ingredientes y el `Chef`) y `DeepClone()` (copia profunda, todo es independiente). `Chef` se implementó como un `record` inmutable.
 
 **Relaciones:** El **Prototype** puede usarse para inicializar **Singletons** o puede ser creado por una **Factory**.
 
@@ -209,7 +209,7 @@ Antes de estudiar cada uno, estos son los conceptos transversales que aparecen e
 
 **Analogía:** Un adaptador de corriente. Tu cargador tiene enchufe tipo A (plano), pero el hotel solo tiene tipo C (redondo). El adaptador convierte uno en otro sin modificar ni el cargador ni la toma de pared.
 
-**Ejemplo real del proyecto:** `IPagoProcesador` es la interfaz esperada. Existen dos `Adaptees`: `GatewayPagoInternacional` (simulando Stripe) y `PasarelaPagoLegacy` (sistema antiguo). `PagoAdapter` y `LegacyAdapter` traducen las llamadas.
+**Ejemplo real del proyecto:** `IProveedorIngredientes` es la interfaz esperada. Existen dos `Adaptees`: `ProveedorInternacional` (interfaz moderna tipo Stripe) y `ProveedorLegacy` (sistema antiguo). `ProveedorInternacionalAdapter` y `ProveedorLegacyAdapter` traducen las llamadas.
 
 **Relaciones:** El **Adapter** puede adaptar no solo una clase, sino todo un subsistema (convirtiéndose en un tipo de **Facade**). También se parece al **Proxy**, pero el Adapter cambia la interfaz; el Proxy mantiene la misma interfaz.
 
@@ -239,7 +239,7 @@ Antes de estudiar cada uno, estos son los conceptos transversales que aparecen e
 
 **Analogía:** Un árbol de Navidad. El pino base es el componente. Le agregas luces (decorador), luego esferas (otro decorador), luego un ángel en la punta. Puedes quitar o cambiar cualquier capa sin tocar el pino.
 
-**Ejemplo real del proyecto:** `ICafe` es el componente. `CafeSimple` es la base. `ConLeche`, `ConCrema`, `ConCaramelo` y `ConCanela` son decoradores que suman costo y descripción. Un café puede ser `new ConCaramelo(new ConLeche(new CafeSimple()))`.
+**Ejemplo real del proyecto:** `IPastel` es el componente. `PastelVainilla` es la base. `ConGlaseado`, `ConChispas` y `ConVelitas` son decoradores que suman precio y descripción. Un pastel puede ser `new ConVelitas(new ConChispas(new ConGlaseado(new PastelVainilla())))`.
 
 **Relaciones:** El **Decorator** tiene la misma estructura de objetos que **Composite** (árbol), pero el Decorator solo tiene un hijo. También se asemeja al **Proxy** (ambos envuelven objetos), pero el Proxy controla acceso, mientras el Decorator añade responsabilidades.
 
@@ -267,7 +267,7 @@ Antes de estudiar cada uno, estos son los conceptos transversales que aparecen e
 
 **Analogía:** El mostrador de atención al cliente en un banco. Tú solo hablas con el cajero (Facade). Internamente, él consulta el sistema de cuentas, el sistema de préstamos, el sistema de seguridad y te da una respuesta única.
 
-**Ejemplo real del proyecto:** `FacadePedido` orquesta 4 subsistemas: `SubsistemaInventario`, `SubsistemaPagos`, `SubsistemaEnvios` y `SubsistemaNotificaciones`. El cliente llama `RealizarPedido()` y la Facade maneja el flujo completo. Además incluye un constructor con inyección de dependencias para testear con mocks.
+**Ejemplo real del proyecto:** `ServicioDelivery` orquesta 4 subsistemas: `Inventario`, `Cocina`, `Repartidor` y `Notificaciones`. El cliente llama `PedirCombo()` y la Facade maneja el flujo completo, devolviendo la guía o `null` si algo falla. Además incluye un constructor con inyección de dependencias para testear con mocks.
 
 **Relaciones:** Una **Facade** puede usar internamente **Factory Methods** para crear objetos del subsistema. Puede interactuar con **Singletons** (si los subsistemas son únicos). No transforma la interfaz como el **Adapter**, solo la simplifica.
 
@@ -296,9 +296,9 @@ Antes de estudiar cada uno, estos son los conceptos transversales que aparecen e
 
 **Analogía:** Un abogado. Tú (cliente) no hablas directamente con el juez (objeto real), sino con tu abogado (proxy). Él decide si tu solicitud procede, prepara la documentación y la presenta al juez.
 
-**Ejemplo real del proyecto:** Se implementan dos proxies sobre `IServicioDatos`:
-- `ProxyCache`: guarda resultados de `ObtenerDatos()` por 30 segundos usando `DateTimeOffset.UtcNow`. La segunda llamada con el mismo ID es instantánea.
-- `ProxySeguridad`: verifica el rol del usuario antes de permitir el acceso. Muestra tanto el caso denegado (usuario normal) como el permitido (administrador).
+**Ejemplo real del proyecto:** Se implementan dos proxies sobre `IChef`:
+- `ProxyChefCache`: recuerda platos ya preparados, así que el segundo pedido del mismo plato es instantáneo.
+- `ProxyChefSeguridad`: verifica el rol del cliente antes de dejar pedir el "Plato estrella". Muestra tanto el caso denegado (cliente normal) como el permitido (VIP).
 
 **Relaciones:** El **Proxy** tiene la misma interfaz que el objeto real, a diferencia del **Adapter**. Un **Proxy** de caché se parece al **Flyweight** (ambos evitan crear objetos), pero el Proxy controla un único objeto real, mientras el Flyweight comparte muchos objetos pequeños.
 
@@ -324,9 +324,9 @@ Antes de estudiar cada uno, estos son los conceptos transversales que aparecen e
 2. Puede llamar `Operacion()` tanto en una hoja como en un compuesto.
 3. El `Composite` delega la operación a todos sus hijos y agrega los resultados.
 
-**Analogía:** Una empresa. Un empleado individual (hoja) tiene un salario. Un departamento (composite) contiene empleados y sub-departamentos. Para calcular el presupuesto total, simplemente sumas el salario de todos, sin importar si es una persona o un departamento entero.
+**Analogía:** Un menú de restaurante. Un platillo individual (hoja) tiene su precio. Un combo (composite) contiene platillos y otros combos. Para calcular el precio total, simplemente sumas todo, sin importar si es un platillo o un combo entero.
 
-**Ejemplo real del proyecto:** `IComponenteOrganigrama` con `Empleado` (hoja) y `Departamento` (composite). El composite usa LINQ (`Sum`) para calcular costos totales y contar personas. El cliente llama `Mostrar()` o `GetCostoTotal()` sin saber si es hoja o compuesto.
+**Ejemplo real del proyecto:** `IElementoMenu` con `PlatilloMenu` (hoja) y `ComboMenu` (composite). El composite usa LINQ (`Sum`) para calcular precio y calorías totales. El cliente llama `Mostrar()` o `GetPrecioTotal()` sin saber si es platillo o combo, y un combo puede contener otros combos.
 
 **Relaciones:** El **Composite** es estructuralmente similar al **Decorator** (ambos usan composición recursiva), pero el Composite modela jerarquías parte-todo, mientras el Decorator añade responsabilidades. Frecuentemente se usa junto al **Iterator** para recorrer la estructura.
 
@@ -354,9 +354,9 @@ Antes de estudiar cada uno, estos son los conceptos transversales que aparecen e
 2. Llama a métodos de la abstracción.
 3. La abstracción delega las operaciones de bajo nivel al `Implementor`.
 
-**Analogía:** Un control remoto universal. El control (abstracción) puede aprender comandos de cualquier TV (implementación). Agregar una nueva marca de TV no requiere cambiar el control remoto. Agregar funciones al control (voz, app) no requiere cambiar las TVs.
+**Analogía:** Un mismo método de cocción universal. La receta (abstracción) puede prepararse con cualquier método (implementación). Agregar un método nuevo (freidora) no requiere cambiar las recetas. Agregar una receta nueva no requiere cambiar los métodos.
 
-**Ejemplo real del proyecto:** `ControlRemoto` es la abstracción con subclases `ControlBasico` y `ControlAvanzado`. `IPlataformaTV` es el implementor con `SamsungTV`, `LgTV` y `SonyTV`. Un `ControlAvanzado` puede usar cualquier TV.
+**Ejemplo real del proyecto:** `RecetaBase` es la abstracción con subclases `RecetaCasera` y `RecetaGourmet`. `IMetodoCoccion` es el implementor con `Horno`, `Freidora` y `Parrilla`. Una `RecetaGourmet` puede cocinarse con cualquier método.
 
 **Relaciones:** El **Bridge** es similar al **Adapter**, pero el Bridge desacopla desde el diseño (pre-planificado), mientras el Adapter corrige incompatibilidades existentes (post-hoc). A menudo el producto de un **Builder** usa un **Bridge** para ser independiente de su implementación.
 
@@ -386,7 +386,7 @@ Antes de estudiar cada uno, estos son los conceptos transversales que aparecen e
 
 **Analogía:** Un cine con 500 butacas. En vez de crear 500 objetos "Butaca" con su propio proyector, cada butaca solo guarda su fila/columna (extrínseco). El proyector, la película y la pantalla son compartidos (intrínsecos) por todas.
 
-**Ejemplo real del proyecto:** `TipoArbol` es el flyweight con nombre, color y textura (intrínseco). `Arbol` es el contexto con posición X/Y (extrínseco). `FabricaArboles` administra los tipos. Al plantar 1,000 árboles solo se crean 3 instancias de `TipoArbol` en memoria.
+**Ejemplo real del proyecto:** `TipoBebida` es el flyweight con nombre, precio y color (intrínseco). `Comanda` es el contexto con el número de mesa (extrínseco). `FabricaBebidas` administra los tipos. Al levantar 1,000 comandas solo se crean 3 instancias de `TipoBebida` en memoria.
 
 **Relaciones:** El **Flyweight** se parece al **Singleton** (ambos controlan instancias), pero el Flyweight maneja múltiples instancias compartidas por clave. A menudo se usa dentro de **Composite** (las hojas pueden ser flyweights).
 
@@ -418,7 +418,7 @@ Antes de estudiar cada uno, estos son los conceptos transversales que aparecen e
 
 **Analogía:** Estrategias de navegación en Google Maps. El destino es el mismo, pero puedes elegir: en coche (ruta más rápida), a pie (caminos peatonales), o transporte público (horarios de bus). El mapa (contexto) te muestra la ruta según la estrategia seleccionada.
 
-**Ejemplo real del proyecto:** `ICalculadorImpuesto` es la estrategia con implementaciones para Costa Rica (13%), Panamá (7%), México (16%) y Zona Franca (0%). `Facturador` es el contexto que permite cambiar de estrategia en tiempo de ejecución con `CambiarEstrategia()`.
+**Ejemplo real del proyecto:** `IEstrategiaDescuento` es la estrategia con implementaciones `SinDescuento`, `HappyHour` (20%), `ClienteVip` (15%) y `MenuDelDia` (10%). `CajaRegistradora` es el contexto que permite cambiar de estrategia en tiempo de ejecución con `CambiarEstrategia()`.
 
 **Relaciones:** El **Strategy** es similar al **State** (ambos usan composición para cambiar comportamiento), pero el Strategy cambia algoritmos por decisión del cliente, mientras el State cambia automáticamente según el estado interno. A menudo los objetos creados por **Factory Method** son estrategias.
 
@@ -447,7 +447,7 @@ Antes de estudiar cada uno, estos son los conceptos transversales que aparecen e
 
 **Analogía:** Un canal de YouTube. Tú te suscribes (observer). Cuando el creador sube un video (cambio de estado), YouTube notifica a todos los suscriptores simultáneamente. El creador no sabe cuántos suscriptores tiene ni cómo reciben la notificación.
 
-**Ejemplo real del proyecto:** `AgenciaNoticias` es el sujeto. Existen `SuscriptorEmail`, `SuscriptorSMS`, `SuscriptorApp` y `SuscriptorFiltrado` (que solo recibe ciertas categorías). El método `Notificar()` usa `try-catch` individual por suscriptor para evitar que un fallo de un receptor afecte a los demás.
+**Ejemplo real del proyecto:** `Cocina` es el sujeto. Existen `MeseroNotificador`, `PantallaSalon`, `AppCliente` y `ObservadorDePostres` (que solo reacciona a los postres). Cuando un platillo está listo, `PedidoListo()` notifica a todos los suscriptores registrados.
 
 **Relaciones:** El **Observer** es la base del patrón **MVC** (Modelo notifica a las Vistas). En C#, los `events` y `delegates` son implementaciones nativas del patrón Observer. Frecuentemente se usa con **Mediator** (el mediator puede actuar como subject centralizado).
 
@@ -479,7 +479,7 @@ Antes de estudiar cada uno, estos son los conceptos transversales que aparecen e
 
 **Analogía:** Un control remoto de TV. Cada botón es un comando. El botón "Volumen +" no sabe cómo funciona el circuito de audio de la TV; solo envía la orden. El botón "Deshacer" puede revertir la última acción.
 
-**Ejemplo real del proyecto:** `EditorTexto` es el receiver. Existen `ComandoInsertar`, `ComandoCortar` y `ComandoPegar`. `HistorialComandos` es el invoker con dos stacks: uno para `UNDO` y otro para `REDO`. Cada comando guarda estado suficiente para poder deshacerse.
+**Ejemplo real del proyecto:** `Comanda` es el receiver. Existen `ComandoAgregar` y `ComandoQuitar`. `MeseroComandas` es el invoker con dos stacks: uno para `UNDO` y otro para `REDO`. Cada comando guarda estado suficiente para poder deshacerse.
 
 **Relaciones:** El **Command** se combina con **Memento** para guardar el estado necesario para deshacer. También se usa con **Composite** para crear macros (comandos compuestos). El **Chain of Responsibility** puede usarse para encadenar comandos.
 
@@ -508,7 +508,7 @@ Antes de estudiar cada uno, estos son los conceptos transversales que aparecen e
 
 **Analogía:** Una receta de cocina. El esqueleto es siempre: preparar ingredientes → cocinar → servir. Pero "cocinar" varía: para pasta hierve agua; para carne, dora en sartén. La estructura de la receta no cambia, solo los pasos concretos.
 
-**Ejemplo real del proyecto:** `ProcesadorArchivo` define el flujo: `Validar` → `Abrir` → `Extraer` → `Transformar` → `Guardar` → `Notificar`. Las subclases `ProcesadorCSV`, `ProcesadorJSON` y `ProcesadorPDF` implementan `AbrirArchivo`, `ExtraerDatos` y `GuardarResultado`. `ValidarArchivo` y `NotificarCompletado` son hooks opcionales.
+**Ejemplo real del proyecto:** `RecetaBase` define el flujo: `Validar` → `ReunirIngredientes` → `Cocinar` → `Emplatar` → `Notificar`. Las subclases `RecetaPizza`, `RecetaSushi` y `RecetaPasta` implementan `ReunirIngredientes`, `Cocinar` y `Emplatar`. `ValidarPedido` y `NotificarListo` son hooks opcionales.
 
 **Relaciones:** El **Template Method** usa herencia para variar comportamiento, mientras **Strategy** usa composición. Son alternativas: usa Template Method cuando controlas la jerarquía; usa Strategy cuando necesitas flexibilidad total en tiempo de ejecución.
 
@@ -537,7 +537,7 @@ Antes de estudiar cada uno, estos son los conceptos transversales que aparecen e
 
 **Analogía:** Un semáforo. El semáforo (contexto) está siempre en una de tres estados: Verde, Amarillo o Rojo. Cuando está en Verde, permite avanzar y transiciona a Amarillo. Cuando está en Rojo, rechaza avanzar. El semáforo no decide la lógica; el estado actual sí.
 
-**Ejemplo real del proyecto:** `Pedido` es el contexto con estados: `EstadoNuevo`, `EstadoPagado`, `EstadoEnviado`, `EstadoEntregado` y `EstadoCancelado`. Cada estado implementa `Pagar()`, `Enviar()`, `Entregar()` y `Cancelar()`. El estado solo puede cambiarse a través de métodos del contexto (encapsulación protegida con `CambiarEstado()`). Los estados son singletons estáticos para evitar crear instancias innecesarias.
+**Ejemplo real del proyecto:** `Chef` es el contexto con humores: `ChefFeliz`, `ChefEstresado` y `ChefEnojado`. Cada humor implementa `RecibirPedido()`, `Cocinar()` y `Descansar()`, y las acciones hacen que el chef cambie de humor. El estado solo puede cambiarse a través de métodos del contexto (encapsulación protegida con `CambiarEstado()`). Los estados son singletons estáticos para evitar crear instancias innecesarias.
 
 **Relaciones:** El **State** es estructuralmente similar al **Strategy**, pero las transiciones entre estados suelen ser controladas por los propios estados (circular), mientras que en Strategy el cliente elige la estrategia. El **State** puede usar **Singleton** para estados sin estado propio.
 
@@ -566,7 +566,7 @@ Antes de estudiar cada uno, estos son los conceptos transversales que aparecen e
 
 **Analogía:** Un chat grupal de WhatsApp. Ana no envía un mensaje directamente a Carlos y a María; lo manda al grupo. WhatsApp (mediator) se encarga de replicarlo a todos los miembros.
 
-**Ejemplo real del proyecto:** `SalaChatGrupal` implementa `ISalaChat`. `Usuario` es el colega. Cuando `ana.Enviar("Hola")`, el usuario delega a `_sala.EnviarMensaje()`. La sala itera sobre todos los usuarios registrados y llama `Recibir()` excepto al remitente.
+**Ejemplo real del proyecto:** `PaseCocina` implementa `IPaseCocina`. `TrabajadorCocina` es la clase base de los colegas `Mesero`, `Cocinero` y `Repartidor`. Cuando `luis.Enviar("Mesa 4 pidió pizza")`, el trabajador delega a `_pase.Enviar()`. El pase itera sobre todos los registrados y llama `Recibir()` excepto al remitente.
 
 **Relaciones:** El **Mediator** a veces implementa el patrón **Observer** (la sala observa a los usuarios). A menudo reemplaza múltiples **Observers** bidireccionales. Es útil en arquitecturas MVC donde el Controller actúa como mediator entre View y Model.
 
@@ -595,7 +595,7 @@ Antes de estudiar cada uno, estos son los conceptos transversales que aparecen e
 
 **Analogía:** Los checkpoints de un videojuego. En cualquier momento presionas "Guardar". El juego (Originator) empaqueta tu posición, vidas y puntaje en un archivo de guardado (Memento). Tú (Caretaker) guardas ese archivo en tu disco. Más tarde, eliges "Cargar" y el juego restaura exactamente ese estado.
 
-**Ejemplo real del proyecto:** `Partida` es el originator. `EstadoJuego` es el memento, implementado como `record` inmutable con `DateTimeOffset.UtcNow`. `GestorGuardados` es el caretaker con un `Stack<EstadoJuego>`. Se demuestra guardar, avanzar, recibir daño, y restaurar checkpoints.
+**Ejemplo real del proyecto:** `PizzaEnProgreso` es el originator. `EstadoPizza` es el memento, implementado como `record` inmutable con `DateTimeOffset.UtcNow`. `GestorRecetas` es el caretaker con un `Stack<EstadoPizza>`. Se demuestra armar la pizza, arruinarla, y restaurar checkpoints.
 
 **Relaciones:** El **Memento** se usa frecuentemente junto al **Command** (para implementar undo). El **Caretaker** puede ser un **Singleton**.
 
@@ -625,7 +625,7 @@ Antes de estudiar cada uno, estos son los conceptos transversales que aparecen e
 
 **Analogía:** Un hospital de emergencias. Llegas con una torcedura (leve): el médico general te atiende. Llegas con un infarto (crítico): el general te deriva al cardiólogo, quien te deriva al quirófano. Cada nivel decide si puede o pasa al siguiente.
 
-**Ejemplo real del proyecto:** `SoporteHandler` es la clase abstracta con `EstablecerSiguiente()`. Existen `SoporteNivel1`, `SoporteNivel2`, `SoporteNivel3` y `DirectorSoporte`. `TicketSoporte` es un `record` inmutable que usa el enum `SeveridadTicket` (Leve, Moderada, Critica, Empresarial). Cada nivel maneja hasta cierta severidad.
+**Ejemplo real del proyecto:** `ManejadorQueja` es la clase abstracta con `EstablecerSiguiente()`. Existen `AtencionMesero`, `JefeDeCocina`, `Gerente` y `Dueno`. `Queja` es un `record` inmutable que usa el enum `GravedadQueja` (Molestia, Reclamo, Grave, Catastrofe). Cada nivel maneja hasta cierta gravedad.
 
 **Relaciones:** El **Chain of Responsibility** se parece al **Decorator** (ambos pasan solicitudes a lo largo de una cadena), pero el Decorator siempre delega; el Chain decide si procesa o delega. En ASP.NET Core, los middlewares forman una cadena de responsabilidad.
 
@@ -735,7 +735,7 @@ Todos manejan estructuras de objetos, pero:
 > Depende. En aplicaciones modernas con inyección de dependencias (DI), el Singleton como patrón de código ha caído en desuso porque el contenedor DI gestiona el ciclo de vida. Sin embargo, entender cómo funciona es valioso para comprender el control de instancias.
 
 **¿Qué es un "record" en C# y por qué se usa en algunos patrones?**
-> Un `record` es un tipo de referencia (o valor con `record struct`) inmutable por convención, con value equality, `ToString` automático y sintaxis `with` para crear copias modificadas. Es ideal para objetos de datos puros como `TicketSoporte`, `EstadoJuego` o `DatosFiscales`.
+> Un `record` es un tipo de referencia (o valor con `record struct`) inmutable por convención, con value equality, `ToString` automático y sintaxis `with` para crear copias modificadas. Es ideal para objetos de datos puros como `Queja`, `EstadoPizza` o `Chef`.
 
 ---
 

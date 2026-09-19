@@ -10,60 +10,55 @@ namespace DesignPatterns.Structural;
 /// USO REAL: Integración con APIs de terceros, wrappers de bibliotecas
 ///           legacy, normalización de datos de distintos proveedores.
 
-// --- Target: la interfaz que espera nuestro sistema ---
-public interface IPagoProcesador
+// --- Target: la interfaz que espera nuestra cocina ---
+public interface IProveedorIngredientes
 {
-    bool Cobrar(string numeroTarjeta, decimal monto, string moneda);
+    bool Entregar(string ingrediente, decimal kilos);
 }
 
-// --- Adaptee: un servicio externo con interfaz diferente ---
-// Simula un gateway de pago internacional (ej. Stripe, PayPal)
-public class GatewayPagoInternacional
+// --- Adaptee: proveedor moderno con otra interfaz ---
+public class ProveedorInternacional
 {
-    public string Charge(string token, double amount, string currency)
+    public string Deliver(string item, double weightKg, string unit)
     {
-        // Simula procesamiento
-        Thread.Sleep(50);
-
-        // Genera un ID de transacción simulado, ej. "TX-3F8A12B4C"
-        var guid = Guid.NewGuid().ToString("N").ToUpper();
-        return $"TX-{guid[..9]}";
+        Thread.Sleep(40); // simula procesamiento
+        var codigo = Guid.NewGuid().ToString("N").ToUpper();
+        return $"INTL-{codigo[..9]}";
     }
 }
 
-// --- Adapter: adapta GatewayPagoInternacional -> IPagoProcesador (Target) ---
-public class PagoAdapter : IPagoProcesador
+// --- Adapter: adapta ProveedorInternacional -> IProveedorIngredientes ---
+public class ProveedorInternacionalAdapter : IProveedorIngredientes
 {
-    private readonly GatewayPagoInternacional _gateway;
+    private readonly ProveedorInternacional _proveedor;
 
-    public PagoAdapter(GatewayPagoInternacional gateway)
+    public ProveedorInternacionalAdapter(ProveedorInternacional proveedor)
     {
-        _gateway = gateway;
+        _proveedor = proveedor;
     }
 
-    public bool Cobrar(string numeroTarjeta, decimal monto, string moneda)
+    public bool Entregar(string ingrediente, decimal kilos)
     {
-        Console.WriteLine($"  [Adapter] Convirtiendo solicitud...");
+        Console.WriteLine("  [Adapter] Traduciendo el pedido al formato internacional...");
 
         // 1. Normalizar datos
-        var token = $"tok_{numeroTarjeta[^4..]}"; // simula tokenización
-        var amount = (double)monto;
-        var currency = moneda.ToUpper();
+        var item = ingrediente.ToLower();
+        var weight = (double)kilos;
+        var unit = "kg";
 
-        // 2. Llamar al gateway con su interfaz nativa
-        Console.WriteLine($"  [Adapter] Llamando Gateway.Charge(token={token}, amount={amount}, currency={currency})");
-        var txId = _gateway.Charge(token, amount, currency);
+        // 2. Llamar al proveedor con su interfaz nativa
+        var guia = _proveedor.Deliver(item, weight, unit);
 
         // 3. Traducir la respuesta
-        Console.WriteLine($"  [Adapter] Transacción completada: {txId}");
-        return !string.IsNullOrEmpty(txId);
+        Console.WriteLine($"  [Adapter] Entrega confirmada con guía {guia}");
+        return !string.IsNullOrEmpty(guia);
     }
 }
 
-// --- Otro Adaptee: pasarela legacy (sistema antiguo) ---
-public class PasarelaPagoLegacy
+// --- Otro Adaptee: distribuidor legacy (sistema antiguo) ---
+public class ProveedorLegacy
 {
-    public string EnviarPago(string tarjetaEncriptada, string montoStr)
+    public string EnviarMercancia(string ingredienteEncriptado, string kilosTexto)
     {
         Thread.Sleep(30);
         return $"LEGACY-{DateTime.Now.Ticks}";
@@ -71,22 +66,22 @@ public class PasarelaPagoLegacy
 }
 
 // --- Otro Adapter ---
-public class LegacyAdapter : IPagoProcesador
+public class ProveedorLegacyAdapter : IProveedorIngredientes
 {
-    private readonly PasarelaPagoLegacy _legacy;
+    private readonly ProveedorLegacy _legacy;
 
-    public LegacyAdapter(PasarelaPagoLegacy legacy)
+    public ProveedorLegacyAdapter(ProveedorLegacy legacy)
     {
         _legacy = legacy;
     }
 
-    public bool Cobrar(string numeroTarjeta, decimal monto, string moneda)
+    public bool Entregar(string ingrediente, decimal kilos)
     {
-        var tarjetaEncriptada = Convert.ToBase64String(
-            System.Text.Encoding.UTF8.GetBytes(numeroTarjeta));
-        var montoStr = $"{monto:F2}";
-        var id = _legacy.EnviarPago(tarjetaEncriptada, montoStr);
-        Console.WriteLine($"  [LegacyAdapter] Pago legacy procesado: {id}");
+        var ingredienteEncriptado = Convert.ToBase64String(
+            System.Text.Encoding.UTF8.GetBytes(ingrediente));
+        var kilosTexto = kilos.ToString("F2");
+        var guia = _legacy.EnviarMercancia(ingredienteEncriptado, kilosTexto);
+        Console.WriteLine($"  [LegacyAdapter] Entrega legacy confirmada: {guia}");
         return true;
     }
 }
@@ -96,25 +91,25 @@ public static class AdapterDemo
     public static void Run()
     {
         Console.WriteLine("  🔌 ADAPTER — Interfaces incompatibles → compatibles\n");
-        Console.WriteLine("  Escenario: Sistema de e-commerce con múltiples pasarelas de pago\n");
+        Console.WriteLine("  Escenario: La cocina pide ingredientes a proveedores distintos\n");
 
-        // El sistema solo conoce IPagoProcesador
-        var procesadores = new List<(string nombre, IPagoProcesador proc)>
+        // La cocina solo conoce IProveedorIngredientes
+        var proveedores = new List<(string nombre, IProveedorIngredientes proveedor)>
         {
-            ("Stripe (Adapter)", new PagoAdapter(new GatewayPagoInternacional())),
-            ("Legacy (Adapter)", new LegacyAdapter(new PasarelaPagoLegacy()))
+            ("Internacional (Adapter)", new ProveedorInternacionalAdapter(new ProveedorInternacional())),
+            ("Legacy (Adapter)", new ProveedorLegacyAdapter(new ProveedorLegacy()))
         };
 
-        foreach (var (nombre, proc) in procesadores)
+        foreach (var (nombre, proveedor) in proveedores)
         {
-            Console.WriteLine($"  ── {nombre} ──");
-            var resultado = proc.Cobrar("4000-1234-5678-9010", 49990.00m, "CRC");
-            Console.WriteLine($"  Resultado: {(resultado ? "✅ Aprobado" : "❌ Rechazado")}");
+            Console.WriteLine($"  ── Proveedor: {nombre} ──");
+            var resultado = proveedor.Entregar("Tomate", 12.5m);
+            Console.WriteLine($"  Resultado: {(resultado ? "✅ Entregado" : "❌ Falló")}");
             Console.WriteLine();
         }
 
-        Console.WriteLine("  ✅ El Adapter permite que el sistema central use");
-        Console.WriteLine("     cualquier pasarela sin modificar su código.");
-        Console.WriteLine("     Solo se necesita un nuevo Adapter por cada integración.");
+        Console.WriteLine("  ✅ El Adapter permite que la cocina use cualquier");
+        Console.WriteLine("     proveedor sin modificar su código.");
+        Console.WriteLine("     Solo se necesita un nuevo Adapter por cada proveedor.");
     }
 }

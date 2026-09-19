@@ -19,8 +19,8 @@ echo 7 | dotnet run   # ejecutar un patrón directamente por número
 |---|--------|----------|
 | 1 | Singleton | El presidente del país: solo hay uno |
 | 2 | Factory Method | Fábrica de muebles; cada sucursal decide el material |
-| 3 | Abstract Factory | Fábrica que produce muebles de una línea completa coordinada |
-| 4 | Builder | Armar un sándwich por pasos en Subway |
+| 3 | Abstract Factory | Menú completo por cocina: italiano o mexicano, todo combina |
+| 4 | Builder | Armar una hamburguesa por pasos (pan, carne, extras) |
 | 5 | Prototype | Fotocopia de un formulario que luego personalizas |
 
 ### 1. Singleton — una sola instancia global
@@ -41,7 +41,7 @@ echo 7 | dotnet run   # ejecutar un patrón directamente por número
 
 - **Intención:** crear **familias de objetos relacionados** sin acoplarse a sus clases concretas.
 - **Analogía:** tienda de muebles con líneas completa "moderna" o "vintage": compras el set y todo combina.
-- **Cuándo usarlo:** temas de UI (claro/oscuro), conectores a distintas bases de datos, kits multiplataforma.
+- **Cuándo usarlo:** menús completos de distintas cocinas (italiano/mexicano), temas de UI, conectores a distintas bases de datos.
 - **Cuándo NO usarlo:** si solo hay **un** producto por familia (para eso es Factory Method, más simple).
 
 ### 4. Builder — construcción paso a paso
@@ -55,7 +55,7 @@ echo 7 | dotnet run   # ejecutar un patrón directamente por número
 
 - **Intención:** crear nuevos objetos **copiando un prototipo existente**, en vez de construirlos desde cero.
 - **Analogía:** fotocopia de un formulario en blanco prellenado.
-- **Cuándo usarlo:** duplicar documentos/facturas plantilla, crear muchos enemigos similares en un videojuego.
+- **Cuándo usarlo:** duplicar recetas/documentos plantilla, crear muchos enemigos similares en un videojuego.
 - **Cuidado:** distingue **copia superficial** (comparte referencias: ¡la lista copiada es la misma!) de **copia profunda** (todo nuevo). Este proyecto demuestra ambas.
 
 ---
@@ -69,8 +69,8 @@ echo 7 | dotnet run   # ejecutar un patrón directamente por número
 | 8 | Facade | Recepción de un hotel: un solo punto para todo |
 | 9 | Proxy | Tarjeta de crédito: intermediario antes de tocar tu dinero |
 | 10 | Composite | Carpeta que contiene archivos y otras carpetas |
-| 11 | Bridge | Control remoto (forma) independiente de la TV (marca) |
-| 12 | Flyweight | Un solo molde de árbol para plantar mil árboles |
+| 11 | Bridge | Receta (casera/gourmet) independiente del método de cocción |
+| 12 | Flyweight | Un solo molde de bebida para servir mil comandas |
 
 ### 6. Adapter — interfaces incompatibles → compatibles
 
@@ -83,7 +83,7 @@ echo 7 | dotnet run   # ejecutar un patrón directamente por número
 
 - **Intención:** **envolver** un objeto con otros que le agregan comportamiento, sin herencia ni modificar la clase original.
 - **Analogía:** vestirse en capas: camiseta, suéter, abrigo — la persona es la misma, se agregan capas.
-- **Cuándo usarlo:** cuando tendrías una explosión de subclases (café con leche+canela+crema...). Es la base de streams y middleware en .NET.
+- **Cuándo usarlo:** cuando tendrías una explosión de subclases (pastel con glaseado+chispas+velitas...). Es la base de streams y middleware en .NET.
 - **Cuándo NO usarlo:** si solo hay una variante posible, la herencia simple es más directa.
 
 ### 8. Facade — interfaz simple para subsistemas complejos
@@ -103,21 +103,21 @@ echo 7 | dotnet run   # ejecutar un patrón directamente por número
 ### 10. Composite — árboles parte-todo
 
 - **Intención:** tratar **objetos individuales y composiciones de objetos de forma uniforme** (estructura de árbol).
-- **Analogía:** organigrama: una persona y un departamento responden la misma pregunta ("¿cuánto cuesta?").
+- **Analogía:** menú: un platillo y un combo entero responden la misma pregunta ("¿cuánto cuesta?").
 - **Cuándo usarlo:** sistemas de archivos, menús, orgánigramas, árboles de componentes UI.
 - **Cuándo NO usarlo:** si la estructura nunca es anidada (solo hay hojas), el árbol es innecesario.
 
 ### 11. Bridge — abstracción e implementación independientes
 
-- **Intención:** separar una **abstracción** de su **implementación** para que ambas dimensiones (ej. control remoto / marca de TV) evolucionen sin multiplicarse.
-- **Analogía:** control remoto (simple/avanzado) × TV (Samsung/LG/Sony): dos perillas independientes.
-- **Cuándo usarlo:** cuando tienes dos dimensiones de variación (sin Bridge: 2 controles × 3 TVs = 6 clases; con Bridge: 2 + 3 = 5).
+- **Intención:** separar una **abstracción** de su **implementación** para que ambas dimensiones (ej. receta / método de cocción) evolucionen sin multiplicarse.
+- **Analogía:** receta (casera/gourmet) × método (horno/freidora/parrilla): dos perillas independientes.
+- **Cuándo usarlo:** cuando tienes dos dimensiones de variación (sin Bridge: 2 recetas × 3 métodos = 6 clases; con Bridge: 2 + 3 = 5).
 - **Cuándo NO usarlo:** con una sola dimensión, herencia simple basta.
 
 ### 12. Flyweight — compartir objetos en gran cantidad
 
 - **Intención:** compartir el estado **intrínseco** (común) entre miles de objetos, dejando lo **extrínseco** (posición) en el cliente.
-- **Analogía:** un solo molde de roble reutilizado para plantar mil robles en posiciones distintas.
+- **Analogía:** un solo molde de limonada reutilizado para servir mil comandas en mesas distintas.
 - **Cuándo usarlo:** muchísimos objetos similares en memoria (tiles de videojuegos, caracteres de un documento).
 - **Cuándo NO usarlo:** con pocos objetos o cuando no hay nada compartible; la factory complica sin beneficio.
 
@@ -133,8 +133,8 @@ echo 7 | dotnet run   # ejecutar un patrón directamente por número
 | 16 | Template Method | Receta de cocina: pasos fijos, ingredientes variables |
 | 17 | State | Estado de ánimo: cambia cómo reaccionas |
 | 18 | Mediator | Torre de control: nadie coordina con nadie directamente |
-| 19 | Memento | Partida guardada en un videojuego |
-| 20 | Chain of Responsibility | Soporte técnico por niveles |
+| 19 | Memento | Guardar la pizza a medio armar por si la arruinas |
+| 20 | Chain of Responsibility | La queja escala del mesero al dueño |
 
 ### 13. Strategy — algoritmos intercambiables
 
@@ -161,7 +161,7 @@ echo 7 | dotnet run   # ejecutar un patrón directamente por número
 
 - **Intención:** definir la **estructura fija** del algoritmo en la clase base; las subclases rellenan pasos concretos.
 - **Analogía:** receta de pan: los pasos son fijos (mezclar, amasar, hornear); el tipo de harina lo eliges tú.
-- **Cuándo usarlo:** pipelines con pasos comunes que varían en el detalle (procesar CSV/JSON/PDF).
+- **Cuándo usarlo:** pipelines con pasos comunes que varían en el detalle (preparar pizza/sushi/pasta).
 - **Cuándo NO usarlo:** si cada implementación difiere mucho en el flujo, mejor composición (Strategy).
 
 ### 17. State — comportamiento según el estado
@@ -188,7 +188,7 @@ echo 7 | dotnet run   # ejecutar un patrón directamente por número
 ### 20. Chain of Responsibility — cadena de manejadores
 
 - **Intención:** pasar una solicitud por una **cadena de manejadores**; cada uno la procesa o la pasa al siguiente.
-- **Analogía:** mesa de soporte: nivel 1 intenta; si no puede, escala a nivel 2, y así hasta el director.
+- **Analogía:** una queja en el restaurante: el mesero intenta resolverla; si no puede, escala al jefe de cocina, luego al gerente y por último al dueño.
 - **Cuándo usarlo:** middleware, validaciones encadenadas, escalado de aprobaciones.
 - **Cuándo NO usarlo:** si siempre sabes quién maneja la solicitud, un `switch` o llamada directa es más claro.
 

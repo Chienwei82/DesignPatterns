@@ -8,137 +8,127 @@ namespace DesignPatterns.Creational;
 /// opcionales o pasos de configuración.
 ///
 /// USO REAL: Construcción de consultas SQL, objetos HTTP Request,
-///           constructores de pizzas/hamburguesas, configuración
-///           de objetos con muchos parámetros.
+///           armado de pizzas/hamburguesas, objetos con muchos campos.
 
 // --- Producto final ---
-public class PedidoComplejo
+public class Hamburguesa
 {
-    public string Cliente { get; set; } = "";
-    public List<string> Productos { get; set; } = [];
-    public string DireccionEnvio { get; set; } = "";
-    public bool EnvolverParaRegalo { get; set; }
-    public bool EnvioExprés { get; set; }
-    public string? Notas { get; set; }
-    public string MetodoPago { get; set; } = "Efectivo";
+    public string Pan { get; set; } = "";
+    public string Carne { get; set; } = "";
+    public bool ConQueso { get; set; }
+    public bool SinCebolla { get; set; }
+    public string Salsa { get; set; } = "ninguna";
+    public List<string> Extras { get; set; } = [];
 
     public void Resumen()
     {
-        Console.WriteLine($"  Cliente:      {Cliente}");
-        Console.WriteLine($"  Productos:    {string.Join(", ", Productos)}");
-        Console.WriteLine($"  Dirección:    {DireccionEnvio}");
-        Console.WriteLine($"  Regalo:       {(EnvolverParaRegalo ? "Sí" : "No")}");
-        Console.WriteLine($"  Envío exprés: {(EnvioExprés ? "Sí" : "No")}");
-        Console.WriteLine($"  Notas:        {Notas ?? "(sin notas)"}");
-        Console.WriteLine($"  Pago:         {MetodoPago}");
+        Console.WriteLine($"  Pan:        {Pan}");
+        Console.WriteLine($"  Carne:      {Carne}");
+        Console.WriteLine($"  Queso:      {(ConQueso ? "Sí" : "No")}");
+        Console.WriteLine($"  Cebolla:    {(SinCebolla ? "Sin cebolla" : "Normal")}");
+        Console.WriteLine($"  Salsa:      {Salsa}");
+        Console.WriteLine($"  Extras:     {(Extras.Count > 0 ? string.Join(", ", Extras) : "(ninguno)")}");
     }
 }
 
 // --- Builder ---
-public interface IPedidoBuilder
+public interface IHamburguesaBuilder
 {
-    IPedidoBuilder AgregarCliente(string nombre);
-    IPedidoBuilder AgregarProducto(string producto);
-    IPedidoBuilder AgregarDireccion(string direccion);
-    IPedidoBuilder ConfigurarEnvioExprés();
-    IPedidoBuilder ConfigurarRegalo();
-    IPedidoBuilder AgregarNotas(string notas);
-    IPedidoBuilder SeleccionarPago(string metodo);
-    PedidoComplejo Construir();
+    IHamburguesaBuilder ConPan(string tipo);
+    IHamburguesaBuilder ConCarne(string tipo);
+    IHamburguesaBuilder ConQueso();
+    IHamburguesaBuilder SinCebolla();
+    IHamburguesaBuilder ConSalsa(string salsa);
+    IHamburguesaBuilder AgregarExtra(string extra);
+    Hamburguesa Construir();
 }
 
 // --- Builder concreto ---
-public class PedidoBuilder : IPedidoBuilder
+public class HamburguesaBuilder : IHamburguesaBuilder
 {
-    private PedidoComplejo _pedido = new();
+    private Hamburguesa _hamburguesa = new();
 
-    public IPedidoBuilder AgregarCliente(string nombre)
+    public IHamburguesaBuilder ConPan(string tipo)
     {
-        _pedido.Cliente = nombre;
-        Console.WriteLine($"  📝 Cliente registrado: {nombre}");
+        _hamburguesa.Pan = tipo;
+        Console.WriteLine($"  🍞 Pan: {tipo}");
         return this;
     }
 
-    public IPedidoBuilder AgregarProducto(string producto)
+    public IHamburguesaBuilder ConCarne(string tipo)
     {
-        _pedido.Productos.Add(producto);
-        Console.WriteLine($"  📦 Producto agregado: {producto}");
+        _hamburguesa.Carne = tipo;
+        Console.WriteLine($"  🥩 Carne: {tipo}");
         return this;
     }
 
-    public IPedidoBuilder AgregarDireccion(string direccion)
+    public IHamburguesaBuilder ConQueso()
     {
-        _pedido.DireccionEnvio = direccion;
-        Console.WriteLine($"  📍 Dirección: {direccion}");
+        _hamburguesa.ConQueso = true;
+        Console.WriteLine("  🧀 Queso agregado");
         return this;
     }
 
-    public IPedidoBuilder ConfigurarEnvioExprés()
+    public IHamburguesaBuilder SinCebolla()
     {
-        _pedido.EnvioExprés = true;
-        Console.WriteLine("  ⚡ Envío exprés activado");
+        _hamburguesa.SinCebolla = true;
+        Console.WriteLine("  🧅 Sin cebolla");
         return this;
     }
 
-    public IPedidoBuilder ConfigurarRegalo()
+    public IHamburguesaBuilder ConSalsa(string salsa)
     {
-        _pedido.EnvolverParaRegalo = true;
-        Console.WriteLine($"  🎁 Envoltura para regalo");
+        _hamburguesa.Salsa = salsa;
+        Console.WriteLine($"  🥫 Salsa: {salsa}");
         return this;
     }
 
-    public IPedidoBuilder AgregarNotas(string notas)
+    public IHamburguesaBuilder AgregarExtra(string extra)
     {
-        _pedido.Notas = notas;
-        Console.WriteLine($"  📌 Notas: {notas}");
+        _hamburguesa.Extras.Add(extra);
+        Console.WriteLine($"  ➕ Extra: {extra}");
         return this;
     }
 
-    public IPedidoBuilder SeleccionarPago(string metodo)
+    public Hamburguesa Construir()
     {
-        _pedido.MetodoPago = metodo;
-        Console.WriteLine($"  💳 Método de pago: {metodo}");
-        return this;
-    }
-
-    public PedidoComplejo Construir()
-    {
-        Console.WriteLine("  🏁 Pedido construido exitosamente");
-        var resultado = _pedido;
-        _pedido = new PedidoComplejo(); // Reset para permitir reutilización
+        Console.WriteLine("  🏁 Hamburguesa armada");
+        var resultado = _hamburguesa;
+        _hamburguesa = new Hamburguesa(); // Reset para permitir reutilización
         return resultado;
     }
 }
 
 // --- Director (opcional) — guía el proceso de construcción ---
-public class DirectorPedidos
+public class ChefDirector
 {
-    private readonly IPedidoBuilder _builder;
+    private readonly IHamburguesaBuilder _builder;
 
-    public DirectorPedidos(IPedidoBuilder builder)
+    public ChefDirector(IHamburguesaBuilder builder)
     {
         _builder = builder;
     }
 
-    // Receta predefinida: pedido básico, sin extras
-    public PedidoComplejo ConstruirPedidoSimple(string cliente, string producto, string direccion)
+    // Receta predefinida: la clásica
+    public Hamburguesa PrepararClasica()
     {
-        _builder.AgregarCliente(cliente);
-        _builder.AgregarProducto(producto);
-        _builder.AgregarDireccion(direccion);
-        _builder.SeleccionarPago("Tarjeta");
+        _builder.ConPan("brioche");
+        _builder.ConCarne("res");
+        _builder.ConQueso();
+        _builder.ConSalsa("tomate");
         return _builder.Construir();
     }
 
-    // Receta predefinida: pedido premium con regalo y envío exprés
-    public PedidoComplejo ConstruirPedidoPremium(string cliente, string[] productos, string direccion)
+    // Receta predefinida: la monstruosa, con todo
+    public Hamburguesa PrepararMonstruosa()
     {
-        _builder.AgregarCliente(cliente);
-        foreach (var p in productos) _builder.AgregarProducto(p);
-        _builder.AgregarDireccion(direccion);
-        _builder.ConfigurarEnvioExprés();
-        _builder.ConfigurarRegalo();
-        _builder.SeleccionarPago("PayPal");
+        _builder.ConPan("pretzel");
+        _builder.ConCarne("doble res y tocino");
+        _builder.ConQueso();
+        _builder.ConSalsa("barbacoa");
+        _builder.AgregarExtra("aros de cebolla");
+        _builder.AgregarExtra("jalapeños");
+        _builder.AgregarExtra("huevo frito");
         return _builder.Construir();
     }
 }
@@ -147,38 +137,36 @@ public static class BuilderDemo
 {
     public static void Run()
     {
-        Console.WriteLine("  🧱 BUILDER — Objetos complejos paso a paso\n");
-        Console.WriteLine("  Escenario: Sistema de pedidos con múltiples configuraciones\n");
+        Console.WriteLine("  🧱 BUILDER — Armar una hamburguesa paso a paso\n");
+        Console.WriteLine("  Escenario: El chef arma hamburguesas con distintas configuraciones\n");
 
-        // ── Pedido a medida: el cliente encadena los pasos (API fluent) ──
-        Console.WriteLine("  ── Pedido a medida (fluent API) ──");
-        var pedido1 = new PedidoBuilder()
-            .AgregarCliente("Ana López")
-            .AgregarProducto("Laptop HP")
-            .AgregarDireccion("San José, Rohrmoser")
-            .SeleccionarPago("Tarjeta")
+        // ── A medida: el cocinero encadena los pasos (API fluent) ──
+        Console.WriteLine("  ── Hamburguesa a medida (fluent API) ──");
+        var aMedida = new HamburguesaBuilder()
+            .ConPan("brioche")
+            .ConCarne("pollo crujiente")
+            .ConQueso()
+            .SinCebolla()
+            .ConSalsa("mostaza y miel")
+            .AgregarExtra("lechuga")
             .Construir();
         Console.WriteLine();
-        pedido1.Resumen();
+        aMedida.Resumen();
         Console.WriteLine();
 
-        // ── El Director encapsula recetas predefinidas que reutilizan el builder ──
-        var director = new DirectorPedidos(new PedidoBuilder());
+        // ── El Director encapsula recetas predefinidas ──
+        var chef = new ChefDirector(new HamburguesaBuilder());
 
-        Console.WriteLine("  ── Pedido Simple (vía Director) ──");
-        var pedido2 = director.ConstruirPedidoSimple("Luis Rojas", "Monitor 24\"", "Alajuela, Centro");
+        Console.WriteLine("  ── La Clásica (vía Director) ──");
+        var clasica = chef.PrepararClasica();
         Console.WriteLine();
-        pedido2.Resumen();
+        clasica.Resumen();
         Console.WriteLine();
 
-        Console.WriteLine("  ── Pedido Premium (vía Director) ──");
-        var pedido3 = director.ConstruirPedidoPremium(
-            "Carlos Méndez",
-            ["Monitor 27\"", "Teclado Mecánico", "Mouse Inalámbrico"],
-            "Heredia, Santo Domingo"
-        );
+        Console.WriteLine("  ── La Monstruosa (vía Director) ──");
+        var monstruosa = chef.PrepararMonstruosa();
         Console.WriteLine();
-        pedido3.Resumen();
+        monstruosa.Resumen();
         Console.WriteLine();
 
         Console.WriteLine("  ✅ El Builder permite crear objetos con diferentes");

@@ -11,127 +11,104 @@ namespace DesignPatterns.Behavioral;
 ///           vistas en MVVM, el patrón event/delegate de C#.
 
 // --- Sujeto (observable) ---
-public interface ISujetoNoticias
+public interface IPublicadorPedidos
 {
-    void Suscribir(IObservadorNoticias observador);
-    void Desuscribir(IObservadorNoticias observador);
-    void Notificar(string categoria, string titular);
+    void Suscribir(IObservadorPedido observador);
+    void Desuscribir(IObservadorPedido observador);
+    void Notificar(string platillo, string mesa);
 }
 
 // --- Observador ---
-public interface IObservadorNoticias
+public interface IObservadorPedido
 {
     string Nombre { get; }
-    void RecibirNoticia(string categoria, string titular);
+    void RecibirPedido(string platillo, string mesa);
 }
 
 // --- Sujeto concreto ---
-public class AgenciaNoticias : ISujetoNoticias
+public class Cocina : IPublicadorPedidos
 {
-    private readonly List<IObservadorNoticias> _suscriptores = [];
+    private readonly List<IObservadorPedido> _suscriptores = [];
 
-    public void Suscribir(IObservadorNoticias observador)
+    public void Suscribir(IObservadorPedido observador)
     {
         _suscriptores.Add(observador);
-        Console.WriteLine($"  📰 [Agencia] {observador.Nombre} se suscribió a noticias");
+        Console.WriteLine($"  🍳 [Cocina] {observador.Nombre} se suscribió a los pedidos");
     }
 
-    public void Desuscribir(IObservadorNoticias observador)
+    public void Desuscribir(IObservadorPedido observador)
     {
         _suscriptores.Remove(observador);
-        Console.WriteLine($"  📰 [Agencia] {observador.Nombre} canceló suscripción");
+        Console.WriteLine($"  🍳 [Cocina] {observador.Nombre} canceló su suscripción");
     }
 
-    public void Notificar(string categoria, string titular)
+    public void Notificar(string platillo, string mesa)
     {
-        Console.WriteLine($"  📰 [Agencia] Publicando noticia [{categoria}]: {titular}");
-        Console.WriteLine($"    Notificando a {_suscriptores.Count} suscriptor(es)...");
+        Console.WriteLine($"    Avisando a {_suscriptores.Count} suscriptor(es)...");
 
         foreach (var suscriptor in _suscriptores)
-        {
-            try
-            {
-                suscriptor.RecibirNoticia(categoria, titular);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"    ⚠️  Error notificando a {suscriptor.Nombre}: {ex.Message}");
-            }
-        }
+            suscriptor.RecibirPedido(platillo, mesa);
+
         Console.WriteLine();
     }
 
-    // Método de alto nivel para publicar
-    public void PublicarNoticia(string categoria, string titular)
+    // Método de alto nivel: la cocina terminó un platillo
+    public void PedidoListo(string platillo, string mesa)
     {
-        Console.WriteLine($"\n  📢 NUEVA NOTICIA: [{categoria}] {titular}");
-        Notificar(categoria, titular);
+        Console.WriteLine($"\n  🔔 COCINA: {platillo} listo para la mesa {mesa}");
+        Notificar(platillo, mesa);
     }
 }
 
 // --- Observadores concretos ---
 
-public class SuscriptorEmail : IObservadorNoticias
+public class MeseroNotificador : IObservadorPedido
 {
     public string Nombre { get; }
 
-    public SuscriptorEmail(string nombre) => Nombre = nombre;
+    public MeseroNotificador(string nombre) => Nombre = nombre;
 
-    public void RecibirNoticia(string categoria, string titular)
+    public void RecibirPedido(string platillo, string mesa)
     {
-        Console.WriteLine($"    ✉️ [Email->{Nombre}] Noticia enviada a su correo");
+        Console.WriteLine($"    🏃 [{Nombre}] Llevando {platillo} a la mesa {mesa}");
     }
 }
 
-public class SuscriptorSMS : IObservadorNoticias
+public class PantallaSalon : IObservadorPedido
 {
-    public string Nombre { get; }
-    private readonly string _telefono;
+    public string Nombre => "Pantalla del salón";
 
-    public SuscriptorSMS(string nombre, string telefono)
+    public void RecibirPedido(string platillo, string mesa)
     {
-        Nombre = nombre;
-        _telefono = telefono;
-    }
-
-    public void RecibirNoticia(string categoria, string titular)
-    {
-        Console.WriteLine($"    📱 [SMS->{Nombre}] SMS enviado al {_telefono}");
+        Console.WriteLine($"    🖥️  [Pantalla] Mostrando: \"{platillo} → mesa {mesa}\"");
     }
 }
 
-public class SuscriptorApp : IObservadorNoticias
+public class AppCliente : IObservadorPedido
 {
     public string Nombre { get; }
 
-    public SuscriptorApp(string nombre) => Nombre = nombre;
+    public AppCliente(string nombre) => Nombre = nombre;
 
-    public void RecibirNoticia(string categoria, string titular)
+    public void RecibirPedido(string platillo, string mesa)
     {
-        Console.WriteLine($"    🔔 [App->{Nombre}] Notificación push recibida: \"{titular}\"");
+        Console.WriteLine($"    📱 [App de {Nombre}] Notificación: \"{platillo} va en camino\"");
     }
 }
 
-// --- Observador con filtro (solo recibe ciertas categorías) ---
-public class SuscriptorFiltrado : IObservadorNoticias
+// --- Observador con filtro (solo le interesan los postres) ---
+public class ObservadorDePostres : IObservadorPedido
 {
-    public string Nombre { get; }
-    private readonly string _categoriaInteres;
+    public string Nombre => "Chef de postres";
 
-    public SuscriptorFiltrado(string nombre, string categoriaInteres)
+    public void RecibirPedido(string platillo, string mesa)
     {
-        Nombre = nombre;
-        _categoriaInteres = categoriaInteres;
-    }
-
-    public void RecibirNoticia(string categoria, string titular)
-    {
-        if (categoria != _categoriaInteres)
+        if (!platillo.Contains("Pastel") && !platillo.Contains("Helado"))
         {
-            Console.WriteLine($"    🔇 [{Nombre}] Noticia ignorada (categoría '{categoria}' no es '{_categoriaInteres}')");
+            Console.WriteLine($"    🔇 [{Nombre}] Ignora '{platillo}' (no es postre)");
             return;
         }
-        Console.WriteLine($"    ✅ [{Nombre}] Noticia de '{categoria}' recibida: {titular}");
+        Console.WriteLine($"    🍰 [{Nombre}] ¡Postre para la mesa {mesa}: {platillo}!");
     }
 }
 
@@ -140,36 +117,36 @@ public static class ObserverDemo
     public static void Run()
     {
         Console.WriteLine("  👁️  OBSERVER — Suscripción y notificación en tiempo real\n");
-        Console.WriteLine("  Escenario: Aplicación de noticias con múltiples canales\n");
+        Console.WriteLine("  Escenario: La cocina avisa cuando un pedido está listo\n");
 
         // Sujeto
-        var agencia = new AgenciaNoticias();
+        var cocina = new Cocina();
 
         // Crear suscriptores
-        var jose = new SuscriptorEmail("José");
-        var maria = new SuscriptorSMS("María", "+5068888-1234");
-        var ana = new SuscriptorApp("Ana");
-        var deportes = new SuscriptorFiltrado("Carlos 🏀", "Deportes");
+        var luis = new MeseroNotificador("Luis");
+        var pantalla = new PantallaSalon();
+        var app = new AppCliente("María");
+        var postres = new ObservadorDePostres();
 
         // Suscribir
-        agencia.Suscribir(jose);
-        agencia.Suscribir(maria);
-        agencia.Suscribir(ana);
-        agencia.Suscribir(deportes);
+        cocina.Suscribir(luis);
+        cocina.Suscribir(pantalla);
+        cocina.Suscribir(app);
+        cocina.Suscribir(postres);
         Console.WriteLine();
 
-        // Publicar noticias
-        agencia.PublicarNoticia("Tecnología", "Microsoft lanza .NET 11 preview");
-        agencia.PublicarNoticia("Deportes", "Costa Rica clasifica al mundial 2030");
+        // Preparar pedidos
+        cocina.PedidoListo("Pizza margarita", "Mesa 4");
+        cocina.PedidoListo("Pastel de chocolate", "Mesa 2");
 
         // Cancelar suscripción
-        agencia.Desuscribir(ana);
+        cocina.Desuscribir(app);
         Console.WriteLine();
 
-        // Publicar otra — Ana ya no recibe
-        agencia.PublicarNoticia("Economía", "Tipo de cambio del dólar estable");
+        // Otro pedido — la app ya no recibe
+        cocina.PedidoListo("Ensalada césar", "Mesa 7");
 
         Console.WriteLine("  ✅ Observer desacopla el emisor de los receptores.");
-        Console.WriteLine("     Nuevos canales se agregan sin modificar la agencia.");
+        Console.WriteLine("     Nuevos canales se agregan sin modificar la cocina.");
     }
 }

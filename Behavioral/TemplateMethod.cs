@@ -12,153 +12,124 @@ namespace DesignPatterns.Behavioral;
 ///           procesos ETL, recetas de cocina.
 
 // --- Clase abstracta con Template Method ---
-public abstract class ProcesadorArchivo
+public abstract class RecetaBase
 {
     /// Template Method — define la estructura del algoritmo.
     /// No es virtual ni abstract, por lo que las subclases NO pueden
     /// sobrescribirlo. Esto garantiza que el flujo siempre sea el mismo.
-    public void Procesar(string rutaArchivo)
+    public void Preparar(string nombrePlato)
     {
-        Console.WriteLine("\n  ⚙️  Iniciando procesamiento...\n");
+        Console.WriteLine("\n  ⚙️  Iniciando preparación...\n");
 
         // Paso 1: Validar (hook opcional)
-        if (!ValidarArchivo(rutaArchivo))
+        if (!ValidarPedido(nombrePlato))
         {
-            Console.WriteLine("  ❌ Archivo inválido. Abortando.");
+            Console.WriteLine("  ❌ Pedido inválido. Abortando.");
             return;
         }
 
-        // Paso 2: Abrir (varía según tipo de archivo)
-        var datos = AbrirArchivo(rutaArchivo);
+        // Paso 2: Reunir ingredientes (varía según la receta)
+        var ingredientes = ReunirIngredientes();
 
-        // Paso 3: Extraer datos (varía según tipo)
-        var contenido = ExtraerDatos(datos);
+        // Paso 3: Cocinar (varía según la receta)
+        Cocinar(ingredientes);
 
-        // Paso 4: Transformar (común para todos)
-        var transformado = Transformar(contenido);
+        // Paso 4: Emplatar (varía según la receta)
+        Emplatar(ingredientes);
 
-        // Paso 5: Guardar resultado (varía según tipo)
-        GuardarResultado(transformado);
+        // Paso 5: Notificar (hook opcional)
+        NotificarListo(nombrePlato);
 
-        // Paso 6: Notificar (hook opcional)
-        NotificarCompletado(rutaArchivo);
-
-        Console.WriteLine("  ✅ Procesamiento completado.\n");
+        Console.WriteLine("  ✅ Preparación completada.\n");
     }
 
     // Pasos abstractos — las subclases DEBEN implementarlos
-    protected abstract byte[] AbrirArchivo(string ruta);
-    protected abstract string ExtraerDatos(byte[] datos);
-    protected abstract void GuardarResultado(string contenido);
+    protected abstract string ReunirIngredientes();
+    protected abstract void Cocinar(string ingredientes);
+    protected abstract void Emplatar(string ingredientes);
 
-    // Pasos con implementación por defecto (comunes a todos)
-    protected virtual bool ValidarArchivo(string ruta)
+    // Paso con implementación por defecto (común a todos)
+    protected virtual bool ValidarPedido(string nombrePlato)
     {
-        if (string.IsNullOrEmpty(ruta))
+        if (string.IsNullOrEmpty(nombrePlato))
         {
-            Console.WriteLine("  [Validación] Ruta vacía");
+            Console.WriteLine("  [Validación] No hay nombre de platillo");
             return false;
         }
-        Console.WriteLine($"  [Validación] Archivo válido: {ruta}");
+        Console.WriteLine($"  [Validación] Pedido válido: {nombrePlato}");
         return true;
     }
 
-    protected string Transformar(string contenido)
-    {
-        Console.WriteLine("  [Transformación] Normalizando datos...");
-        return contenido.Trim().ToUpperInvariant();
-    }
-
     // Hook — las subclases PUEDEN sobrescribirlo, pero no es obligatorio
-    protected virtual void NotificarCompletado(string ruta)
+    protected virtual void NotificarListo(string nombrePlato)
     {
-        Console.WriteLine($"  [Notificación] Procesamiento de '{ruta}' finalizado.");
+        Console.WriteLine($"  [Notificación] '{nombrePlato}' listo para servir.");
     }
 }
 
-// --- Subclase concreta: Procesador CSV ---
-public class ProcesadorCSV : ProcesadorArchivo
+// --- Subclase concreta: Pizza ---
+public class RecetaPizza : RecetaBase
 {
-    protected override byte[] AbrirArchivo(string ruta)
+    protected override string ReunirIngredientes()
     {
-        Console.WriteLine($"  [CSV] Abriendo archivo CSV: {ruta}");
-        // Simula lectura
-        return System.Text.Encoding.UTF8.GetBytes("nombre,edad\nAna,30\nCarlos,25");
+        Console.WriteLine("  [Pizza] Reuniendo masa, tomate y queso");
+        return "masa, tomate, queso";
     }
 
-    protected override string ExtraerDatos(byte[] datos)
+    protected override void Cocinar(string ingredientes)
     {
-        Console.WriteLine("  [CSV] Parseando filas y columnas...");
-        var texto = System.Text.Encoding.UTF8.GetString(datos);
-        return string.Join(" | ", texto.Split('\n'));
+        Console.WriteLine($"  [Pizza] Horneando {ingredientes} a 250°C por 12 min");
     }
 
-    protected override void GuardarResultado(string contenido)
+    protected override void Emplatar(string ingredientes)
     {
-        Console.WriteLine("  [CSV] Guardando como CSV procesado...");
-        Console.WriteLine($"  [CSV] Resultado: {contenido}");
-    }
-
-    // Hook sobrescrito
-    protected override void NotificarCompletado(string ruta)
-    {
-        Console.WriteLine($"  [CSV] ✅ Archivo '{ruta}' procesado. Filas: 3");
+        Console.WriteLine("  [Pizza] Cortando en 8 porciones y sirviendo en tabla");
     }
 }
 
-// --- Subclase concreta: Procesador JSON ---
-public class ProcesadorJSON : ProcesadorArchivo
+// --- Subclase concreta: Sushi ---
+public class RecetaSushi : RecetaBase
 {
-    protected override byte[] AbrirArchivo(string ruta)
+    protected override string ReunirIngredientes()
     {
-        Console.WriteLine($"  [JSON] Abriendo archivo JSON: {ruta}");
-        return System.Text.Encoding.UTF8.GetBytes("{\"nombre\":\"Ana\",\"edad\":30}");
+        Console.WriteLine("  [Sushi] Reuniendo arroz, salmón y algas");
+        return "arroz, salmón, algas";
     }
 
-    protected override string ExtraerDatos(byte[] datos)
+    protected override void Cocinar(string ingredientes)
     {
-        Console.WriteLine("  [JSON] Parseando objeto JSON...");
-        var texto = System.Text.Encoding.UTF8.GetString(datos);
-        return texto.Replace("\"", "").Replace("{", "").Replace("}", "");
+        Console.WriteLine($"  [Sushi] Sin cocción: armando rollos con {ingredientes}");
     }
 
-    protected override void GuardarResultado(string contenido)
+    protected override void Emplatar(string ingredientes)
     {
-        Console.WriteLine("  [JSON] Guardando como JSON procesado...");
-        Console.WriteLine($"  [JSON] Resultado: {contenido}");
+        Console.WriteLine("  [Sushi] Sirviendo en plato frío con wasabi y jengibre");
     }
 
-    // También podemos sobrescribir el hook ValidarArchivo
-    protected override bool ValidarArchivo(string ruta)
+    // Hook sobrescrito: el sushi tiene su propia notificación
+    protected override void NotificarListo(string nombrePlato)
     {
-        if (!ruta.EndsWith(".json"))
-        {
-            Console.WriteLine($"  [JSON] ⚠️  Extensión no esperada: {ruta}");
-            return false;
-        }
-        return base.ValidarArchivo(ruta);
+        Console.WriteLine($"  [Sushi] 🍣 '{nombrePlato}' listo. ¡Consumir de inmediato!");
     }
 }
 
-// --- Subclase concreta: Procesador PDF ---
-public class ProcesadorPDF : ProcesadorArchivo
+// --- Subclase concreta: Pasta ---
+public class RecetaPasta : RecetaBase
 {
-    protected override byte[] AbrirArchivo(string ruta)
+    protected override string ReunirIngredientes()
     {
-        Console.WriteLine($"  [PDF] Abriendo PDF: {ruta} (requiere librería externa)");
-        return "PDF:Datos simulados"u8.ToArray();
+        Console.WriteLine("  [Pasta] Reuniendo pasta y salsa alfredo");
+        return "pasta, salsa alfredo";
     }
 
-    protected override string ExtraerDatos(byte[] datos)
+    protected override void Cocinar(string ingredientes)
     {
-        Console.WriteLine("  [PDF] Extrayendo texto del PDF (OCR si es escaneado)...");
-        return "Texto extraído del documento PDF";
+        Console.WriteLine($"  [Pasta] Hirviendo {ingredientes} por 8 min");
     }
 
-    protected override void GuardarResultado(string contenido)
+    protected override void Emplatar(string ingredientes)
     {
-        Console.WriteLine("  [PDF] Exportando resultado como PDF procesado...");
-        Console.WriteLine($"  [PDF] Contenido extraído: {contenido}");
+        Console.WriteLine("  [Pasta] Sirviendo en plato hondo con parmesano");
     }
 }
 
@@ -167,21 +138,21 @@ public static class TemplateMethodDemo
     public static void Run()
     {
         Console.WriteLine("  📋 TEMPLATE METHOD — Esqueleto de algoritmo\n");
-        Console.WriteLine("  Escenario: Procesamiento de archivos (CSV/JSON/PDF)\n");
+        Console.WriteLine("  Escenario: Preparación de recetas (Pizza/Sushi/Pasta)\n");
         Console.WriteLine("  El flujo es siempre el mismo, pero cada paso varía");
 
-        // Procesar usando el template method
-        var archivos = new (string nombre, string ruta, ProcesadorArchivo procesador)[]
+        // Preparar usando el template method
+        var recetas = new (string nombre, RecetaBase receta)[]
         {
-            ("CSV",  "datos.csv",  new ProcesadorCSV()),
-            ("JSON", "config.json", new ProcesadorJSON()),
-            ("PDF",  "reporte.pdf", new ProcesadorPDF()),
+            ("Pizza margarita", new RecetaPizza()),
+            ("Sushi de salmón", new RecetaSushi()),
+            ("Pasta alfredo", new RecetaPasta()),
         };
 
-        foreach (var (nombre, ruta, proc) in archivos)
+        foreach (var (nombre, receta) in recetas)
         {
-            Console.WriteLine($"\n  ══ Procesando archivo {nombre} ══");
-            proc.Procesar(ruta);
+            Console.WriteLine($"\n  ══ Preparando: {nombre} ══");
+            receta.Preparar(nombre);
         }
 
         Console.WriteLine("  ✅ El Template Method define el QUÉ y el ORDEN.");

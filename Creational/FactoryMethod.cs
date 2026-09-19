@@ -10,145 +10,90 @@ namespace DesignPatterns.Creational;
 ///           documentos (PDF, Excel, Word), factories de controles UI.
 
 // --- Producto abstracto ---
-public abstract class Notificador
+public interface IPlatillo
 {
-    public abstract void Enviar(string mensaje);
+    void Preparar();
 }
 
-// --- Productos concretos ---
-public class NotificadorEmail : Notificador
+// --- Productos concretos: cada estación crea el suyo ---
+public class CostillaBBQ : IPlatillo
 {
-    private readonly string _smtpServer;
-
-    public NotificadorEmail(string smtpServer = "smtp.gmail.com")
+    public void Preparar()
     {
-        _smtpServer = smtpServer;
-    }
-
-    public override void Enviar(string mensaje)
-    {
-        Console.WriteLine($"  ✉️ [EMAIL]    Conectando a {_smtpServer}...");
-        Console.WriteLine($"  ✉️ [EMAIL]    Enviando correo a usuarios: \"{mensaje}\"");
+        Console.WriteLine("  🍖 [Parrilla]    Costillas BBQ con salsa ahumada");
     }
 }
 
-public class NotificadorSMS : Notificador
+public class Pastel : IPlatillo
 {
-    private readonly string _numeroOrigen;
-
-    public NotificadorSMS(string numeroOrigen = "+5068000-1234")
+    public void Preparar()
     {
-        _numeroOrigen = numeroOrigen;
-    }
-
-    public override void Enviar(string mensaje)
-    {
-        Console.WriteLine($"  📱 [SMS]      Enviando desde {_numeroOrigen}: \"{mensaje}\"");
+        Console.WriteLine("  🎂 [Pastelería]  Pastel de chocolate recién horneado");
     }
 }
 
-public class NotificadorPush : Notificador
+public class Limonada : IPlatillo
 {
-    private readonly string _appId;
-
-    public NotificadorPush(string appId = "com.miempresa.app")
+    public void Preparar()
     {
-        _appId = appId;
-    }
-
-    public override void Enviar(string mensaje)
-    {
-        Console.WriteLine($"  🔔 [PUSH]     App {_appId}: Notificación push enviada: \"{mensaje}\"");
+        Console.WriteLine("  🍋 [Bar]         Limonada fría con hierbabuena");
     }
 }
 
 // --- Creator abstracto (Factory Method) ---
-public abstract class NotificadorFactory
+public abstract class EstacionCocina
 {
-    // Factory Method — las subclases deciden qué crear
-    public abstract Notificador CrearNotificador();
+    // Factory Method — cada estación decide qué platillo crear
+    public abstract IPlatillo CrearPlatillo();
 
     // Método que usa el producto creado
-    public void Notificar(string mensaje)
+    public void ServirPedido(string cliente)
     {
-        var notificador = CrearNotificador();
-        Console.WriteLine("  Preparando envío...");
-        Thread.Sleep(100);
-        notificador.Enviar(mensaje);
+        Console.WriteLine($"  Pedido de {cliente}:");
+        var platillo = CrearPlatillo();
+        platillo.Preparar();
     }
 }
 
 // --- Creators concretos ---
-public class FactoryEmail : NotificadorFactory
+public class EstacionParrilla : EstacionCocina
 {
-    private readonly string _smtpServer;
-    public FactoryEmail(string smtpServer = "smtp.gmail.com")
-    {
-        _smtpServer = smtpServer;
-    }
-
-    public override Notificador CrearNotificador()
-    {
-        Console.WriteLine($"    [FactoryEmail] Configurando servidor SMTP: {_smtpServer}");
-        return new NotificadorEmail(_smtpServer);
-    }
+    public override IPlatillo CrearPlatillo() => new CostillaBBQ();
 }
 
-public class FactorySMS : NotificadorFactory
+public class EstacionPasteleria : EstacionCocina
 {
-    private readonly string _numeroOrigen;
-    public FactorySMS(string numeroOrigen = "+5068000-1234")
-    {
-        _numeroOrigen = numeroOrigen;
-    }
-
-    public override Notificador CrearNotificador()
-    {
-        Console.WriteLine($"    [FactorySMS] Número de origen: {_numeroOrigen}");
-        return new NotificadorSMS(_numeroOrigen);
-    }
+    public override IPlatillo CrearPlatillo() => new Pastel();
 }
 
-public class FactoryPush : NotificadorFactory
+public class EstacionBar : EstacionCocina
 {
-    private readonly string _appId;
-    public FactoryPush(string appId = "com.miempresa.app")
-    {
-        _appId = appId;
-    }
-
-    public override Notificador CrearNotificador()
-    {
-        Console.WriteLine($"    [FactoryPush] App ID: {_appId}");
-        return new NotificadorPush(_appId);
-    }
+    public override IPlatillo CrearPlatillo() => new Limonada();
 }
 
 public static class FactoryMethodDemo
 {
     public static void Run()
     {
-        Console.WriteLine("  🏭 FACTORY METHOD — Creación delegada a subclases\n");
-        Console.WriteLine("  Escenario: Sistema de notificaciones multicanal\n");
+        Console.WriteLine("  🏭 FACTORY METHOD — Cada estación decide qué cocinar\n");
+        Console.WriteLine("  Escenario: Cocina de restaurante con estaciones especializadas\n");
 
         // El cliente no sabe qué clase concreta se crea
-        var canales = new (string nombre, NotificadorFactory factory)[]
+        var estaciones = new (string nombre, EstacionCocina estacion)[]
         {
-            ("Email", new FactoryEmail("smtp.outlook.com")),
-            ("SMS", new FactorySMS("+5068888-9999")),
-            ("Push", new FactoryPush("com.empresa.notifications"))
+            ("Mesa 1", new EstacionParrilla()),
+            ("Mesa 2", new EstacionPasteleria()),
+            ("Mesa 3", new EstacionBar())
         };
 
-        int numero = 1;
-        foreach (var (nombre, factory) in canales)
+        foreach (var (cliente, estacion) in estaciones)
         {
-            Console.WriteLine($"  [{numero++}] Usando canal: {nombre}");
-            factory.Notificar("Su pedido ha sido enviado 🎉");
+            estacion.ServirPedido(cliente);
             Console.WriteLine();
         }
 
-        Console.WriteLine("  ✅ El cliente depende de la abstracción (Notificador),");
-        Console.WriteLine("     no de las clases concretas. Agregar un nuevo canal");
-        Console.WriteLine("     solo requiere crear una nueva factory.");
+        Console.WriteLine("  ✅ El cliente depende de la abstracción (EstacionCocina),");
+        Console.WriteLine("     no de las clases concretas. Agregar una estación nueva");
+        Console.WriteLine("     solo requiere crear otra subclase.");
     }
 }

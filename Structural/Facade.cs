@@ -6,64 +6,64 @@ namespace DesignPatterns.Structural;
 /// Es como la fachada de un edificio — esconde la complejidad interna
 /// y expone solo lo que el cliente necesita.
 ///
-/// USO REAL: APIs de frameworks (ASP.NET MVC controller simplifica
+/// USO REAL: APIs de frameworks (un controller de ASP.NET simplifica
 ///           el pipeline), bibliotecas de logging, sistemas de pedidos.
 
 // --- Subsistema complejo #1: Inventario ---
-public class SubsistemaInventario
+public class Inventario
 {
     private readonly Dictionary<string, int> _stock = new()
     {
-        ["Laptop"] = 5,
-        ["Mouse"] = 50,
-        ["Teclado"] = 20,
-        ["Monitor"] = 8
+        ["Pizza"] = 5,
+        ["Ensalada"] = 50,
+        ["Pasta"] = 20,
+        ["Sopa"] = 8
     };
 
-    public bool VerificarDisponibilidad(string producto, int cantidad)
+    public bool VerificarDisponibilidad(string platillo, int cantidad)
     {
-        var disponible = _stock.GetValueOrDefault(producto, 0);
-        Console.WriteLine($"  [Inventario] {producto}: solicitados {cantidad}, disponibles {disponible}");
+        var disponible = _stock.GetValueOrDefault(platillo, 0);
+        Console.WriteLine($"  [Inventario] {platillo}: pedidos {cantidad}, disponibles {disponible}");
         return disponible >= cantidad;
     }
 
-    public void Reservar(string producto, int cantidad)
+    public void Reservar(string platillo, int cantidad)
     {
-        if (_stock.ContainsKey(producto))
-            _stock[producto] -= cantidad;
-        Console.WriteLine($"  [Inventario] {cantidad}x {producto} reservados. Stock restante: {_stock.GetValueOrDefault(producto, 0)}");
+        if (_stock.ContainsKey(platillo))
+            _stock[platillo] -= cantidad;
+        Console.WriteLine($"  [Inventario] {cantidad}x {platillo} reservados. Quedan: {_stock.GetValueOrDefault(platillo, 0)}");
     }
 }
 
-// --- Subsistema complejo #2: Pagos ---
-public class SubsistemaPagos
+// --- Subsistema complejo #2: Cocina ---
+public class Cocina
 {
-    public bool ProcesarPago(string cliente, decimal monto, string metodo)
+    public bool Preparar(string platillo, int cantidad)
     {
-        Console.WriteLine($"  [Pagos] Procesando ¢{monto:N2} de {cliente} vía {metodo}...");
-        Thread.Sleep(100); // simula proceso
-        Console.WriteLine($"  [Pagos] ✅ Pago aprobado");
+        Console.WriteLine($"  [Cocina] Preparando {cantidad}x {platillo}...");
+        Thread.Sleep(100); // simula el tiempo de cocción
+        Console.WriteLine("  [Cocina] ✅ Platillo listo");
         return true;
     }
 }
 
-// --- Subsistema complejo #3: Envíos ---
-public class SubsistemaEnvios
+// --- Subsistema complejo #3: Repartidor ---
+public class Repartidor
 {
     private static int _guiaCount = 1000;
 
-    public string GenerarGuia(string cliente, string direccion)
+    public string AsignarReparto(string cliente, string direccion)
     {
         _guiaCount++;
         var guia = $"CR-{_guiaCount:D5}";
-        Console.WriteLine($"  [Envíos] Guía {guia} generada para {cliente}");
-        Console.WriteLine($"  [Envíos] Dirección: {direccion}");
+        Console.WriteLine($"  [Reparto] Guía {guia} asignada a {cliente}");
+        Console.WriteLine($"  [Reparto] Dirección: {direccion}");
         return guia;
     }
 }
 
 // --- Subsistema complejo #4: Notificaciones ---
-public class SubsistemaNotificaciones
+public class Notificaciones
 {
     public void EnviarConfirmacion(string cliente, string guia)
     {
@@ -73,56 +73,55 @@ public class SubsistemaNotificaciones
 }
 
 // --- FACADE: la interfaz simple que el cliente usa ---
-public class FacadePedido
+public class ServicioDelivery
 {
-    private readonly SubsistemaInventario _inventario;
-    private readonly SubsistemaPagos _pagos;
-    private readonly SubsistemaEnvios _envios;
-    private readonly SubsistemaNotificaciones _notificaciones;
+    private readonly Inventario _inventario;
+    private readonly Cocina _cocina;
+    private readonly Repartidor _repartidor;
+    private readonly Notificaciones _notificaciones;
 
     // Constructor por defecto (conveniencia educativa)
-    public FacadePedido()
-        : this(new SubsistemaInventario(), new SubsistemaPagos(),
-               new SubsistemaEnvios(), new SubsistemaNotificaciones())
+    public ServicioDelivery()
+        : this(new Inventario(), new Cocina(), new Repartidor(), new Notificaciones())
     { }
 
     // Constructor con inyección de dependencias (desacoplamiento real)
-    public FacadePedido(SubsistemaInventario inventario, SubsistemaPagos pagos,
-                        SubsistemaEnvios envios, SubsistemaNotificaciones notificaciones)
+    public ServicioDelivery(Inventario inventario, Cocina cocina,
+                            Repartidor repartidor, Notificaciones notificaciones)
     {
         _inventario = inventario;
-        _pagos = pagos;
-        _envios = envios;
+        _cocina = cocina;
+        _repartidor = repartidor;
         _notificaciones = notificaciones;
     }
 
-    // Un solo método que orquesta todo el proceso complejo
-    public string RealizarPedido(string cliente, string producto, int cantidad,
-                                  decimal precio, string metodoPago, string direccion)
+    // Un solo método que orquesta todo el proceso complejo.
+    // Devuelve la guía del pedido, o null si algo falló.
+    public string? PedirCombo(string cliente, string platillo, int cantidad,
+                              decimal precio, string direccion)
     {
-        Console.WriteLine($"\n  🏪 Procesando pedido de {cliente}...");
-        Console.WriteLine($"  Producto: {producto} x{cantidad}");
+        Console.WriteLine($"\n  🍽️  Procesando pedido de {cliente}...");
+        Console.WriteLine($"  Platillo: {platillo} x{cantidad}");
 
         // Paso 1: Verificar inventario
-        if (!_inventario.VerificarDisponibilidad(producto, cantidad))
+        if (!_inventario.VerificarDisponibilidad(platillo, cantidad))
         {
-            Console.WriteLine("  ❌ Producto agotado. Pedido cancelado.");
-            return "";
+            Console.WriteLine("  ❌ No hay ingredientes suficientes. Pedido cancelado.");
+            return null;
         }
 
         // Paso 2: Reservar
-        _inventario.Reservar(producto, cantidad);
+        _inventario.Reservar(platillo, cantidad);
 
-        // Paso 3: Cobrar
-        var total = precio * cantidad;
-        if (!_pagos.ProcesarPago(cliente, total, metodoPago))
+        // Paso 3: Cocinar
+        if (!_cocina.Preparar(platillo, cantidad))
         {
-            Console.WriteLine("  ❌ Pago fallido. Pedido cancelado.");
-            return "";
+            Console.WriteLine("  ❌ La cocina falló. Pedido cancelado.");
+            return null;
         }
 
-        // Paso 4: Generar envío
-        var guia = _envios.GenerarGuia(cliente, direccion);
+        // Paso 4: Asignar reparto
+        var guia = _repartidor.AsignarReparto(cliente, direccion);
 
         // Paso 5: Notificar
         _notificaciones.EnviarConfirmacion(cliente, guia);
@@ -136,39 +135,37 @@ public static class FacadeDemo
     public static void Run()
     {
         Console.WriteLine("  🏛️  FACADE — Interfaz simple para subsistemas complejos\n");
-        Console.WriteLine("  Escenario: Tienda online — el cliente solo llama a\n" +
-                         "  'RealizarPedido' y el Facade orquesta 4 subsistemas\n");
+        Console.WriteLine("  Escenario: Delivery — el cliente solo llama a\n" +
+                         "  'PedirCombo' y el Facade orquesta 4 subsistemas\n");
 
-        var tienda = new FacadePedido();
+        var delivery = new ServicioDelivery();
 
-        var guia = tienda.RealizarPedido(
+        var guia = delivery.PedirCombo(
             cliente: "María Rodríguez",
-            producto: "Laptop",
+            platillo: "Pizza",
             cantidad: 1,
-            precio: 650000m,
-            metodoPago: "Tarjeta",
+            precio: 9500m,
             direccion: "Escazú, Plaza Itskatzú"
         );
 
-        if (!string.IsNullOrEmpty(guia))
+        if (guia is not null)
         {
             Console.WriteLine($"\n  🎉 Pedido completado. Guía: {guia}");
         }
 
         // ── Pedido que falla: la fachada también orquesta el camino de error ──
-        Console.WriteLine("\n  ── Pedido con producto agotado ──");
-        tienda.RealizarPedido(
+        Console.WriteLine("\n  ── Pedido sin ingredientes suficientes ──");
+        delivery.PedirCombo(
             cliente: "Pedro Gómez",
-            producto: "Teclado",
+            platillo: "Pasta",
             cantidad: 100,   // solo hay 20 en stock
-            precio: 25_000m,
-            metodoPago: "Tarjeta",
+            precio: 7500m,
             direccion: "Cartago, Centro"
         );
 
         Console.WriteLine();
         Console.WriteLine("  ✅ El cliente solo ve 1 método.");
-        Console.WriteLine("     La complejidad del inventario, pagos, envíos y");
+        Console.WriteLine("     La complejidad de inventario, cocina, reparto y");
         Console.WriteLine("     notificaciones queda oculta tras la fachada...");
         Console.WriteLine("     incluso cuando el pedido falla.");
     }
