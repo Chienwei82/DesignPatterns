@@ -4,71 +4,100 @@ namespace DesignPatterns.Behavioral;
 /// ───────────────
 /// Define un objeto que encapsula CÓMO interactúan un conjunto de objetos.
 /// Promueve el acoplamiento débil evitando que los objetos se referencien
-/// explícitamente entre sí. Es como un "switchboard" o sala de chat.
+/// explícitamente entre sí. Es como un "switchboard" o una sala de chat.
 ///
-/// USO REAL: Salas de chat, control de tráfico aéreo, coordenadores
+/// USO REAL: Salas de chat, control de tráfico aéreo, coordinadores
 ///           de workflows, mediadores en frameworks UI (MVVM).
 
 // --- Mediator ---
-public interface ISalaChat
+public interface IPaseCocina
 {
-    void EnviarMensaje(string mensaje, Usuario remitente);
-    void RegistrarUsuario(Usuario usuario);
+    void Registrar(TrabajadorCocina trabajador);
+    void Enviar(string mensaje, TrabajadorCocina remitente);
 }
 
 // --- Colega ---
-public class Usuario
+public abstract class TrabajadorCocina
 {
     public string Nombre { get; }
-    private ISalaChat? _sala;
+    private IPaseCocina? _pase;
 
-    public Usuario(string nombre)
+    protected TrabajadorCocina(string nombre)
     {
         Nombre = nombre;
     }
 
-    public void UnirseASala(ISalaChat sala)
+    public void UnirseAlPase(IPaseCocina pase)
     {
-        _sala = sala;
-        _sala.RegistrarUsuario(this);
+        _pase = pase;
+        _pase.Registrar(this);
     }
 
     public void Enviar(string mensaje)
     {
         Console.WriteLine($"  [{Nombre}] >> {mensaje}");
-        _sala?.EnviarMensaje(mensaje, this);
+        _pase?.Enviar(mensaje, this);
     }
 
-    public void Recibir(string mensaje, string remitente)
-    {
-        if (remitente != Nombre)
-            Console.WriteLine($"    [{Nombre}] << {remitente}: {mensaje}");
-    }
+    // Por defecto, cada uno reacciona a su manera
+    public abstract void Recibir(string mensaje, string remitente);
 }
 
-// --- Mediador concreto ---
-public class SalaChatGrupal : ISalaChat
+// --- Mediador concreto: el pase de cocina ---
+public class PaseCocina : IPaseCocina
 {
-    private readonly List<Usuario> _usuarios = [];
+    private readonly List<TrabajadorCocina> _trabajadores = [];
     private readonly string _nombre;
 
-    public SalaChatGrupal(string nombre)
+    public PaseCocina(string nombre)
     {
         _nombre = nombre;
     }
 
-    public void RegistrarUsuario(Usuario usuario)
+    public void Registrar(TrabajadorCocina trabajador)
     {
-        _usuarios.Add(usuario);
-        Console.WriteLine($"  [Sala '{_nombre}'] {usuario.Nombre} se unió. Total: {_usuarios.Count}");
+        _trabajadores.Add(trabajador);
+        Console.WriteLine($"  [Pase '{_nombre}'] {trabajador.Nombre} se sumó. Total: {_trabajadores.Count}");
     }
 
-    public void EnviarMensaje(string mensaje, Usuario remitente)
+    public void Enviar(string mensaje, TrabajadorCocina remitente)
     {
-        foreach (var usuario in _usuarios)
+        foreach (var trabajador in _trabajadores)
         {
-            usuario.Recibir(mensaje, remitente.Nombre);
+            if (trabajador != remitente)
+                trabajador.Recibir(mensaje, remitente.Nombre);
         }
+    }
+}
+
+// --- Colegas concretos ---
+public class Mesero : TrabajadorCocina
+{
+    public Mesero(string nombre) : base(nombre) { }
+
+    public override void Recibir(string mensaje, string remitente)
+    {
+        Console.WriteLine($"    🧾 [{Nombre}] Anota lo de {remitente}: \"{mensaje}\"");
+    }
+}
+
+public class Cocinero : TrabajadorCocina
+{
+    public Cocinero(string nombre) : base(nombre) { }
+
+    public override void Recibir(string mensaje, string remitente)
+    {
+        Console.WriteLine($"    👨🍳 [{Nombre}] Prende la estufa por {remitente}: \"{mensaje}\"");
+    }
+}
+
+public class Repartidor : TrabajadorCocina
+{
+    public Repartidor(string nombre) : base(nombre) { }
+
+    public override void Recibir(string mensaje, string remitente)
+    {
+        Console.WriteLine($"    🛵 [{Nombre}] Arranca la moto por {remitente}: \"{mensaje}\"");
     }
 }
 
@@ -77,30 +106,30 @@ public static class MediatorDemo
     public static void Run()
     {
         Console.WriteLine("  🗣️  MEDIATOR — Comunicación centralizada\n");
-        Console.WriteLine("  Escenario: Sala de chat grupal\n");
+        Console.WriteLine("  Escenario: El pase de cocina coordina a todo el equipo\n");
 
-        var sala = new SalaChatGrupal("Developers CR");
+        var pase = new PaseCocina("Servicio de la noche");
 
-        var ana = new Usuario("Ana");
-        var carlos = new Usuario("Carlos");
-        var maria = new Usuario("María");
+        var luis = new Mesero("Luis");
+        var ana = new Cocinero("Ana");
+        var pedro = new Repartidor("Pedro");
 
-        ana.UnirseASala(sala);
-        carlos.UnirseASala(sala);
-        maria.UnirseASala(sala);
+        luis.UnirseAlPase(pase);
+        ana.UnirseAlPase(pase);
+        pedro.UnirseAlPase(pase);
         Console.WriteLine();
 
-        ana.Enviar("¡Hola equipo! ¿Listos para el sprint?");
+        luis.Enviar("Mesa 4 pidió pizza, ¡ya sale!");
         Console.WriteLine();
 
-        carlos.Enviar("Sí, ya terminé mis tareas.");
+        ana.Enviar("Pizza lista en el pase.");
         Console.WriteLine();
 
-        maria.Enviar("Yo también. Hagamos la daily mañana.");
+        pedro.Enviar("Voy con el pedido de la mesa 4.");
         Console.WriteLine();
 
-        Console.WriteLine("  ✅ Los usuarios NO se conocen entre sí.");
-        Console.WriteLine("     Todo pasa por la sala (mediator).");
-        Console.WriteLine("     Agregar/eliminar usuarios no rompe el código de nadie.");
+        Console.WriteLine("  ✅ Los trabajadores NO se conocen entre sí.");
+        Console.WriteLine("     Todo pasa por el pase (mediator).");
+        Console.WriteLine("     Agregar/eliminar gente no rompe el código de nadie.");
     }
 }

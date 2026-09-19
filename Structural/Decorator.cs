@@ -8,80 +8,68 @@ namespace DesignPatterns.Structural;
 ///
 /// USO REAL: Middleware en ASP.NET Core (logging, auth, caching),
 ///           Streams con buffering/compresión en .NET, agregar
-///           funcionalidades a objetos GUI, notificaciones con
-///           canales adicionales.
+///           funcionalidades a objetos GUI.
 
 // --- Componente abstracto ---
-public interface ICafe
+public interface IPastel
 {
     string GetDescripcion();
-    decimal GetCosto();
+    decimal GetPrecio();
 }
 
 // --- Componente concreto ---
-public class CafeSimple : ICafe
+public class PastelVainilla : IPastel
 {
-    public string GetDescripcion() => "Café simple";
-    public decimal GetCosto() => 1500m; // ¢1,500
+    public string GetDescripcion() => "Pastel de vainilla";
+    public decimal GetPrecio() => 8000m;
 }
 
 // --- Decorador base ---
-public abstract class CafeDecorator : ICafe
+public abstract class PastelDecorator : IPastel
 {
-    protected ICafe _cafe;
+    protected readonly IPastel _pastel;
 
-    public CafeDecorator(ICafe cafe)
+    protected PastelDecorator(IPastel pastel)
     {
-        _cafe = cafe;
+        _pastel = pastel;
     }
 
-    public virtual string GetDescripcion() => _cafe.GetDescripcion();
-    public virtual decimal GetCosto() => _cafe.GetCosto();
+    public virtual string GetDescripcion() => _pastel.GetDescripcion();
+    public virtual decimal GetPrecio() => _pastel.GetPrecio();
 }
 
 // --- Decoradores concretos ---
-public class ConLeche : CafeDecorator
+public class ConGlaseado : PastelDecorator
 {
-    public ConLeche(ICafe cafe) : base(cafe) { }
+    public ConGlaseado(IPastel pastel) : base(pastel) { }
 
     public override string GetDescripcion() =>
-        $"{_cafe.GetDescripcion()} + Leche";
+        $"{_pastel.GetDescripcion()} + glaseado de fresa";
 
-    public override decimal GetCosto() =>
-        _cafe.GetCosto() + 500m;
+    public override decimal GetPrecio() =>
+        _pastel.GetPrecio() + 1500m;
 }
 
-public class ConCrema : CafeDecorator
+public class ConChispas : PastelDecorator
 {
-    public ConCrema(ICafe cafe) : base(cafe) { }
+    public ConChispas(IPastel pastel) : base(pastel) { }
 
     public override string GetDescripcion() =>
-        $"{_cafe.GetDescripcion()} + Crema batida";
+        $"{_pastel.GetDescripcion()} + chispas de chocolate";
 
-    public override decimal GetCosto() =>
-        _cafe.GetCosto() + 800m;
+    public override decimal GetPrecio() =>
+        _pastel.GetPrecio() + 800m;
 }
 
-public class ConCaramelo : CafeDecorator
+public class ConVelitas : PastelDecorator
 {
-    public ConCaramelo(ICafe cafe) : base(cafe) { }
+    public ConVelitas(IPastel pastel) : base(pastel) { }
 
     public override string GetDescripcion() =>
-        $"{_cafe.GetDescripcion()} + Shot de caramelo";
+        $"{_pastel.GetDescripcion()} + velitas de cumpleaños";
 
-    public override decimal GetCosto() =>
-        _cafe.GetCosto() + 400m;
-}
-
-public class ConCanela : CafeDecorator
-{
-    public ConCanela(ICafe cafe) : base(cafe) { }
-
-    public override string GetDescripcion() =>
-        $"{_cafe.GetDescripcion()} + Canela espolvoreada";
-
-    public override decimal GetCosto() =>
-        _cafe.GetCosto() + 200m;
+    public override decimal GetPrecio() =>
+        _pastel.GetPrecio() + 500m;
 }
 
 public static class DecoratorDemo
@@ -89,32 +77,32 @@ public static class DecoratorDemo
     public static void Run()
     {
         Console.WriteLine("  🎄 DECORATOR — Añadir funcionalidad dinámicamente\n");
-        Console.WriteLine("  Escenario: Cafetería — arma tu café con extras\n");
+        Console.WriteLine("  Escenario: Pastelería — decora el pastel con extras\n");
 
-        // Café básico
-        ICafe cafe = new CafeSimple();
-        Console.WriteLine($"  Base: {cafe.GetDescripcion(),-35} ¢{cafe.GetCosto(),6:N0}");
+        // Pastel básico
+        IPastel pastel = new PastelVainilla();
+        Console.WriteLine($"  Base: {pastel.GetDescripcion(),-45} ¢{pastel.GetPrecio(),6:N0}");
 
         // Vamos decorando paso a paso
-        cafe = new ConLeche(cafe);
-        Console.WriteLine($"  +    {cafe.GetDescripcion(),-35} ¢{cafe.GetCosto(),6:N0}");
+        pastel = new ConGlaseado(pastel);
+        Console.WriteLine($"  +    {pastel.GetDescripcion(),-45} ¢{pastel.GetPrecio(),6:N0}");
 
-        cafe = new ConCrema(cafe);
-        Console.WriteLine($"  +    {cafe.GetDescripcion(),-35} ¢{cafe.GetCosto(),6:N0}");
+        pastel = new ConChispas(pastel);
+        Console.WriteLine($"  +    {pastel.GetDescripcion(),-45} ¢{pastel.GetPrecio(),6:N0}");
 
-        cafe = new ConCaramelo(cafe);
-        Console.WriteLine($"  +    {cafe.GetDescripcion(),-35} ¢{cafe.GetCosto(),6:N0}");
+        pastel = new ConVelitas(pastel);
+        Console.WriteLine($"  +    {pastel.GetDescripcion(),-45} ¢{pastel.GetPrecio(),6:N0}");
 
         Console.WriteLine();
-        Console.WriteLine($"  🧾 TOTAL: {cafe.GetDescripcion(),-35} ¢{cafe.GetCosto(),6:N0}");
+        Console.WriteLine($"  🧾 TOTAL: {pastel.GetDescripcion(),-45} ¢{pastel.GetPrecio(),6:N0}");
         Console.WriteLine();
 
         // Otra combinación
-        Console.WriteLine("  ── Otra combinación: Café + Crema + Canela ──");
-        ICafe otro = new CafeSimple();
-        otro = new ConCrema(otro);
-        otro = new ConCanela(otro);
-        Console.WriteLine($"  {otro.GetDescripcion(),-40} ¢{otro.GetCosto(),6:N0}");
+        Console.WriteLine("  ── Otra combinación: Pastel + chispas + velitas ──");
+        IPastel otro = new PastelVainilla();
+        otro = new ConChispas(otro);
+        otro = new ConVelitas(otro);
+        Console.WriteLine($"  {otro.GetDescripcion(),-45} ¢{otro.GetPrecio(),6:N0}");
         Console.WriteLine();
 
         Console.WriteLine("  ✅ Los decoradores se pueden combinar en cualquier orden.");

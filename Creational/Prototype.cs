@@ -11,118 +11,107 @@ namespace DesignPatterns.Creational;
 ///           creación de enemigos en videojuegos, evitar costos de
 ///           inicialización pesada.
 
-// ICloneable es la interfaz nativa de .NET para clonación
+// ICloneable es la interfaz nativa de .NET para clonación,
+// aunque devuelve object (no es genérica) y hoy se prefiere
+// un método propio como DeepClone().
 
-/// --- Prototipo concreto: Factura ---
-public class Factura : ICloneable
+/// --- Prototipo concreto: Receta ---
+public class Receta : ICloneable
 {
-    public string NumeroFactura { get; set; }
-    public string Cliente { get; set; }
-    public DateTime Fecha { get; set; }
-    public decimal Total { get; set; }
-    public List<string> Lineas { get; set; } = [];
-    public DatosFiscales DatosFiscales { get; set; }
+    public string Nombre { get; set; }
+    public int Porciones { get; set; }
+    public List<string> Ingredientes { get; set; } = [];
+    public Chef Chef { get; set; }
 
-    public Factura(string numero, string cliente)
+    public Receta(string nombre, int porciones)
     {
-        NumeroFactura = numero;
-        Cliente = cliente;
-        Fecha = DateTime.Now;
-        DatosFiscales = new DatosFiscales();
+        Nombre = nombre;
+        Porciones = porciones;
+        Chef = new Chef();
     }
 
     // Clone() crea una copia superficial (shallow copy)
-    // Los objetos de referencia (List, DatosFiscales) se COMPARTEN
+    // Los objetos de referencia (List, Chef) se COMPARTEN
     public object Clone()
     {
         return MemberwiseClone();
     }
 
     // DeepClone() crea una copia profunda — TODO es nuevo
-    public Factura DeepClone()
+    public Receta DeepClone()
     {
-        var copia = (Factura)MemberwiseClone();
-        copia.Lineas = new List<string>(Lineas);
-        copia.DatosFiscales = new DatosFiscales
-        {
-            Cedula = DatosFiscales.Cedula,
-            Nombre = DatosFiscales.Nombre,
-            Telefono = DatosFiscales.Telefono
-        };
+        var copia = (Receta)MemberwiseClone();
+        copia.Ingredientes = new List<string>(Ingredientes);
+        copia.Chef = Chef with { }; // los records son inmutables: with crea uno nuevo
         return copia;
     }
 
     public void Mostrar()
     {
-        Console.WriteLine($"  Factura #{NumeroFactura}");
-        Console.WriteLine($"  Cliente: {Cliente}");
-        Console.WriteLine($"  Fecha:   {Fecha:dd/MM/yyyy HH:mm}");
-        Console.WriteLine($"  Total:   ¢{Total:N2}");
-        Console.WriteLine($"  Líneas:  {string.Join(", ", Lineas)}");
-        Console.WriteLine($"  Cédula:  {DatosFiscales.Cedula}");
+        Console.WriteLine($"  Receta:      {Nombre}");
+        Console.WriteLine($"  Porciones:   {Porciones}");
+        Console.WriteLine($"  Ingredientes: {string.Join(", ", Ingredientes)}");
+        Console.WriteLine($"  Chef:        {Chef.Nombre} ({Chef.Restaurante})");
     }
 }
 
-public record DatosFiscales(string Cedula = "", string Nombre = "", string Telefono = "");
+public record Chef(string Nombre = "", string Restaurante = "", string Telefono = "");
 
 public static class PrototypeDemo
 {
     public static void Run()
     {
-        Console.WriteLine("  🧬 PROTOTYPE — Clonación de objetos\n");
-        Console.WriteLine("  Escenario: Sistema de facturación — crear facturas\n" +
-                         "  similares a partir de una plantilla\n");
+        Console.WriteLine("  🧬 PROTOTYPE — Clonar recetas\n");
+        Console.WriteLine("  Escenario: El chef clona su receta maestra de salsa\n" +
+                         "  para crear variantes sin empezar de cero\n");
 
-        // ── Crear factura original (prototipo base) ──
-        var facturaBase = new Factura("F001-00001", "Comercial XYZ")
+        // ── Crear receta original (prototipo base) ──
+        var recetaBase = new Receta("Salsa de la casa", 4)
         {
-            Total = 125000.00m,
-            Lineas = ["Laptop Dell XPS 13", "Mouse Bluetooth"],
-            DatosFiscales = new DatosFiscales
+            Ingredientes = ["tomate", "cebolla", "culantro"],
+            Chef = new Chef
             {
-                Cedula = "3-101-234567",
-                Nombre = "Comercial XYZ S.A.",
+                Nombre = "Chef Ramírez",
+                Restaurante = "La Cocina Caótica",
                 Telefono = "2256-7890"
             }
         };
 
-        Console.WriteLine("  📄 FACTURA ORIGINAL (prototipo):");
-        facturaBase.Mostrar();
+        Console.WriteLine("  📄 RECETA ORIGINAL (prototipo):");
+        recetaBase.Mostrar();
         Console.WriteLine();
 
         // ── Clon superficial ──
         Console.WriteLine("  ── CLON SUPERFICIAL (shallow copy) ──");
-        var facturaClon = (Factura)facturaBase.Clone();
-        facturaClon.NumeroFactura = "F001-00002";
-        facturaClon.Cliente = "Tienda ABC (copia)";
-        facturaClon.Total = 85000.00m;
-        facturaClon.Lineas.Add("Monitor 24\""); // ⚠️ ¡Agrega a la LISTA COMPARTIDA!
-        Console.WriteLine("  (modificamos líneas en el clon...)");
+        var recetaClon = (Receta)recetaBase.Clone();
+        recetaClon.Nombre = "Salsa picante (copia)";
+        recetaClon.Porciones = 8;
+        recetaClon.Ingredientes.Add("chile habanero"); // ⚠️ ¡Agrega a la LISTA COMPARTIDA!
+        Console.WriteLine("  (le agregamos chile a la copia...)");
         Console.WriteLine();
 
-        Console.WriteLine("  📄 Factura ORIGINAL después de modificar el clon:");
-        facturaBase.Mostrar();
+        Console.WriteLine("  📄 RECETA ORIGINAL después de modificar la copia:");
+        recetaBase.Mostrar();
         Console.WriteLine();
-        Console.WriteLine("  ⚠️  ¡La línea 'Monitor 24\"' apareció en la original!");
+        Console.WriteLine("  ⚠️  ¡El 'chile habanero' apareció en la receta original!");
         Console.WriteLine("     Porque el clon superficial comparte la lista.\n");
 
         // ── Clon profundo ──
         Console.WriteLine("  ── CLON PROFUNDO (deep copy) ──");
-        var facturaDeep = facturaBase.DeepClone();
-        facturaDeep.NumeroFactura = "F001-00003";
-        facturaDeep.Cliente = "Nuevo Cliente (deep)";
-        facturaDeep.Total = 95000.00m;
-        facturaDeep.Lineas.Add("Teclado Mecánico"); // solo en el deep clone
-        Console.WriteLine("  (modificamos líneas en el deep clone...)");
+        var recetaDeep = recetaBase.DeepClone();
+        recetaDeep.Nombre = "Salsa suave (deep)";
+        recetaDeep.Porciones = 6;
+        recetaDeep.Ingredientes.Add("crema"); // solo en el deep clone
+        Console.WriteLine("  (le agregamos crema a la copia profunda...)");
         Console.WriteLine();
 
-        Console.WriteLine("  📄 Factura ORIGINAL (sin cambios esta vez):");
-        facturaBase.Mostrar();
+        Console.WriteLine("  📄 RECETA ORIGINAL (sin cambios esta vez):");
+        recetaBase.Mostrar();
         Console.WriteLine();
-        Console.WriteLine("  📄 Deep Clone (modificado):");
-        facturaDeep.Mostrar();
+        Console.WriteLine("  📄 Copia profunda (modificada):");
+        recetaDeep.Mostrar();
         Console.WriteLine();
         Console.WriteLine("  ✅ Con deep copy, las modificaciones no afectan al original.");
-        Console.WriteLine("     Útil cuando necesitas variantes de un objeto costoso de crear.");
+        Console.WriteLine("     Útil cuando necesitas variantes de algo costoso de crear.");
     }
 }

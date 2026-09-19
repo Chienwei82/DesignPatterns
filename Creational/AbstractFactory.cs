@@ -6,96 +6,72 @@ namespace DesignPatterns.Creational;
 /// sin especificar sus clases concretas. Es como un Factory Method
 /// pero para crear múltiples productos que funcionan juntos.
 ///
-/// USO REAL: Interfaces UI multiplataforma (Windows/Mac/Linux),
-///           conectores a distintos motores de BD, familias de
-///           temas visuales (claro/oscuro).
+/// USO REAL: Interfaces UI multiplataforma, conectores a distintos
+///           motores de BD, menús completos de distintas cocinas.
 
 // --- Productos abstractos ---
-public interface IBoton
+public interface IEntrada
 {
-    void Dibujar();
+    void Servir();
 }
 
-public interface IVentana
+public interface IPlatoFuerte
 {
-    void Mostrar();
+    void Servir();
 }
 
-// --- Productos concretos: Tema Claro ---
-public class BotonClaro : IBoton
+// --- Familia: Menú Italiano ---
+public class Bruschetta : IEntrada
 {
-    public void Dibujar()
+    public void Servir()
     {
-        Console.WriteLine("  [☀️ Claro] Botón: fondo blanco, texto negro, bordes suaves");
+        Console.WriteLine("  [🇮🇹 Entrada] Bruschetta con tomate y albahaca");
     }
 }
 
-public class VentanaClaro : IVentana
+public class Pizza : IPlatoFuerte
 {
-    public void Mostrar()
+    public void Servir()
     {
-        Console.WriteLine("  [☀️ Claro] Ventana: fondo blanco, barras gris claro");
+        Console.WriteLine("  [🇮🇹 Fuerte]  Pizza margarita recién salida del horno");
     }
 }
 
-// --- Productos concretos: Tema Oscuro ---
-public class BotonOscuro : IBoton
+// --- Familia: Menú Mexicano ---
+public class Nachos : IEntrada
 {
-    public void Dibujar()
+    public void Servir()
     {
-        Console.WriteLine("  [🌙 Oscuro] Botón: fondo #333, texto blanco, bordes sutiles");
+        Console.WriteLine("  [🇲🇽 Entrada] Nachos con guacamole y jalapeños");
     }
 }
 
-public class VentanaOscuro : IVentana
+public class Tacos : IPlatoFuerte
 {
-    public void Mostrar()
+    public void Servir()
     {
-        Console.WriteLine("  [🌙 Oscuro] Ventana: fondo #1e1e1e, barras #2d2d2d");
-    }
-}
-
-// --- Productos concretos: Tema Alto Contraste ---
-public class BotonAltoContraste : IBoton
-{
-    public void Dibujar()
-    {
-        Console.WriteLine("  [♿ Alto Contraste] Botón: amarillo brillante, borde negro grueso");
-    }
-}
-
-public class VentanaAltoContraste : IVentana
-{
-    public void Mostrar()
-    {
-        Console.WriteLine("  [♿ Alto Contraste] Ventana: fondo negro, texto blanco grande");
+        Console.WriteLine("  [🇲🇽 Fuerte]  Tacos al pastor con piña");
     }
 }
 
 // --- Abstract Factory ---
-public interface IUIFactory
+public interface IMenuFactory
 {
-    IBoton CrearBoton();
-    IVentana CrearVentana();
+    IEntrada CrearEntrada();
+    IPlatoFuerte CrearPlatoFuerte();
 }
 
 // --- Factories concretas ---
-public class TemaClaroFactory : IUIFactory
+public class MenuItalianoFactory : IMenuFactory
 {
-    public IBoton CrearBoton() => new BotonClaro();
-    public IVentana CrearVentana() => new VentanaClaro();
+    public IEntrada CrearEntrada() => new Bruschetta();
+    public IPlatoFuerte CrearPlatoFuerte() => new Pizza();
 }
 
-public class TemaOscuroFactory : IUIFactory
+public class MenuMexicanoFactory : IMenuFactory
 {
-    public IBoton CrearBoton() => new BotonOscuro();
-    public IVentana CrearVentana() => new VentanaOscuro();
-}
-
-public class TemaAltoContrasteFactory : IUIFactory
-{
-    public IBoton CrearBoton() => new BotonAltoContraste();
-    public IVentana CrearVentana() => new VentanaAltoContraste();
+    public IEntrada CrearEntrada() => new Nachos();
+    public IPlatoFuerte CrearPlatoFuerte() => new Tacos();
 }
 
 // --- Cliente ---
@@ -103,30 +79,29 @@ public static class AbstractFactoryDemo
 {
     public static void Run()
     {
-        Console.WriteLine("  🏭🏭 ABSTRACT FACTORY — Familias de objetos relacionados\n");
-        Console.WriteLine("  Escenario: Aplicación que cambia de tema (claro/oscuro/contraste)\n");
+        Console.WriteLine("  🏭🏭 ABSTRACT FACTORY — Familias de platillos que combinan\n");
+        Console.WriteLine("  Escenario: El restaurante arma menús completos por cocina\n");
 
-        var temas = new (string nombre, IUIFactory factory)[]
+        var menus = new (string nombre, IMenuFactory factory)[]
         {
-            ("Claro", new TemaClaroFactory()),
-            ("Oscuro", new TemaOscuroFactory()),
-            ("Alto Contraste", new TemaAltoContrasteFactory())
+            ("Italiano", new MenuItalianoFactory()),
+            ("Mexicano", new MenuMexicanoFactory())
         };
 
-        foreach (var (nombre, factory) in temas)
+        foreach (var (nombre, factory) in menus)
         {
-            Console.WriteLine($"  ── TEMA: {nombre} ──");
+            Console.WriteLine($"  ── MENÚ {nombre.ToUpper()} ──");
 
             // El cliente usa la factory sin saber qué clases concretas se crean
-            var boton = factory.CrearBoton();
-            var ventana = factory.CrearVentana();
+            var entrada = factory.CrearEntrada();
+            var fuerte = factory.CrearPlatoFuerte();
 
-            boton.Dibujar();
-            ventana.Mostrar();
+            entrada.Servir();
+            fuerte.Servir();
             Console.WriteLine();
         }
 
-        Console.WriteLine("  ✅ Los productos de cada familia son compatibles entre sí.");
-        Console.WriteLine("  ✅ Cambiar de tema = cambiar de factory. El cliente no cambia.");
+        Console.WriteLine("  ✅ Los platillos de cada familia son compatibles entre sí.");
+        Console.WriteLine("  ✅ Cambiar de cocina = cambiar de factory. El cliente no cambia.");
     }
 }

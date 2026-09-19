@@ -11,145 +11,88 @@ namespace DesignPatterns.Behavioral;
 ///           macros de teclado, historial de Ctrl+Z.
 
 // --- Command ---
-public interface IComando
+public interface IComandoComanda
 {
     string Nombre { get; }
     void Ejecutar();
     void Deshacer();
 }
 
-// --- Receiver: la lógica de negocio real ---
-public class EditorTexto
+// --- Receiver: la comanda real del restaurante ---
+public class Comanda
 {
-    private string _contenido = "";
-    private string _portapapeles = "";
+    private readonly List<string> _platillos = [];
 
-    public void Insertar(string texto)
+    public void Agregar(string platillo)
     {
-        _contenido += texto;
-        Console.WriteLine($"    📝 Insertado: \"{texto}\"");
+        _platillos.Add(platillo);
+        Console.WriteLine($"    ➕ Anotado: \"{platillo}\"");
     }
 
-    public void InsertarEn(int posicion, string texto)
+    // Quita el último platillo anotado y lo devuelve (o "" si está vacía)
+    public string Quitar()
     {
-        if (posicion >= 0 && posicion <= _contenido.Length)
+        if (_platillos.Count == 0)
         {
-            _contenido = _contenido.Insert(posicion, texto);
-            Console.WriteLine($"    📝 Insertado en pos {posicion}: \"{texto}\"");
-        }
-    }
-
-    public void Borrar(int cantidad)
-    {
-        if (cantidad <= _contenido.Length)
-        {
-            var borrado = _contenido[^cantidad..];
-            _contenido = _contenido[..^cantidad];
-            Console.WriteLine($"    🗑️  Borrado: \"{borrado}\"");
-        }
-    }
-
-    // Corta el rango indicado, lo guarda en el portapapeles y lo devuelve.
-    // Si el rango es inválido, no modifica nada y devuelve "".
-    public string Cortar(int desde, int hasta)
-    {
-        if (desde < 0 || desde >= hasta || hasta > _contenido.Length)
+            Console.WriteLine("    ⚠️  La comanda está vacía");
             return "";
-
-        _portapapeles = _contenido[desde..hasta];
-        _contenido = _contenido[..desde] + _contenido[hasta..];
-        Console.WriteLine($"    ✂️  Cortado: \"{_portapapeles}\"");
-        return _portapapeles;
-    }
-
-    public void Pegar()
-    {
-        if (!string.IsNullOrEmpty(_portapapeles))
-        {
-            _contenido += _portapapeles;
-            Console.WriteLine($"    📋 Pegado: \"{_portapapeles}\"");
         }
-    }
 
-    public string Contenido => _contenido;
+        var ultimo = _platillos[^1];
+        _platillos.RemoveAt(_platillos.Count - 1);
+        Console.WriteLine($"    ➖ Tachado: \"{ultimo}\"");
+        return ultimo;
+    }
 
     public void Mostrar()
     {
-        Console.WriteLine($"    ── Contenido actual: \"{_contenido}\"");
+        var texto = _platillos.Count > 0 ? string.Join(", ", _platillos) : "(vacía)";
+        Console.WriteLine($"    ── Comanda actual: {texto}");
     }
 }
 
 // --- Commands concretos ---
-public class ComandoInsertar : IComando
+public class ComandoAgregar : IComandoComanda
 {
-    private readonly EditorTexto _editor;
-    private readonly string _texto;
-    public string Nombre => $"Insertar \"{_texto}\"";
+    private readonly Comanda _comanda;
+    private readonly string _platillo;
+    public string Nombre => $"Agregar \"{_platillo}\"";
 
-    public ComandoInsertar(EditorTexto editor, string texto)
+    public ComandoAgregar(Comanda comanda, string platillo)
     {
-        _editor = editor;
-        _texto = texto;
+        _comanda = comanda;
+        _platillo = platillo;
     }
 
-    public void Ejecutar() => _editor.Insertar(_texto);
+    public void Ejecutar() => _comanda.Agregar(_platillo);
 
-    public void Deshacer() => _editor.Borrar(_texto.Length);
+    public void Deshacer() => _comanda.Quitar();
 }
 
-public class ComandoCortar : IComando
+public class ComandoQuitar : IComandoComanda
 {
-    private readonly EditorTexto _editor;
-    private readonly int _desde;
-    private readonly int _hasta;
-    private string _textoCortado = "";
-    public string Nombre => $"Cortar [{_desde}..{_hasta}]";
+    private readonly Comanda _comanda;
+    private string _platilloQuitado = "";
+    public string Nombre => "Quitar último platillo";
 
-    public ComandoCortar(EditorTexto editor, int desde, int hasta)
-    {
-        _editor = editor;
-        _desde = desde;
-        _hasta = hasta;
-    }
+    public ComandoQuitar(Comanda comanda) => _comanda = comanda;
 
-    public void Ejecutar() => _textoCortado = _editor.Cortar(_desde, _hasta);
+    public void Ejecutar() => _platilloQuitado = _comanda.Quitar();
 
     public void Deshacer()
     {
-        Console.WriteLine($"    ↩️ [Undo] Restaurando texto cortado...");
-        _editor.InsertarEn(_desde, _textoCortado);
-    }
-}
-
-public class ComandoPegar : IComando
-{
-    private readonly EditorTexto _editor;
-    private int _longitudPegada = 0;
-    public string Nombre => "Pegar";
-
-    public ComandoPegar(EditorTexto editor) => _editor = editor;
-
-    public void Ejecutar()
-    {
-        var textoPrevio = _editor.Contenido;
-        _editor.Pegar();
-        _longitudPegada = _editor.Contenido.Length - textoPrevio.Length;
-    }
-
-    public void Deshacer()
-    {
-        Console.WriteLine($"    ↩️ [Undo] Despegando {_longitudPegada} caracteres...");
-        _editor.Borrar(_longitudPegada);
+        if (!string.IsNullOrEmpty(_platilloQuitado))
+            _comanda.Agregar(_platilloQuitado);
     }
 }
 
 // --- Invoker: maneja el historial y la ejecución ---
-public class HistorialComandos
+public class MeseroComandas
 {
-    private readonly Stack<IComando> _historial = new();
-    private readonly Stack<IComando> _rehacer = new();
+    private readonly Stack<IComandoComanda> _historial = new();
+    private readonly Stack<IComandoComanda> _rehacer = new();
 
-    public void Ejecutar(IComando comando)
+    public void Ejecutar(IComandoComanda comando)
     {
         Console.WriteLine($"  ▶️ Ejecutando: {comando.Nombre}");
         comando.Ejecutar();
@@ -191,42 +134,37 @@ public static class CommandDemo
     public static void Run()
     {
         Console.WriteLine("  🎮 COMMAND — Comandos como objetos (con UNDO/REDO)\n");
-        Console.WriteLine("  Escenario: Editor de texto con Ctrl+Z / Ctrl+Y\n");
+        Console.WriteLine("  Escenario: El mesero anota y corrige la comanda\n");
 
-        var editor = new EditorTexto();
-        var historial = new HistorialComandos();
+        var comanda = new Comanda();
+        var mesero = new MeseroComandas();
 
-        // Secuencia de edición
-        historial.Ejecutar(new ComandoInsertar(editor, "Hola mundo cruel"));
-        editor.Mostrar();
+        // Secuencia de anotaciones
+        mesero.Ejecutar(new ComandoAgregar(comanda, "Pizza margarita"));
+        comanda.Mostrar();
         Console.WriteLine();
 
-        // Cortar "mundo " (posiciones 5 a 11)
-        historial.Ejecutar(new ComandoCortar(editor, 5, 11));
-        editor.Mostrar();
+        mesero.Ejecutar(new ComandoAgregar(comanda, "Ensalada césar"));
+        mesero.Ejecutar(new ComandoAgregar(comanda, "Jugo natural"));
+        comanda.Mostrar();
         Console.WriteLine();
 
-        // Pegar al final
-        historial.Ejecutar(new ComandoPegar(editor));
-        editor.Mostrar();
+        // El cliente se arrepiente del jugo
+        Console.WriteLine("  ── Deshacer último platillo ──");
+        mesero.Deshacer();
+        comanda.Mostrar();
         Console.WriteLine();
 
-        // Undo pegar
-        Console.WriteLine("  ── Deshacer Pegar (Ctrl+Z) ──");
-        historial.Deshacer();
-        editor.Mostrar();
+        // Y también de la ensalada
+        Console.WriteLine("  ── Deshacer otra vez ──");
+        mesero.Deshacer();
+        comanda.Mostrar();
         Console.WriteLine();
 
-        // Undo cortar
-        Console.WriteLine("  ── Deshacer Cortar (Ctrl+Z) ──");
-        historial.Deshacer();
-        editor.Mostrar();
-        Console.WriteLine();
-
-        // Redo cortar
-        Console.WriteLine("  ── Rehacer Cortar (Ctrl+Y) ──");
-        historial.Rehacer();
-        editor.Mostrar();
+        // Se arrepiente de haberse arrepentido
+        Console.WriteLine("  ── Rehacer ──");
+        mesero.Rehacer();
+        comanda.Mostrar();
         Console.WriteLine();
 
         Console.WriteLine("  ✅ Cada comando es un objeto que sabe ejecutarse y deshacerse.");

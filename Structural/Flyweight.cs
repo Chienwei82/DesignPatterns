@@ -9,39 +9,38 @@ namespace DesignPatterns.Structural;
 /// USO REAL: Renderizado de documentos (caracteres con fuente compartida),
 ///           tiles en videojuegos, iconos en mapas, caché de objetos.
 
-// --- Flyweight: el objeto compartido ---
-public class TipoArbol
+// --- Flyweight: la bebida compartida ---
+public class TipoBebida
 {
     public string Nombre { get; }
+    public decimal Precio { get; }
     public string Color { get; }
-    public string Textura { get; }
 
-    public TipoArbol(string nombre, string color, string textura)
+    public TipoBebida(string nombre, decimal precio, string color)
     {
         Nombre = nombre;
+        Precio = precio;
         Color = color;
-        Textura = textura;
     }
 
-    public void Dibujar(int x, int y)
+    public void Servir(int mesa)
     {
-        Console.WriteLine($"    🌳 {Nombre} ({Color}, {Textura}) en [{x}, {y}]");
+        Console.WriteLine($"    🥤 {Nombre} ({Color}) para la mesa {mesa}");
     }
 }
 
 // --- Flyweight Factory: administra y reutiliza los flyweights ---
-public class FabricaArboles
+public class FabricaBebidas
 {
-    private readonly Dictionary<string, TipoArbol> _tipos = new();
+    private readonly Dictionary<string, TipoBebida> _tipos = new();
 
-    public TipoArbol ObtenerTipo(string nombre, string color, string textura)
+    public TipoBebida ObtenerTipo(string nombre, decimal precio, string color)
     {
-        var clave = $"{nombre}-{color}-{textura}";
-        if (!_tipos.TryGetValue(clave, out var tipo))
+        if (!_tipos.TryGetValue(nombre, out var tipo))
         {
-            tipo = new TipoArbol(nombre, color, textura);
-            _tipos[clave] = tipo;
-            Console.WriteLine($"  [Factory] Nuevo tipo creado: {clave}");
+            tipo = new TipoBebida(nombre, precio, color);
+            _tipos[nombre] = tipo;
+            Console.WriteLine($"  [Factory] Nuevo tipo de bebida creado: {nombre}");
         }
         return tipo;
     }
@@ -49,22 +48,20 @@ public class FabricaArboles
     public int TiposCreados => _tipos.Count;
 }
 
-// --- Contexto: cada árbol en el bosque tiene posición única (extrínseco)
-//    pero comparte el tipo (intrínseco) ---
-public class Arbol
+// --- Contexto: cada comanda apunta a una mesa (extrínseco)
+//     pero comparte el tipo de bebida (intrínseco) ---
+public class Comanda
 {
-    private readonly TipoArbol _tipo;
-    private readonly int _x;
-    private readonly int _y;
+    private readonly TipoBebida _bebida;
+    private readonly int _mesa;
 
-    public Arbol(TipoArbol tipo, int x, int y)
+    public Comanda(TipoBebida bebida, int mesa)
     {
-        _tipo = tipo;
-        _x = x;
-        _y = y;
+        _bebida = bebida;
+        _mesa = mesa;
     }
 
-    public void Dibujar() => _tipo.Dibujar(_x, _y);
+    public void Servir() => _bebida.Servir(_mesa);
 }
 
 public static class FlyweightDemo
@@ -72,36 +69,37 @@ public static class FlyweightDemo
     public static void Run()
     {
         Console.WriteLine("  🍃 FLYWEIGHT — Compartir objetos en gran cantidad\n");
-        Console.WriteLine("  Escenario: Bosque con miles de árboles\n");
+        Console.WriteLine("  Escenario: Un restaurante con miles de comandas de bebida\n");
 
-        var fabrica = new FabricaArboles();
-        var bosque = new List<Arbol>();
+        var fabrica = new FabricaBebidas();
+        var comandas = new List<Comanda>();
         var random = new Random(42);
 
-        // Solo 3 tipos de árboles, pero miles de instancias
-        string[] nombres = { "Roble", "Pino", "Palma" };
-        string[] colores = { "Verde oscuro", "Verde claro", "Verde tropical" };
-        string[] texturas = { "Rugosa", "Lisa", "Fibrosa" };
+        // Solo 3 tipos de bebida, pero miles de comandas
+        var tipos = new (string nombre, decimal precio, string color)[]
+        {
+            ("Limonada", 1500m, "amarillo"),
+            ("Café frío", 2000m, "marrón"),
+            ("Agua mineral", 1000m, "transparente")
+        };
 
-        Console.WriteLine("  Plantando 1,000 árboles...\n");
+        Console.WriteLine("  Levantando 1,000 comandas...\n");
         for (int i = 0; i < 1000; i++)
         {
-            var tipo = fabrica.ObtenerTipo(
-                nombres[i % 3],
-                colores[i % 3],
-                texturas[i % 3]);
-
-            bosque.Add(new Arbol(tipo, random.Next(0, 1000), random.Next(0, 1000)));
+            var (nombre, precio, color) = tipos[i % 3];
+            var bebida = fabrica.ObtenerTipo(nombre, precio, color);
+            comandas.Add(new Comanda(bebida, random.Next(1, 50)));
         }
 
-        Console.WriteLine($"\n  📊 Resultado:");
-        Console.WriteLine($"     Árboles plantados: {bosque.Count}");
-        Console.WriteLine($"     Tipos de árbol únicos en memoria: {fabrica.TiposCreados}");
-        Console.WriteLine($"     Memoria ahorrada: ~{(1 - (double)fabrica.TiposCreados / bosque.Count) * 100:F1}%");
+        Console.WriteLine();
+        Console.WriteLine("  📊 Resultado:");
+        Console.WriteLine($"     Comandas levantadas: {comandas.Count}");
+        Console.WriteLine($"     Tipos de bebida únicos en memoria: {fabrica.TiposCreados}");
+        Console.WriteLine($"     Memoria ahorrada: ~{(1 - (double)fabrica.TiposCreados / comandas.Count) * 100:F1}%");
         Console.WriteLine();
 
-        Console.WriteLine("  Muestra de árboles:");
-        for (int i = 0; i < 5; i++) bosque[i].Dibujar();
+        Console.WriteLine("  Muestra de comandas:");
+        for (int i = 0; i < 5; i++) comandas[i].Servir();
         Console.WriteLine();
 
         Console.WriteLine("  ✅ Flyweight evita crear 1,000 objetos idénticos.");

@@ -8,79 +8,70 @@ namespace DesignPatterns.Behavioral;
 /// pueden enchufar según la necesidad.
 ///
 /// USO REAL: Estrategias de ordenamiento, métodos de pago en
-///           e-commerce, compresión de archivos, validación de datos.
+///           e-commerce, compresión de archivos, cálculo de descuentos.
 
 // --- Strategy ---
-public interface ICalculadorImpuesto
+public interface IEstrategiaDescuento
 {
     string Nombre { get; }
-    decimal Calcular(decimal monto);
+    decimal Calcular(decimal subtotal);
 }
 
-// --- Concrete Strategies ---
-public class ImpuestoCostaRica : ICalculadorImpuesto
+// --- Estrategias concretas ---
+public class SinDescuento : IEstrategiaDescuento
 {
-    public string Nombre => "IVA Costa Rica (13%)";
+    public string Nombre => "Sin descuento";
 
-    public decimal Calcular(decimal monto)
-    {
-        return monto * 0.13m;
-    }
+    public decimal Calcular(decimal subtotal) => 0;
 }
 
-public class ImpuestoPanama : ICalculadorImpuesto
+public class HappyHour : IEstrategiaDescuento
 {
-    public string Nombre => "ITBMS Panamá (7%)";
+    public string Nombre => "Happy Hour (20%)";
 
-    public decimal Calcular(decimal monto)
-    {
-        return monto * 0.07m;
-    }
+    public decimal Calcular(decimal subtotal) => subtotal * 0.20m;
 }
 
-public class ImpuestoMexico : ICalculadorImpuesto
+public class ClienteVip : IEstrategiaDescuento
 {
-    public string Nombre => "IVA México (16%)";
+    public string Nombre => "Cliente VIP (15%)";
 
-    public decimal Calcular(decimal monto)
-    {
-        return monto * 0.16m;
-    }
+    public decimal Calcular(decimal subtotal) => subtotal * 0.15m;
 }
 
-public class ImpuestoSinImpuesto : ICalculadorImpuesto
+public class MenuDelDia : IEstrategiaDescuento
 {
-    public string Nombre => "Zona Franca (0%)";
+    public string Nombre => "Menú del día (10%)";
 
-    public decimal Calcular(decimal monto) => 0;
+    public decimal Calcular(decimal subtotal) => subtotal * 0.10m;
 }
 
 // --- Context ---
-public class Facturador
+public class CajaRegistradora
 {
-    private ICalculadorImpuesto _estrategia;
+    private IEstrategiaDescuento _estrategia;
 
-    public Facturador(ICalculadorImpuesto estrategia)
+    public CajaRegistradora(IEstrategiaDescuento estrategia)
     {
         _estrategia = estrategia;
     }
 
     // ¡Clave del patrón! Podemos cambiar la estrategia en tiempo de ejecución
-    public void CambiarEstrategia(ICalculadorImpuesto nuevaEstrategia)
+    public void CambiarEstrategia(IEstrategiaDescuento nuevaEstrategia)
     {
         Console.WriteLine($"  ↪ Cambiando estrategia: {_estrategia.Nombre} → {nuevaEstrategia.Nombre}");
         _estrategia = nuevaEstrategia;
     }
 
-    public void Facturar(string producto, decimal precio)
+    public void Cobrar(string platillo, decimal precio)
     {
-        var impuesto = _estrategia.Calcular(precio);
-        var total = precio + impuesto;
+        var descuento = _estrategia.Calcular(precio);
+        var total = precio - descuento;
 
-        Console.WriteLine($"  Producto: {producto}");
+        Console.WriteLine($"  Platillo: {platillo}");
         Console.WriteLine($"  Precio base:  ¢{precio,10:N2}");
-        Console.WriteLine($"  Impuesto ({_estrategia.Nombre}): ¢{impuesto,10:N2}");
-        Console.WriteLine($"  ─────────────────────────");
+        Console.WriteLine($"  Descuento ({_estrategia.Nombre}): ¢{descuento,10:N2}");
+        Console.WriteLine("  ─────────────────────────");
         Console.WriteLine($"  TOTAL:        ¢{total,10:N2}");
     }
 }
@@ -90,36 +81,36 @@ public static class StrategyDemo
     public static void Run()
     {
         Console.WriteLine("  🧠 STRATEGY — Algoritmos intercambiables\n");
-        Console.WriteLine("  Escenario: Facturación con impuestos según el país\n");
+        Console.WriteLine("  Escenario: La caja aplica descuentos según el cliente\n");
 
         // Creamos el contexto con una estrategia inicial
-        var facturador = new Facturador(new ImpuestoCostaRica());
+        var caja = new CajaRegistradora(new SinDescuento());
 
-        // Primera factura — Costa Rica
-        Console.WriteLine("  ── Factura #1: 🇨🇷 Cliente en Costa Rica ──");
-        facturador.Facturar("Teclado Mecánico", 45_000m);
+        // Primera cuenta — sin descuento
+        Console.WriteLine("  ── Cuenta #1: cliente cualquiera ──");
+        caja.Cobrar("Pizza margarita", 9_500m);
         Console.WriteLine();
 
         // Cambiamos la estrategia en tiempo real
-        facturador.CambiarEstrategia(new ImpuestoMexico());
-        Console.WriteLine("  ── Factura #2: 🇲🇽 Cliente en México ──");
-        facturador.Facturar("Monitor 27\"", 95_000m);
+        caja.CambiarEstrategia(new HappyHour());
+        Console.WriteLine("  ── Cuenta #2: son las 5 p.m. ──");
+        caja.Cobrar("Hamburguesa monstruosa", 12_000m);
         Console.WriteLine();
 
         // Otra estrategia
-        facturador.CambiarEstrategia(new ImpuestoPanama());
-        Console.WriteLine("  ── Factura #3: 🇵🇦 Cliente en Panamá ──");
-        facturador.Facturar("Laptop", 650_000m);
+        caja.CambiarEstrategia(new ClienteVip());
+        Console.WriteLine("  ── Cuenta #3: cliente VIP ──");
+        caja.Cobrar("Corte de carne", 28_000m);
         Console.WriteLine();
 
-        // Zona franca — sin impuesto
-        facturador.CambiarEstrategia(new ImpuestoSinImpuesto());
-        Console.WriteLine("  ── Factura #4: 🏢 Cliente en Zona Franca ──");
-        facturador.Facturar("Servidor", 1_200_000m);
+        // Menú del día
+        caja.CambiarEstrategia(new MenuDelDia());
+        Console.WriteLine("  ── Cuenta #4: menú del día ──");
+        caja.Cobrar("Casado del día", 6_500m);
         Console.WriteLine();
 
-        Console.WriteLine("  ✅ Sin Strategy: if/else por cada país.");
-        Console.WriteLine("     Con Strategy: cada país es una clase separada.");
+        Console.WriteLine("  ✅ Sin Strategy: if/else por cada tipo de descuento.");
+        Console.WriteLine("     Con Strategy: cada descuento es una clase separada.");
         Console.WriteLine("     Fácil de extender — solo agregas una clase más.");
     }
 }

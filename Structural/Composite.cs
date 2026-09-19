@@ -12,73 +12,74 @@ namespace DesignPatterns.Structural;
 ///           árboles de componentes UI en WPF/MAUI.
 
 // --- Componente ---
-public interface IComponenteOrganigrama
+public interface IElementoMenu
 {
     string Nombre { get; }
-    decimal GetCostoTotal();
-    int GetPersonasContadas();
+    decimal GetPrecioTotal();
+    int GetCalorias();
     void Mostrar(int indentacion = 0);
 }
 
-// --- Hoja: un empleado individual ---
-public class Empleado : IComponenteOrganigrama
+// --- Hoja: un platillo individual ---
+public class PlatilloMenu : IElementoMenu
 {
     public string Nombre { get; }
-    public string Cargo { get; }
-    public decimal Salario { get; }
+    public decimal Precio { get; }
+    public int Calorias { get; }
 
-    public Empleado(string nombre, string cargo, decimal salario)
+    public PlatilloMenu(string nombre, decimal precio, int calorias)
     {
         Nombre = nombre;
-        Cargo = cargo;
-        Salario = salario;
+        Precio = precio;
+        Calorias = calorias;
     }
 
-    public decimal GetCostoTotal() => Salario;
+    public decimal GetPrecioTotal() => Precio;
 
-    public int GetPersonasContadas() => 1;
+    public int GetCalorias() => Calorias;
 
     public void Mostrar(int indentacion = 0)
     {
         var indent = new string(' ', indentacion * 3);
-        Console.WriteLine($"{indent}👤 {Nombre} ({Cargo}) — ¢{Salario:N0}/mes");
+        Console.WriteLine($"{indent}🍽️  {Nombre} — ¢{Precio:N0} ({Calorias} kcal)");
     }
 }
 
-// --- Compuesto: un departamento que contiene empleados + sub-departamentos ---
-public class Departamento : IComponenteOrganigrama
+// --- Compuesto: un combo que contiene platillos u otros combos ---
+public class ComboMenu : IElementoMenu
 {
     public string Nombre { get; }
-    private readonly List<IComponenteOrganigrama> _subordinados = [];
+    private readonly List<IElementoMenu> _items = [];
 
-    public Departamento(string nombre)
+    public ComboMenu(string nombre)
     {
         Nombre = nombre;
     }
 
-    public void Agregar(IComponenteOrganigrama componente)
+    public void Agregar(IElementoMenu elemento)
     {
-        _subordinados.Add(componente);
-        Console.WriteLine($"  [Depto {Nombre}] + {componente.Nombre}");
+        _items.Add(elemento);
+        Console.WriteLine($"  [Combo {Nombre}] + {elemento.Nombre}");
     }
 
-    public void Remover(IComponenteOrganigrama componente)
+    public void Remover(IElementoMenu elemento)
     {
-        _subordinados.Remove(componente);
+        _items.Remove(elemento);
+        Console.WriteLine($"  [Combo {Nombre}] - {elemento.Nombre}");
     }
 
     // El compuesto delega a sus hijos y suma resultados (LINQ)
-    public decimal GetCostoTotal() => _subordinados.Sum(s => s.GetCostoTotal());
+    public decimal GetPrecioTotal() => _items.Sum(i => i.GetPrecioTotal());
 
-    public int GetPersonasContadas() => _subordinados.Sum(s => s.GetPersonasContadas());
+    public int GetCalorias() => _items.Sum(i => i.GetCalorias());
 
     public void Mostrar(int indentacion = 0)
     {
         var indent = new string(' ', indentacion * 3);
-        Console.WriteLine($"{indent}📁 {Nombre} — Gasto: ¢{GetCostoTotal():N0}/mes, {GetPersonasContadas()} personas");
+        Console.WriteLine($"{indent}📦 {Nombre} — ¢{GetPrecioTotal():N0}, {GetCalorias()} kcal");
 
-        foreach (var sub in _subordinados)
-            sub.Mostrar(indentacion + 1);
+        foreach (var item in _items)
+            item.Mostrar(indentacion + 1);
     }
 }
 
@@ -87,54 +88,52 @@ public static class CompositeDemo
     public static void Run()
     {
         Console.WriteLine("  🌳 COMPOSITE — Estructuras árbol parte-todo\n");
-        Console.WriteLine("  Escenario: Organigrama empresarial con costo por departamento\n");
+        Console.WriteLine("  Escenario: Menú del restaurante con combos dentro de combos\n");
 
-        // ── Construir organigrama ──
-        Console.WriteLine("  Construyendo organigrama...\n");
+        // ── Construir menú ──
+        Console.WriteLine("  Construyendo menú...\n");
 
-        // Hojas: empleados
-        var ana = new Empleado("Ana López", "Desarrolladora Sr", 2_500_000m);
-        var carlos = new Empleado("Carlos Ruiz", "Desarrollador Jr", 1_200_000m);
-        var maria = new Empleado("María Soto", "QA Engineer", 1_800_000m);
+        // Hojas: platillos
+        var pizza = new PlatilloMenu("Pizza margarita", 9500m, 800);
+        var ensalada = new PlatilloMenu("Ensalada césar", 4500m, 250);
+        var pasta = new PlatilloMenu("Pasta alfredo", 7500m, 700);
+        var sopa = new PlatilloMenu("Sopa de tomate", 3500m, 180);
+        var helado = new PlatilloMenu("Helado de vainilla", 2500m, 300);
+        var cafe = new PlatilloMenu("Café expreso", 1800m, 5);
 
-        var pedro = new Empleado("Pedro Mora", "Soporte Técnico", 1_000_000m);
-        var lucia = new Empleado("Lucía Vega", "SysAdmin", 2_000_000m);
+        // Combos (compuestos)
+        var comboInfantil = new ComboMenu("Combo Infantil");
+        comboInfantil.Agregar(pasta);
+        comboInfantil.Agregar(helado);
 
-        var rosa = new Empleado("Rosa Martínez", "CEO", 5_000_000m);
-        var juan = new Empleado("Juan Castillo", "CFO", 4_000_000m);
+        var comboPareja = new ComboMenu("Combo Pareja");
+        comboPareja.Agregar(pizza);
+        comboPareja.Agregar(ensalada);
+        comboPareja.Agregar(sopa);
 
-        // Departamentos (compuestos)
-        var desarrollo = new Departamento("Desarrollo");
-        desarrollo.Agregar(ana);
-        desarrollo.Agregar(carlos);
-        desarrollo.Agregar(maria);
+        var comboFamiliar = new ComboMenu("Combo Familiar");
+        comboFamiliar.Agregar(comboPareja);
+        comboFamiliar.Agregar(comboInfantil);
+        comboFamiliar.Agregar(cafe);
 
-        var infraestructura = new Departamento("Infraestructura");
-        infraestructura.Agregar(pedro);
-        infraestructura.Agregar(lucia);
-
-        var tecnologia = new Departamento("Tecnología");
-        tecnologia.Agregar(desarrollo);
-        tecnologia.Agregar(infraestructura);
-
-        var direccion = new Departamento("Dirección");
-        direccion.Agregar(rosa);
-        direccion.Agregar(juan);
-
-        var empresa = new Departamento("Tech Solutions CR");
-        empresa.Agregar(tecnologia);
-        empresa.Agregar(direccion);
-
-        // ── Mostrar organigrama completo ──
-        empresa.Mostrar();
+        // ── Mostrar menú completo ──
+        comboFamiliar.Mostrar();
         Console.WriteLine();
-        Console.WriteLine($"  💰 Gasto total en planilla: ¢{empresa.GetCostoTotal():N0}/mes");
-        Console.WriteLine($"  👥 Total empleados: {empresa.GetPersonasContadas()}");
+        Console.WriteLine($"  💰 Precio total: ¢{comboFamiliar.GetPrecioTotal():N0}");
+        Console.WriteLine($"  🔥 Calorías totales: {comboFamiliar.GetCalorias()}");
         Console.WriteLine();
 
-        // El cliente trata empleados y departamentos igual
-        Console.WriteLine("  ✅ El método GetCostoTotal() funciona igual para");
-        Console.WriteLine("     un empleado o un departamento completo.");
+        // El compuesto también permite quitar elementos
+        Console.WriteLine("  ── Quitamos el café del combo familiar ──");
+        comboFamiliar.Remover(cafe);
+        Console.WriteLine();
+        comboFamiliar.Mostrar();
+        Console.WriteLine();
+        Console.WriteLine($"  💰 Precio total ahora: ¢{comboFamiliar.GetPrecioTotal():N0}");
+        Console.WriteLine();
+
+        Console.WriteLine("  ✅ El método GetPrecioTotal() funciona igual para");
+        Console.WriteLine("     un platillo o un combo entero.");
         Console.WriteLine("     El cliente no necesita saber si es hoja o compuesto.");
     }
 }
