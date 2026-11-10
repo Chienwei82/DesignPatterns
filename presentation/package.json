@@ -1,0 +1,15 @@
+{
+  "name": "patrones-diseno-video",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "HYPERFRAMES_PREVIEW_HOST=0.0.0.0 npx --yes hyperframes@0.8.81 preview",
+    "dev:lan": "HYPERFRAMES_PREVIEW_HOST=0.0.0.0 npx --yes hyperframes@0.8.81 preview --background",
+    "check": "npx --yes hyperframes@0.8.81 check",
+    "lint": "npx --yes hyperframes@0.8.81 lint",
+    "snapshot": "npx --yes hyperframes@0.8.81 snapshot",
+    "render": "bash audio/render-with-audio.sh",
+    "publish": "npx --yes hyperframes@0.8.81 publish",
+    "audio": "node audio/generate-audio.mjs"
+  }
+}

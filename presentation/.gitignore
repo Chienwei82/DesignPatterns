@@ -1,0 +1,13 @@
+# ── Salidas generadas (no se versionan binarios) ──────────────────────────────
+renders/
+snapshots/
+.audio-tmp/
+
+# Concatenación de audio derivada (la regenera audio/combine-audio.sh en cada render)
+audio/final-audio.mp3
+
+# Caché del CLI de HyperFrames (ids sellados y preview temporal)
+.hyperframes/
+
+# Dependencias locales
+node_modules/

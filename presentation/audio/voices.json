@@ -1,0 +1,10 @@
+{
+  "nota": "Sustituye cada reference_id por el ID real de tu voz en fish.audio (Voice Library / Voice Cloning). Si dejas vacío, se usa la voz por defecto del modelo.",
+  "voces": {
+    "narrador": "",
+    "codigo": "",
+    "titulo": ""
+  },
+  "modelo": "s2.1-pro-free",
+  "formato": "mp3"
+}

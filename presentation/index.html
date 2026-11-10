@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<!--
+  ═════════════════════════════════════════════════════════════════════════
+  VÍDEO · PATRONES DE DISEÑO GOF EN C# · HYPERFRAMES (ENHANCED)
+  Este archivo ES el vídeo: composición única de 60 s en 1920×1080.
+  Versión enriquecida: fondos animados, iconos, micro-animaciones, transiciones fluidas.
+  Salida:  npm run render  →  renders/video.mp4
+  ═════════════════════════════════════════════════════════════════════════
+-->
+<html lang="es" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, height=1080">
+    <title>Patrones de Diseño GoF en C# · Vídeo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Kalam:wght@300;400;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      :root {
+        /* Paleta principal - papel envejecido cálido */
+        --papel: #fdfbf6;
+        --papel-alto: #ffffff;
+        --papel-oscuro: #f5f0e8;
+        --tinta: #1d1b18;
+        --tinta-suave: #5c5852;
+        --tinta-muy-suave: #9a948b;
+        --regla: #e8e2d8;
+        --acento: #c45a3d;
+        --acento-brillante: #e87451;
+        --acento-suave: #d9a894;
+        --lapiz: #c4bfb6;
+        --tiza: rgba(253, 251, 246, 0.95);
+        --tiza-tenue: rgba(253, 251, 246, 0.65);
+
+        /* Colores por familia */
+        --creacional: #c45a3d;
+        --creacional-claro: #f5e6e0;
+        --estructural: #3d7ac4;
+        --estructural-claro: #e0eaf5;
+        --comportamiento: #3d8b4a;
+        --comportamiento-claro: #dff0e2;
+        --cierre: #1d1b18;
+
+        /* Tipografía */
+        --fuente-titulo: "Caveat", cursive;
+        --fuente-texto: "Kalam", cursive;
+        --fuente-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+
+        /* Espaciado */
+        --gap-xs: 8px;
+        --gap-sm: 16px;
+        --gap-md: 24px;
+        --gap-lg: 32px;
+        --gap-xl: 48px;
+
+        /* Sombras */
+        --sombra-suave: 0 4px 16px rgba(29,27,24,0.05);
+        --sombra-media: 0 8px 28px rgba(29,27,24,0.08);
+        --sombra-fuerte: 0 16px 48px rgba(29,27,24,0.12);
+        --sombra-elevada: 0 24px 64px rgba(29,27,24,0.15);
+
+        /* Transiciones */
+        --trans-rapida: 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        --trans-media: 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        --trans-lenta: 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      }
+
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+
+      html, body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: var(--papel);
+        color: var(--tinta);
+        font-family: var(--fuente-texto);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      #root {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+      }
+
+      .clip { position: absolute; inset: 0; overflow: hidden; }
+      #escena-portada        { z-index: 10; }
+      #escena-creacionales   { z-index: 20; }
+      #escena-estructurales  { z-index: 30; }
+      #escena-comportamiento { z-index: 40; }
+      #escena-cierre         { z-index: 50; }
+
+      .capa { position: absolute; inset: 0; overflow: hidden; }
+
+      .velo { z-index: 100; background: var(--cierre); }
+
+      .fondo { position: absolute; inset: 0; }
+
+      .textura-papel {
+        background-image:
+          radial-gradient(ellipse at 20% 30%, rgba(154,148,139,0.03) 0%, transparent 50%),
+          radial-gradient(ellipse at 80% 70%, rgba(154,148,139,0.02) 0%, transparent 50%),
+          url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.02'/%3E%3C/svg%3E");
+        background-size: cover, cover, 400px 400px;
+        animation: papelDeriva 60s linear infinite;
+      }
+
+      @keyframes papelDeriva {
+        0% { background-position: 0 0, 0 0, 0 0; }
+        100% { background-position: 100px 100px, -100px -100px, 400px 400px; }
+      }
+
+      .particulas { pointer-events: none; }
+      .particula {
+        position: absolute;
+        width: 4px; height: 4px;
+        border-radius: 50%;
+        background: var(--acento);
+        opacity: 0.15;
+        animation: flotar 20s ease-in-out infinite;
+      }
+      .particula:nth-child(odd) { background: var(--estructural); animation-duration: 25s; }
+      .particula:nth-child(3n) { background: var(--comportamiento); animation-duration: 30s; }
+
+      @keyframes flotar {
+        0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.1; }
+        25% { transform: translate(30px, -40px) scale(1.2); opacity: 0.2; }
+        50% { transform: translate(-20px, -80px) scale(0.8); opacity: 0.15; }
+        75% { transform: translate(-40px, -40px) scale(1.1); opacity: 0.18; }
+      }
+
+      .lineas-fondo { pointer-events: none; }
+      .linea-fondo {
+        position: absolute;
+        border-radius: 2px;
+        opacity: 0.04;
+        animation: lineaPulso 8s ease-in-out infinite;
+      }
+      @keyframes lineaPulso {
+        0%, 100% { opacity: 0.03; transform: scaleX(1); }
+        50% { opacity: 0.06; transform: scaleX(1.05); }
+      }
+
+      .contenido {
+        position: absolute;
+        left: 100px;
+        right: 100px;
+        top: 100px;
+        bottom: 100px;
+        display: flex;
+        flex-direction: column;
+        gap: var(--gap-lg);
+        z-index: 10;
+      }
+
+      .eyebrow {
+        font-family: var(--fuente-mono);
+        font-size: 24px;
+        font-weight: 500;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        color: var(--acento);
+        position: relative;
+        display: inline-block;
+        padding-bottom: 8px;
+      }
+      .eyebrow::after {
+        content: "";
+        position: absolute;
+        bottom: 0; left: 0; right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, var(--acento), transparent);
+        transform: scaleX(0);
+        transform-origin: left;
+        animation: eyebrowLinea 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+      }
+      @keyframes eyebrowLinea { to { transform: scaleX(1); } }
+
+      #escena-creacionales .eyebrow { color: var(--creacional); }
+      #escena-creacionales .eyebrow::after { background: linear-gradient(90deg, var(--creacional), transparent); }
+      #escena-estructurales .eyebrow { color: var(--estructural); }
+      #escena-estructurales .eyebrow::after { background: linear-gradient(90deg, var(--estructural), transparent); }
+      #escena-comportamiento .eyebrow { color: var(--comportamiento); }
+      #escena-comportamiento .eyebrow::after { background: linear-gradient(90deg, var(--comportamiento), transparent); }
+      #escena-cierre .eyebrow { color: var(--acento); }
+      #escena-cierre .eyebrow::after { background: linear-gradient(90deg, var(--acento), transparent); }
+
+      h1, h2 {
+        font-family: var(--fuente-titulo);
+        color: var(--tinta);
+        line-height: 1.1;
+        font-weight: 700;
+      }
+      h1 { font-size: 104px; letter-spacing: -1px; }
+      h2 { font-size: 72px; letter-spacing: -0.5px; }
+
+      p {
+        font-size: 32px;
+        line-height: 1.55;
+        color: var(--tinta-suave);
+        max-width: 1150px;
+        font-weight: 300;
+      }
+      p strong { color: var(--tinta); font-weight: 600; }
+
+      .tarjetas {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--gap-md);
+        margin-top: var(--gap-sm);
+        width: 100%;
+      }
+
+      .tarjeta {
+        background: var(--papel-alto);
+        border: 1px solid var(--regla);
+        border-left: 6px solid var(--acento);
+        border-radius: 16px;
+        padding: 32px 28px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        box-shadow: var(--sombra-suave);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .tarjeta::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 100%;
+        background: linear-gradient(180deg, rgba(255,255,255,0.1), transparent);
+        opacity: 0;
+      }
+
+      .tarjeta-icono {
+        font-size: 48px;
+        line-height: 1;
+        opacity: 0.15;
+        position: absolute;
+        top: 24px; right: 24px;
+        pointer-events: none;
+        transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.5s ease;
+      }
+
+      .tarjeta h3 {
+        font-family: var(--fuente-titulo);
+        font-size: 38px;
+        font-weight: 700;
+        color: var(--tinta);
+        margin: 0;
+        position: relative;
+        z-index: 1;
+      }
+
+      .tarjeta p {
+        font-size: 24px;
+        line-height: 1.45;
+        color: var(--tinta-suave);
+        margin: 0;
+        position: relative;
+        z-index: 1;
+        font-weight: 300;
+      }
+
+      #escena-creacionales .tarjeta { border-left-color: var(--creacional); }
+      #escena-creacionales .tarjeta .tarjeta-icono { color: var(--creacional); }
+      #escena-estructurales .tarjeta { border-left-color: var(--estructural); }
+      #escena-estructurales .tarjeta .tarjeta-icono { color: var(--estructural); }
+      #escena-comportamiento .tarjeta { border-left-color: var(--comportamiento); }
+      #escena-comportamiento .tarjeta .tarjeta-icono { color: var(--comportamiento); }
+
+      .pizarra { background: var(--cierre); color: var(--tiza); }
+      .pizarra .fondo { background: var(--cierre); }
+      .pizarra h2 { color: var(--tiza); }
+      .pizarra p { color: var(--tiza-tenue); font-size: 28px; line-height: 1.65; }
+      .pizarra .tarjeta {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-left: 6px solid var(--acento);
+        color: var(--tiza);
+        box-shadow: var(--sombra-media);
+      }
+      .pizarra .tarjeta h3 { color: var(--tiza); }
+      .pizarra .tarjeta p { color: var(--tiza-tenue); }
+      .pizarra .tarjeta .tarjeta-icono { color: var(--acento-suave); opacity: 0.2; }
+
+      .cta {
+        font-family: var(--fuente-mono);
+        font-size: 32px;
+        font-weight: 600;
+        color: var(--acento);
+        margin-top: var(--gap-xs);
+        position: relative;
+        display: inline-block;
+        padding-bottom: 6px;
+      }
+      .cta::after {
+        content: "";
+        position: absolute;
+        bottom: 0; left: 0; right: 0;
+        height: 2px;
+        background: var(--acento);
+        transform: scaleX(0);
+        transform-origin: left;
+        animation: ctaLinea 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.5s forwards;
+      }
+      @keyframes ctaLinea { to { transform: scaleX(1); } }
+      .pizarra .cta { color: var(--acento-brillante); }
+      .pizarra .cta::after { background: var(--acento-brillante); }
+
+      .acento-flotante {
+        position: absolute;
+        pointer-events: none;
+        opacity: 0.08;
+        font-family: var(--fuente-mono);
+        font-size: 120px;
+        font-weight: 700;
+        line-height: 1;
+        animation: acentoFlotar 15s ease-in-out infinite;
+      }
+      @keyframes acentoFlotar {
+        0%, 100% { transform: translate(0, 0) rotate(-2deg); opacity: 0.05; }
+        50% { transform: translate(20px, -15px) rotate(1deg); opacity: 0.1; }
+      }
+
+      .punto-conexion {
+        position: absolute;
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        background: var(--acento);
+        opacity: 0;
+        pointer-events: none;
+        animation: puntoPulso 2s ease-in-out infinite;
+      }
+      @keyframes puntoPulso {
+        0%, 100% { transform: scale(0.5); opacity: 0.3; }
+        50% { transform: scale(1.5); opacity: 0.7; }
+      }
+
+      .timeline-visual {
+        position: absolute;
+        bottom: 60px; left: 100px; right: 100px;
+        height: 4px;
+        background: var(--regla);
+        border-radius: 2px;
+        overflow: hidden;
+        z-index: 5;
+      }
+      .timeline-progreso {
+        height: 100%;
+        background: linear-gradient(90deg, var(--creacional), var(--estructural), var(--comportamiento), var(--acento));
+        border-radius: 2px;
+        transform-origin: left;
+        transform: scaleX(0);
+        animation: timelineAvance 60s linear forwards;
+      }
+      @keyframes timelineAvance { to { transform: scaleX(1); } }
+
+      .timeline-marcador {
+        position: absolute;
+        top: -6px; width: 16px; height: 16px;
+        border-radius: 50%;
+        border: 3px solid var(--papel);
+        box-shadow: var(--sombra-suave);
+        transform: translateX(-50%);
+        opacity: 0;
+        animation: marcadorAparece 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+      }
+      @keyframes marcadorAparece { to { opacity: 1; transform: translateX(-50%) scale(1); } }
+
+      .brillo-barrido {
+        position: absolute;
+        top: 0; left: -100%; width: 50%; height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        animation: brilloBarrido 3s ease-in-out infinite;
+        pointer-events: none;
+      }
+      @keyframes brilloBarrido {
+        0% { left: -100%; }
+        100% { left: 200%; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div data-hf-id="hf-ui1h" id="root" data-composition-id="root" data-duration="60" data-width="1920" data-height="1080">
+
+      <div data-hf-id="hf-183a" id="velo-inicio" class="velo"></div>
+      <div data-hf-id="hf-j5kl" id="velo-final" class="velo"></div>
+
+      <div class="timeline-visual" style="z-index: 5;" data-layout-allow-overflow>
+        <div class="timeline-progreso"></div>
+        <div class="timeline-marcador" style="left: 0%; background: var(--creacional); animation-delay: 0.5s;"></div>
+        <div class="timeline-marcador" style="left: 20%; background: var(--estructural); animation-delay: 12.5s;"></div>
+        <div class="timeline-marcador" style="left: 40%; background: var(--comportamiento); animation-delay: 24.5s;"></div>
+        <div class="timeline-marcador" style="left: 60%; background: var(--acento); animation-delay: 36.5s;"></div>
+        <div class="timeline-marcador" style="left: 80%; background: var(--acento-brillante); animation-delay: 48.5s;"></div>
+        <div class="timeline-marcador" style="left: 100%; background: var(--tinta); animation-delay: 58s;"></div>
+      </div>
+
+      <section data-hf-id="hf-85k6" id="escena-portada" class="clip" data-composition-id="escena-portada" data-start="0" data-duration="12.7" data-layout-allow-overlap>
+        <div data-hf-id="hf-eq8h" class="capa">
+          <div class="fondo textura-papel"></div>
+          <div class="fondo particulas" aria-hidden="true">
+            <div class="particula" style="left: 10%; top: 20%; animation-delay: 0s;"></div>
+            <div class="particula" style="left: 85%; top: 15%; animation-delay: 2s;"></div>
+            <div class="particula" style="left: 20%; top: 75%; animation-delay: 4s;"></div>
+            <div class="particula" style="left: 90%; top: 80%; animation-delay: 6s;"></div>
+            <div class="particula" style="left: 50%; top: 50%; animation-delay: 8s;"></div>
+            <div class="particula" style="left: 5%; top: 50%; animation-delay: 10s;"></div>
+            <div class="particula" style="left: 95%; top: 40%; animation-delay: 12s;"></div>
+            <div class="particula" style="left: 30%; top: 10%; animation-delay: 14s;"></div>
+            <div class="particula" style="left: 70%; top: 90%; animation-delay: 16s;"></div>
+            <div class="particula" style="left: 45%; top: 30%; animation-delay: 18s;"></div>
+          </div>
+          <div class="fondo lineas-fondo" aria-hidden="true">
+            <div class="linea-fondo" style="top: 15%; left: 5%; width: 30%; height: 1px; background: var(--tinta); animation-delay: 0s;"></div>
+            <div class="linea-fondo" style="top: 85%; right: 5%; width: 25%; height: 1px; background: var(--tinta); animation-delay: 1s;"></div>
+            <div class="linea-fondo" style="left: 10%; top: 30%; width: 1px; height: 40%; background: var(--tinta); animation-delay: 2s;"></div>
+            <div class="linea-fondo" style="right: 10%; top: 40%; width: 1px; height: 35%; background: var(--tinta); animation-delay: 3s;"></div>
+          </div>
+          <div class="acento-flotante" style="top: 10%; left: 5%; color: var(--creacional); animation-delay: 0s;">🏗</div>
+          <div class="acento-flotante" style="top: 5%; right: 5%; color: var(--estructural); animation-delay: 2s;">🔗</div>
+          <div class="acento-flotante" style="bottom: 10%; left: 8%; color: var(--comportamiento); animation-delay: 4s;">💬</div>
+          <div class="acento-flotante" style="bottom: 5%; right: 8%; color: var(--acento); animation-delay: 6s;">⚙</div>
+
+          <div data-hf-id="hf-w0jt" class="contenido" data-layout-allow-overlap>
+            <div data-hf-id="hf-ixp5" class="eyebrow">Patrones de diseño · GoF · C# .NET 10</div>
+            <h1 data-hf-id="hf-cfhc">Patrones de Diseño <span style="color: var(--acento);">GoF</span></h1>
+            <h2 data-hf-id="hf-9b8u">en <span style="font-family: var(--fuente-mono); color: var(--estructural);">C#</span></h2>
+            <p data-hf-id="hf-rew5">Veinte patrones, tres familias, un mismo propósito: escribir software más mantenible.</p>
+            <div data-hf-id="hf-6m9q" style="display: flex; gap: 50px; font-size: 28px; color: var(--tinta-suave); margin-top: var(--gap-md);">
+              <div data-hf-id="hf-pzb5" style="text-align: center; padding: var(--gap-md); background: var(--creacional-claro); border-radius: 12px; border: 1px solid var(--creacional); flex: 1;">
+                <div style="font-size: 40px; margin-bottom: 8px;">🏗</div>
+                <strong data-hf-id="hf-sj0p" style="color: var(--creacional); font-size: 30px;">Creacionales</strong><br>
+                <span style="font-size: 22px; font-family: var(--fuente-texto);">cómo se crean los objetos</span>
+              </div>
+              <div data-hf-id="hf-3xb2" style="text-align: center; padding: var(--gap-md); background: var(--estructural-claro); border-radius: 12px; border: 1px solid var(--estructural); flex: 1;">
+                <div style="font-size: 40px; margin-bottom: 8px;">🔗</div>
+                <strong data-hf-id="hf-krky" style="color: var(--estructural); font-size: 30px;">Estructurales</strong><br>
+                <span style="font-size: 22px; font-family: var(--fuente-texto);">cómo se componen las clases</span>
+              </div>
+              <div data-hf-id="hf-duez" style="text-align: center; padding: var(--gap-md); background: var(--comportamiento-claro); border-radius: 12px; border: 1px solid var(--comportamiento); flex: 1;">
+                <div style="font-size: 40px; margin-bottom: 8px;">💬</div>
+                <strong data-hf-id="hf-8rin" style="color: var(--comportamiento); font-size: 30px;">Comportamiento</strong><br>
+                <span style="font-size: 22px; font-family: var(--fuente-texto);">cómo se comunican</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section data-hf-id="hf-gfml" id="escena-creacionales" class="clip" data-composition-id="escena-creacionales" data-start="12" data-duration="12.7" data-layout-allow-overlap>
+        <div data-hf-id="hf-vu85" class="capa">
+          <div class="fondo textura-papel" style="opacity: 0.5;"></div>
+          <div class="fondo particulas" aria-hidden="true">
+            <div class="particula" style="left: 15%; top: 25%; animation-delay: 0s;"></div>
+            <div class="particula" style="left: 80%; top: 20%; animation-delay: 3s;"></div>
+            <div class="particula" style="left: 25%; top: 70%; animation-delay: 6s;"></div>
+            <div class="particula" style="left: 85%; top: 75%; animation-delay: 9s;"></div>
+            <div class="particula" style="left: 50%; top: 45%; animation-delay: 12s;"></div>
+          </div>
+          <div class="acento-flotante" style="top: 8%; left: 3%; color: var(--creacional); font-size: 80px; animation-delay: 1s;">🏗</div>
+          <div class="acento-flotante" style="bottom: 8%; right: 3%; color: var(--creacional); font-size: 60px; animation-delay: 3s;">★</div>
+
+          <div data-hf-id="hf-e7r1" class="contenido" data-layout-allow-overlap>
+            <div data-hf-id="hf-srgd" class="eyebrow">Familia creacional · cómo nacen los objetos</div>
+            <h2 data-hf-id="hf-dtjo">Creacionales</h2>
+            <div data-hf-id="hf-7oye" class="tarjetas" data-layout-allow-overflow>
+              <div data-hf-id="hf-qbf3" class="tarjeta" style="--orden: 1;">
+                <span class="tarjeta-icono" aria-hidden="true">🔑</span>
+                <div class="brillo-barrido" style="animation-delay: 0.5s;"></div>
+                <h3 data-hf-id="hf-ebk5">Singleton</h3>
+                <p data-hf-id="hf-en00">Una sola instancia global: logger, configuración, caché.</p>
+              </div>
+              <div data-hf-id="hf-ga5r" class="tarjeta" style="--orden: 2;">
+                <span class="tarjeta-icono" aria-hidden="true">🏭</span>
+                <div class="brillo-barrido" style="animation-delay: 1s;"></div>
+                <h3 data-hf-id="hf-ofwr">Factory Method</h3>
+                <p data-hf-id="hf-jw5b">Las subclases deciden qué clase concreta crear.</p>
+              </div>
+              <div data-hf-id="hf-fvuq" class="tarjeta" style="--orden: 3;">
+                <span class="tarjeta-icono" aria-hidden="true">🏗️</span>
+                <div class="brillo-barrido" style="animation-delay: 1.5s;"></div>
+                <h3 data-hf-id="hf-mh74">Abstract Factory</h3>
+                <p data-hf-id="hf-kcow">Familias de objetos relacionados que combinan entre sí.</p>
+              </div>
+              <div data-hf-id="hf-fhjp" class="tarjeta" style="--orden: 4;">
+                <span class="tarjeta-icono" aria-hidden="true">🧱</span>
+                <div class="brillo-barrido" style="animation-delay: 2s;"></div>
+                <h3 data-hf-id="hf-aujn">Builder</h3>
+                <p data-hf-id="hf-c32c">Construcción paso a paso, sin constructores gigantes.</p>
+              </div>
+              <div data-hf-id="hf-i9ow" class="tarjeta" style="--orden: 5;">
+                <span class="tarjeta-icono" aria-hidden="true">🧬</span>
+                <div class="brillo-barrido" style="animation-delay: 2.5s;"></div>
+                <h3 data-hf-id="hf-v14q">Prototype</h3>
+                <p data-hf-id="hf-84e7">Clonar un prototipo existente en vez de partir desde cero.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section data-hf-id="hf-8az4" id="escena-estructurales" class="clip" data-composition-id="escena-estructurales" data-start="24" data-duration="12.7" data-layout-allow-overlap>
+        <div data-hf-id="hf-x158" class="capa">
+          <div class="fondo textura-papel" style="opacity: 0.5;"></div>
+          <div class="fondo particulas" aria-hidden="true">
+            <div class="particula" style="left: 12%; top: 30%; animation-delay: 1s;"></div>
+            <div class="particula" style="left: 82%; top: 18%; animation-delay: 4s;"></div>
+            <div class="particula" style="left: 22%; top: 68%; animation-delay: 7s;"></div>
+            <div class="particula" style="left: 88%; top: 72%; animation-delay: 10s;"></div>
+            <div class="particula" style="left: 48%; top: 50%; animation-delay: 13s;"></div>
+            <div class="particula" style="left: 60%; top: 25%; animation-delay: 16s;"></div>
+            <div class="particula" style="left: 35%; top: 80%; animation-delay: 19s;"></div>
+          </div>
+          <div class="acento-flotante" style="top: 6%; left: 4%; color: var(--estructural); font-size: 80px; animation-delay: 2s;">🔗</div>
+          <div class="acento-flotante" style="bottom: 6%; right: 4%; color: var(--estructural); font-size: 60px; animation-delay: 4s;">◆</div>
+
+          <div data-hf-id="hf-feo4" class="contenido" data-layout-allow-overlap>
+            <div data-hf-id="hf-rerb" class="eyebrow">Familia estructural · cómo se componen las clases</div>
+            <h2 data-hf-id="hf-q9c9">Estructurales</h2>
+            <div data-hf-id="hf-omii" class="tarjetas" data-layout-allow-overflow>
+              <div data-hf-id="hf-hvdv" class="tarjeta" style="--orden: 1;">
+                <span class="tarjeta-icono" aria-hidden="true">🔌</span>
+                <div class="brillo-barrido" style="animation-delay: 0.3s;"></div>
+                <h3 data-hf-id="hf-nk6z">Adapter</h3>
+                <p data-hf-id="hf-quia">Hace compatible una interfaz ajena.</p>
+              </div>
+              <div data-hf-id="hf-hh2u" class="tarjeta" style="--orden: 2;">
+                <span class="tarjeta-icono" aria-hidden="true">🎁</span>
+                <div class="brillo-barrido" style="animation-delay: 0.8s;"></div>
+                <h3 data-hf-id="hf-omxl">Decorator</h3>
+                <p data-hf-id="hf-i73e">Añade responsabilidades sin modificar la clase.</p>
+              </div>
+              <div data-hf-id="hf-h2rt" class="tarjeta" style="--orden: 3;">
+                <span class="tarjeta-icono" aria-hidden="true">🏛️</span>
+                <div class="brillo-barrido" style="animation-delay: 1.3s;"></div>
+                <h3 data-hf-id="hf-uouu">Facade</h3>
+                <p data-hf-id="hf-ycnd">Interfaz simplificada sobre un subsistema complejo.</p>
+              </div>
+              <div data-hf-id="hf-di0k" class="tarjeta" style="--orden: 4;">
+                <span class="tarjeta-icono" aria-hidden="true">🛡️</span>
+                <div class="brillo-barrido" style="animation-delay: 1.8s;"></div>
+                <h3 data-hf-id="hf-sv2s">Proxy</h3>
+                <p data-hf-id="hf-xoku">Controla el acceso: caché, seguridad, remoto.</p>
+              </div>
+              <div data-hf-id="hf-d3pj" class="tarjeta" style="--orden: 5;">
+                <span class="tarjeta-icono" aria-hidden="true">🌳</span>
+                <div class="brillo-barrido" style="animation-delay: 2.3s;"></div>
+                <h3 data-hf-id="hf-85dz">Composite</h3>
+                <p data-hf-id="hf-fm20">Trata objetos simples y compuestos de forma uniforme.</p>
+              </div>
+              <div data-hf-id="hf-kozx" class="tarjeta" style="--orden: 6;">
+                <span class="tarjeta-icono" aria-hidden="true">🌉</span>
+                <div class="brillo-barrido" style="animation-delay: 2.8s;"></div>
+                <h3 data-hf-id="hf-wn75">Bridge</h3>
+                <p data-hf-id="hf-zmd2">Desacopla abstracción de su implementación.</p>
+              </div>
+              <div data-hf-id="hf-l3ay" class="tarjeta" style="--orden: 7;">
+                <span class="tarjeta-icono" aria-hidden="true">🪶</span>
+                <div class="brillo-barrido" style="animation-delay: 3.3s;"></div>
+                <h3 data-hf-id="hf-eljt">Flyweight</h3>
+                <p data-hf-id="hf-257v">Comparte estado intrínseco para ahorrar memoria.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section data-hf-id="hf-vy4z" id="escena-comportamiento" class="clip" data-composition-id="escena-comportamiento" data-start="36" data-duration="12.7" data-layout-allow-overlap>
+        <div data-hf-id="hf-wmu7" class="capa">
+          <div class="fondo textura-papel" style="opacity: 0.5;"></div>
+          <div class="fondo particulas" aria-hidden="true">
+            <div class="particula" style="left: 18%; top: 22%; animation-delay: 0s;"></div>
+            <div class="particula" style="left: 78%; top: 25%; animation-delay: 2s;"></div>
+            <div class="particula" style="left: 28%; top: 72%; animation-delay: 5s;"></div>
+            <div class="particula" style="left: 82%; top: 78%; animation-delay: 8s;"></div>
+            <div class="particula" style="left: 52%; top: 48%; animation-delay: 11s;"></div>
+            <div class="particula" style="left: 10%; top: 55%; animation-delay: 14s;"></div>
+            <div class="particula" style="left: 90%; top: 45%; animation-delay: 17s;"></div>
+            <div class="particula" style="left: 40%; top: 15%; animation-delay: 20s;"></div>
+            <div class="particula" style="left: 65%; top: 85%; animation-delay: 23s;"></div>
+          </div>
+          <div class="acento-flotante" style="top: 5%; left: 5%; color: var(--comportamiento); font-size: 80px; animation-delay: 1s;">💬</div>
+          <div class="acento-flotante" style="bottom: 5%; right: 5%; color: var(--comportamiento); font-size: 60px; animation-delay: 3s;">⟳</div>
+
+          <div data-hf-id="hf-f0d3" class="contenido" data-layout-allow-overlap>
+            <div data-hf-id="hf-v06y" class="eyebrow">Familia de comportamiento · cómo se comunican</div>
+            <h2 data-hf-id="hf-zcgi">Comportamiento</h2>
+            <div data-hf-id="hf-p0tj" class="tarjetas" data-layout-allow-overflow>
+              <div data-hf-id="hf-lhlz" class="tarjeta" style="--orden: 1;">
+                <span class="tarjeta-icono" aria-hidden="true">🎯</span>
+                <div class="brillo-barrido" style="animation-delay: 0.2s;"></div>
+                <h3 data-hf-id="hf-eepl">Strategy</h3>
+                <p data-hf-id="hf-ap7a">Intercambia algoritmos en tiempo de ejecución.</p>
+              </div>
+              <div data-hf-id="hf-lvx0" class="tarjeta" style="--orden: 2;">
+                <span class="tarjeta-icono" aria-hidden="true">👁️</span>
+                <div class="brillo-barrido" style="animation-delay: 0.6s;"></div>
+                <h3 data-hf-id="hf-3q8e">Observer</h3>
+                <p data-hf-id="hf-q8dz">Avisa a varios interesados cuando algo cambia.</p>
+              </div>
+              <div data-hf-id="hf-ma81" class="tarjeta" style="--orden: 3;">
+                <span class="tarjeta-icono" aria-hidden="true">📦</span>
+                <div class="brillo-barrido" style="animation-delay: 1s;"></div>
+                <h3 data-hf-id="hf-3wy5">Command</h3>
+                <p data-hf-id="hf-4chq">Encapsula una solicitud como objeto: deshacer / encolar.</p>
+              </div>
+              <div data-hf-id="hf-moj2" class="tarjeta" style="--orden: 4;">
+                <span class="tarjeta-icono" aria-hidden="true">📋</span>
+                <div class="brillo-barrido" style="animation-delay: 1.4s;"></div>
+                <h3 data-hf-id="hf-tv87">Template Method</h3>
+                <p data-hf-id="hf-os0k">Esqueleto fijo de algoritmo; las subclases rellenan pasos.</p>
+              </div>
+              <div data-hf-id="hf-n2u3" class="tarjeta" style="--orden: 5;">
+                <span class="tarjeta-icono" aria-hidden="true">🔄</span>
+                <div class="brillo-barrido" style="animation-delay: 1.8s;"></div>
+                <h3 data-hf-id="hf-yzbt">State</h3>
+                <p data-hf-id="hf-n6pa">Cambia de comportamiento según su estado interno.</p>
+              </div>
+              <div data-hf-id="hf-nh54" class="tarjeta" style="--orden: 6;">
+                <span class="tarjeta-icono" aria-hidden="true">🎭</span>
+                <div class="brillo-barrido" style="animation-delay: 2.2s;"></div>
+                <h3 data-hf-id="hf-e5m1">Mediator</h3>
+                <p data-hf-id="hf-lptv">Comunicación centralizada mediante un intermediario.</p>
+              </div>
+              <div data-hf-id="hf-nvg5" class="tarjeta" style="--orden: 7;">
+                <span class="tarjeta-icono" aria-hidden="true">💾</span>
+                <div class="brillo-barrido" style="animation-delay: 2.6s;"></div>
+                <h3 data-hf-id="hf-dd4f">Memento</h3>
+                <p data-hf-id="hf-v17w">Captura y restaura estado sin romper encapsulamiento.</p>
+              </div>
+              <div data-hf-id="hf-o9r6" class="tarjeta" style="--orden: 8;">
+                <span class="tarjeta-icono" aria-hidden="true">⛓️</span>
+                <div class="brillo-barrido" style="animation-delay: 3s;"></div>
+                <h3 data-hf-id="hf-dors">Chain of<br data-hf-id="hf-x5px">Responsibility</h3>
+                <p data-hf-id="hf-j27p">Pasa una solicitud por una cadena de manejadores.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section data-hf-id="hf-tpdy" id="escena-cierre" class="clip pizarra" data-composition-id="escena-cierre" data-start="48" data-duration="12" data-layout-allow-overlap>
+        <div data-hf-id="hf-xtra" class="capa">
+          <div class="fondo" style="background: var(--cierre);">
+            <div class="textura-papel" style="opacity: 0.03;"></div>
+            <div class="particulas" aria-hidden="true">
+              <div class="particula" style="left: 20%; top: 30%; animation-delay: 0s; background: var(--acento-brillante);"></div>
+              <div class="particula" style="left: 80%; top: 20%; animation-delay: 2s; background: var(--acento-brillante);"></div>
+              <div class="particula" style="left: 30%; top: 70%; animation-delay: 4s; background: var(--acento-brillante);"></div>
+              <div class="particula" style="left: 70%; top: 80%; animation-delay: 6s; background: var(--acento-brillante);"></div>
+              <div class="particula" style="left: 50%; top: 50%; animation-delay: 8s; background: var(--acento-brillante);"></div>
+            </div>
+          </div>
+          <div class="acento-flotante" style="top: 8%; left: 2%; color: var(--acento-suave); font-size: 100px; animation-delay: 0s; opacity: 0.05;">🏗</div>
+          <div class="acento-flotante" style="top: 12%; right: 3%; color: var(--estructural); font-size: 80px; animation-delay: 1s; opacity: 0.05;">🔗</div>
+          <div class="acento-flotante" style="bottom: 10%; left: 5%; color: var(--comportamiento); font-size: 80px; animation-delay: 2s; opacity: 0.05;">💬</div>
+          <div class="acento-flotante" style="bottom: 8%; right: 5%; color: var(--acento-brillante); font-size: 100px; animation-delay: 3s; opacity: 0.05;">✦</div>
+
+          <div data-hf-id="hf-g7a6" class="contenido" data-layout-allow-overflow>
+            <div data-hf-id="hf-7st2" class="eyebrow">Cierre · ¿y los que faltan?</div>
+            <h2 data-hf-id="hf-u9kw">Veinte de veintitrés</h2>
+            <p data-hf-id="hf-iu4j">Faltan a propósito <strong data-hf-id="hf-k924" style="color: var(--acento-brillante);">Interpreter</strong>, <strong data-hf-id="hf-29kg" style="color: var(--acento-brillante);">Iterator</strong> y <strong data-hf-id="hf-h70o" style="color: var(--acento-brillante);">Visitor</strong>: Iterator ya lo cubre C# con IEnumerable y LINQ; Visitor es muy especializado; Interpreter es raro en la práctica.</p>
+            <p data-hf-id="hf-1na6">Lo más poderoso es que los patrones se combinan: un <strong style="color: var(--creacional-claro);">Abstract Factory</strong> puede crear <strong style="color: var(--comportamiento-claro);">Strategies</strong>, coordinadas por un <strong style="color: var(--comportamiento-claro);">Mediator</strong> que notifica cambios vía <strong style="color: var(--comportamiento-claro);">Observer</strong>.</p>
+            <div data-hf-id="hf-acnw" class="cta">Prueba los ejemplos: <span style="font-family: var(--fuente-mono); color: var(--tiza);">dotnet run</span> en el repositorio</div>
+
+            <div style="display: flex; gap: 20px; margin-top: var(--gap-xl); padding-top: var(--gap-lg); border-top: 1px solid rgba(255,255,255,0.1); flex-wrap: wrap;">
+              <div style="flex: 1; min-width: 200px; text-align: center; padding: var(--gap-md); background: var(--creacional-claro); border: 2px solid var(--creacional); border-radius: 12px;" data-layout-allow-overflow>
+                <div style="font-size: 36px; margin-bottom: 8px; color: var(--creacional);" data-layout-allow-occlusion>🏗</div>
+                <div style="font-family: var(--fuente-mono); font-size: 20px; color: var(--tinta); font-weight: 700;">5 CREACIONALES</div>
+                <div style="font-size: 18px; color: var(--tinta); margin-top: 4px; font-family: var(--fuente-texto); font-weight: 500;">Singleton, Factory, Abstract Factory, Builder, Prototype</div>
+              </div>
+              <div style="flex: 1; min-width: 200px; text-align: center; padding: var(--gap-md); background: var(--estructural-claro); border: 2px solid var(--estructural); border-radius: 12px;" data-layout-allow-overflow>
+                <div style="font-size: 36px; margin-bottom: 8px; color: var(--estructural);" data-layout-allow-occlusion>🔗</div>
+                <div style="font-family: var(--fuente-mono); font-size: 20px; color: var(--tinta); font-weight: 700;">7 ESTRUCTURALES</div>
+                <div style="font-size: 18px; color: var(--tinta); margin-top: 4px; font-family: var(--fuente-texto); font-weight: 500;">Adapter, Decorator, Facade, Proxy, Composite, Bridge, Flyweight</div>
+              </div>
+              <div style="flex: 1; min-width: 200px; text-align: center; padding: var(--gap-md); background: var(--comportamiento-claro); border: 2px solid var(--comportamiento); border-radius: 12px;" data-layout-allow-overflow>
+                <div style="font-size: 36px; margin-bottom: 8px; color: var(--comportamiento);" data-layout-allow-occlusion>💬</div>
+                <div style="font-family: var(--fuente-mono); font-size: 20px; color: var(--tinta); font-weight: 700;">8 COMPORTAMIENTO</div>
+                <div style="font-size: 18px; color: var(--tinta); margin-top: 4px; font-family: var(--fuente-texto); font-weight: 500;">Strategy, Observer, Command, Template, State, Mediator, Memento, Chain</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <script>
+      gsap.registerEffect({
+        name: "entradaTarjeta",
+        defaults: { duration: 0.9, ease: "elastic.out(1, 0.6)" },
+        effect: (targets, config) => {
+          return gsap.from(targets, {
+            y: 60,
+            scale: 0.85,
+            rotationX: -15,
+            opacity: 0,
+            duration: config.duration,
+            ease: config.ease,
+            stagger: config.stagger || 0.1,
+            transformOrigin: "center bottom"
+          });
+        }
+      });
+
+      const tlRaiz = gsap.timeline({ paused: true });
+
+      const creaTarjetasTL = (selectorEscena, inicioStagger = 0.12) => {
+        const tl = gsap.timeline();
+        tl.from(`${selectorEscena} .eyebrow`, {
+          y: -30, opacity: 0, duration: 0.8, ease: "back.out(1.5)"
+        }, 0.1);
+        tl.from(`${selectorEscena} h2`, {
+          y: 40, opacity: 0, duration: 1, ease: "elastic.out(1, 0.5)"
+        }, 0.3);
+        tl.from(`${selectorEscena} .tarjeta`, {
+          y: 50,
+          scale: 0.8,
+          rotationX: -20,
+          opacity: 0,
+          duration: 0.9,
+          stagger: inicioStagger,
+          ease: "elastic.out(1, 0.6)",
+          transformOrigin: "center bottom"
+        }, 0.7);
+        tl.from(`${selectorEscena} .tarjeta-icono`, {
+          scale: 0,
+          rotation: -180,
+          opacity: 0,
+          duration: 0.6,
+          stagger: inicioStagger,
+          ease: "back.out(1.8)"
+        }, 0.9, "<");
+        return tl;
+      };
+
+      const tlPortada = gsap.timeline();
+      tlPortada.from("#escena-portada .eyebrow", { y: -30, opacity: 0, duration: 0.8, ease: "back.out(1.5)" }, 0.1);
+      tlPortada.from("#escena-portada h1", { y: 50, opacity: 0, duration: 1.2, ease: "elastic.out(1, 0.4)" }, 0.3);
+      tlPortada.from("#escena-portada h1 span", { y: 50, opacity: 0, duration: 1, ease: "elastic.out(1, 0.5)" }, 0.5);
+      tlPortada.from("#escena-portada h2", { y: 35, opacity: 0, duration: 0.9, ease: "back.out(1.35)" }, 0.7);
+      tlPortada.from("#escena-portada h2 span", { y: 35, opacity: 0, duration: 0.8, ease: "back.out(1.35)" }, 0.9);
+      tlPortada.from("#escena-portada p", { y: 25, opacity: 0, duration: 0.8, ease: "power2.out" }, 1.1);
+      tlPortada.from("#escena-portada .contenido > div:last-child > div", {
+        y: 40, scale: 0.9, opacity: 0, duration: 0.8, stagger: 0.15, ease: "back.out(1.3)"
+      }, 1.4);
+      tlPortada.from("#escena-portada .particula", {
+        scale: 0, opacity: 0, duration: 1, stagger: 0.05, ease: "back.out(1.5)"
+      }, 0.5);
+      tlPortada.from("#escena-portada .acento-flotante", {
+        scale: 0, rotation: -90, opacity: 0, duration: 1, stagger: 0.2, ease: "elastic.out(1, 0.5)"
+      }, 1);
+
+      const tlCreacionales = creaTarjetasTL("#escena-creacionales", 0.11);
+      const tlEstructurales = creaTarjetasTL("#escena-estructurales", 0.09);
+      const tlComportamiento = creaTarjetasTL("#escena-comportamiento", 0.08);
+
+      const tlCierre = gsap.timeline();
+      tlCierre.from("#escena-cierre .eyebrow", { y: -30, opacity: 0, duration: 0.8, ease: "back.out(1.5)" }, 0.1);
+      tlCierre.from("#escena-cierre h2", { y: 45, opacity: 0, duration: 1.1, ease: "elastic.out(1, 0.4)" }, 0.3);
+      tlCierre.from("#escena-cierre p", { y: 30, opacity: 0, duration: 0.9, ease: "power2.out", stagger: 0.12 }, 0.8);
+      tlCierre.from("#escena-cierre .cta", { y: 30, scale: 0.9, opacity: 0, duration: 0.9, ease: "back.out(1.3)" }, 1.8);
+      tlCierre.from("#escena-cierre .contenido > div:last-child > div", {
+        y: 40, scale: 0.95, opacity: 0, duration: 0.8, stagger: 0.1, ease: "back.out(1.2)"
+      }, 2.2);
+      tlCierre.from("#escena-cierre .particula", { scale: 0, opacity: 0, duration: 1, stagger: 0.1, ease: "back.out(1.5)" }, 0.5);
+      tlCierre.from("#escena-cierre .acento-flotante", { scale: 0, rotation: 90, opacity: 0, duration: 1.2, stagger: 0.15, ease: "elastic.out(1, 0.5)" }, 1);
+
+      tlRaiz.add(tlPortada, 0);
+      tlRaiz.add(tlCreacionales, 12);
+      tlRaiz.add(tlEstructurales, 24);
+      tlRaiz.add(tlComportamiento, 36);
+      tlRaiz.add(tlCierre, 48);
+
+      const transicion = (salida, entrada, tiempo) => {
+        tlRaiz.fromTo(salida, { opacity: 1, scale: 1, filter: "blur(0px)" },
+                      { opacity: 0, scale: 1.04, filter: "blur(4px)", duration: 0.8, ease: "power2.inOut" }, tiempo);
+        tlRaiz.fromTo(entrada, { opacity: 0, scale: 1.06, filter: "blur(4px)" },
+                      { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.8, ease: "power2.inOut", immediateRender: false }, tiempo);
+      };
+
+      transicion("#escena-portada .capa", "#escena-creacionales .capa", 12);
+      transicion("#escena-creacionales .capa", "#escena-estructurales .capa", 24);
+      transicion("#escena-estructurales .capa", "#escena-comportamiento .capa", 36);
+      transicion("#escena-comportamiento .capa", "#escena-cierre .capa", 48);
+
+      tlRaiz.to("#velo-inicio", { opacity: 0, duration: 0.8, ease: "power2.out" }, 0);
+      tlRaiz.to("#velo-final", { opacity: 1, duration: 0.8, ease: "power2.in" }, 57.2);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["root"] = tlRaiz;
+
+      console.log(`[HyperFrames] Duración total: ${tlRaiz.duration()}s`);
+    </script>
+  </body>
+</html>
