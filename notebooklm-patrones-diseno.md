@@ -25,6 +25,46 @@ Fueron catalogados por **Erich Gamma, Richard Helm, Ralph Johnson y John Vlissid
 | **Estructurales** | Cómo se componen las clases y objetos | Adapter, Decorator, Facade, Proxy, Composite, Bridge, Flyweight |
 | **De Comportamiento** | Cómo se comunican y distribuyen responsabilidades | Strategy, Observer, Command, Template Method, State, Mediator, Memento, Chain of Responsibility |
 
+```mermaid
+graph TB
+    classDef creacional fill:#f5e6e0,stroke:#c45a3d,stroke-width:2px;
+    classDef estructural fill:#e0eaf5,stroke:#3d7ac4,stroke-width:2px;
+    classDef comportamiento fill:#dff0e2,stroke:#3d8b4a,stroke-width:2px;
+
+    GOF[Patrones GoF<br/>Gang of Four, 1994]
+
+    GOF --> C[Creacionales<br/>5 patrones]
+    GOF --> E[Estructurales<br/>7 patrones]
+    GOF --> B[Comportamiento<br/>8 patrones]
+
+    C --> S1[Singleton]
+    C --> S2[Factory Method]
+    C --> S3[Abstract Factory]
+    C --> S4[Builder]
+    C --> S5[Prototype]
+
+    E --> S6[Adapter]
+    E --> S7[Decorator]
+    E --> S8[Facade]
+    E --> S9[Proxy]
+    E --> S10[Composite]
+    E --> S11[Bridge]
+    E --> S12[Flyweight]
+
+    B --> S13[Strategy]
+    B --> S14[Observer]
+    B --> S15[Command]
+    B --> S16[Template Method]
+    B --> S17[State]
+    B --> S18[Mediator]
+    B --> S19[Memento]
+    B --> S20[Chain of Resp.]
+
+    class S1,S2,S3,S4,S5 creacional;
+    class S6,S7,S8,S9,S10,S11,S12 estructural;
+    class S13,S14,S15,S16,S17,S18,S19,S20 comportamiento;
+```
+
 **Nota importante:** Este proyecto contiene implementaciones educativas de **20 de los 23 patrones GoF**. Faltan intencionalmente: Interpreter, Iterator y Visitor (más especializados o ya cubiertos por el lenguaje C#).
 
 ---

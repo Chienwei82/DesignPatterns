@@ -52,6 +52,154 @@ Una aplicación de consola interactiva en **.NET 10** que demuestra **20 de los 
 
 ---
 
+## Mapa visual de los patrones
+
+```mermaid
+graph TD
+    %% Estilos por familia
+    classDef creacional fill:#f5e6e0,stroke:#c45a3d,stroke-width:2px,color:#1d1b18;
+    classDef estructural fill:#e0eaf5,stroke:#3d7ac4,stroke-width:2px,color:#1d1b18;
+    classDef comportamiento fill:#dff0e2,stroke:#3d8b4a,stroke-width:2px,color:#1d1b18;
+
+    GOF[Patrones GoF<br/>20 de 23 implementados]
+
+    GOF --> C[Creacionales<br/>5 patrones]
+    GOF --> E[Estructurales<br/>7 patrones]
+    GOF --> B[Comportamiento<br/>8 patrones]
+
+    C --> S1[1 Singleton]
+    C --> S2[2 Factory Method]
+    C --> S3[3 Abstract Factory]
+    C --> S4[4 Builder]
+    C --> S5[5 Prototype]
+
+    E --> S6[6 Adapter]
+    E --> S7[7 Decorator]
+    E --> S8[8 Facade]
+    E --> S9[9 Proxy]
+    E --> S10[10 Composite]
+    E --> S11[11 Bridge]
+    E --> S12[12 Flyweight]
+
+    B --> S13[13 Strategy]
+    B --> S14[14 Observer]
+    B --> S15[15 Command]
+    B --> S16[16 Template Method]
+    B --> S17[17 State]
+    B --> S18[18 Mediator]
+    B --> S19[19 Memento]
+    B --> S20[20 Chain of Responsibility]
+
+    class S1,S2,S3,S4,S5 creacional;
+    class S6,S7,S8,S9,S10,S11,S12 estructural;
+    class S13,S14,S15,S16,S17,S18,S19,S20 comportamiento;
+```
+
+## ¿Qué patrón elijo? — Diagrama de decisión
+
+```mermaid
+flowchart TD
+    A[¿Qué necesitas hacer?] --> B{Crear objetos}
+    A --> C{Componer clases u objetos}
+    A --> D{Gestionar comunicación / comportamiento}
+
+    %% Creacionales
+    B --> B1{¿Una única instancia global?}
+    B1 -->|Sí| E1[Singleton]
+    B1 -->|No| B2{¿Familias de productos compatibles?}
+    B2 -->|Sí| E2[Abstract Factory]
+    B2 -->|No| B3{¿Construcción compleja paso a paso?}
+    B3 -->|Sí| E3[Builder]
+    B3 -->|No| B4{¿Clonar un objeto existente?}
+    B4 -->|Sí| E4[Prototype]
+    B4 -->|No| E5[Factory Method]
+
+    %% Estructurales
+    C --> C1{¿Interfaces incompatibles?}
+    C1 -->|Sí| E6[Adapter]
+    C1 -->|No| C2{¿Añadir responsabilidades dinámicamente?}
+    C2 -->|Sí| E7[Decorator]
+    C2 -->|No| C3{¿Interfaz simple sobre subsistema complejo?}
+    C3 -->|Sí| E8[Facade]
+    C3 -->|No| C4{¿Controlar acceso a un objeto?}
+    C4 -->|Sí| E9[Proxy]
+    C4 -->|No| C5{¿Tratar simple y compuesto uniformemente?}
+    C5 -->|Sí| E10[Composite]
+    C5 -->|No| C6{¿Separar abstracción e implementación?}
+    C6 -->|Sí| E11[Bridge]
+    C6 -->|No| E12[Flyweight]
+
+    %% Comportamiento
+    D --> D1{¿Intercambiar algoritmos en tiempo de ejecución?}
+    D1 -->|Sí| E13[Strategy]
+    D1 -->|No| D2{¿Notificar a varios suscriptores?}
+    D2 -->|Sí| E14[Observer]
+    D2 -->|No| D3{¿Encapsular solicitudes / undo-redo?}
+    D3 -->|Sí| E15[Command]
+    D3 -->|No| D4{¿Esqueleto fijo con pasos variables?}
+    D4 -->|Sí| E16[Template Method]
+    D4 -->|No| D5{¿Cambiar comportamiento según estado?}
+    D5 -->|Sí| E17[State]
+    D5 -->|No| D6{¿Comunicación centralizada vía intermediario?}
+    D6 -->|Sí| E18[Mediator]
+    D6 -->|No| D7{¿Guardar y restaurar estado sin romper encapsulamiento?}
+    D7 -->|Sí| E19[Memento]
+    D7 -->|No| E20[Chain of Responsibility]
+
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style E1 fill:#f5e6e0,stroke:#c45a3d
+    style E2 fill:#f5e6e0,stroke:#c45a3d
+    style E3 fill:#f5e6e0,stroke:#c45a3d
+    style E4 fill:#f5e6e0,stroke:#c45a3d
+    style E5 fill:#f5e6e0,stroke:#c45a3d
+```
+
+## Diagramas de clases representativos
+
+### Singleton — clase única con acceso global
+
+```mermaid
+classDiagram
+    class DespensaCentral {
+        - static DespensaCentral _instancia
+        - Lazy<DespensaCentral> _lazy
+        + static DespensaCentral Instancia
+        - DespensaCentral()
+        + string ObtenerProducto(string nombre)
+    }
+    class Cocina {
+        + void Preparar()
+    }
+    Cocia --> DespensaCentral : usa la única instancia
+```
+
+### Strategy — algoritmos intercambiables
+
+```mermaid
+classDiagram
+    class IPagoStrategy {
+        <<interface>>
+        + Pagar(monto: decimal)
+    }
+    class PagoTarjeta {
+        + Pagar(monto: decimal)
+    }
+    class PagoEfectivo {
+        + Pagar(monto: decimal)
+    }
+    class ContextoPago {
+        - IPagoStrategy _estrategia
+        + EstablecerEstrategia(estrategia: IPagoStrategy)
+        + ProcesarPago(monto: decimal)
+    }
+
+    IPagoStrategy <|.. PagoTarjeta
+    IPagoStrategy <|.. PagoEfectivo
+    ContextoPago o-- IPagoStrategy : usa
+```
+
+---
+
 ## Requisitos
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download)

@@ -23,6 +23,21 @@ echo 7 | dotnet run   # ejecutar un patrón directamente por número
 | 4 | Builder | Armar una hamburguesa por pasos (pan, carne, extras) |
 | 5 | Prototype | Fotocopia de un formulario que luego personalizas |
 
+```mermaid
+graph TD
+    classDef creacional fill:#f5e6e0,stroke:#c45a3d,stroke-width:2px;
+    
+    C[Creacionales<br/>cómo se crean los objetos]
+    
+    C --> S1[1 Singleton<br/>una sola instancia]
+    C --> S2[2 Factory Method<br/>subclases deciden]
+    C --> S3[3 Abstract Factory<br/>familias compatibles]
+    C --> S4[4 Builder<br/>paso a paso]
+    C --> S5[5 Prototype<br/>clonar existente]
+    
+    class S1,S2,S3,S4,S5 creacional;
+```
+
 ### 1. Singleton — una sola instancia global
 
 - **Intención:** garantizar que una clase tenga **una única instancia** y un punto de acceso global a ella.
@@ -71,6 +86,23 @@ echo 7 | dotnet run   # ejecutar un patrón directamente por número
 | 10 | Composite | Carpeta que contiene archivos y otras carpetas |
 | 11 | Bridge | Receta (casera/gourmet) independiente del método de cocción |
 | 12 | Flyweight | Un solo molde de bebida para servir mil comandas |
+
+```mermaid
+graph TD
+    classDef estructural fill:#e0eaf5,stroke:#3d7ac4,stroke-width:2px;
+    
+    E[Estructurales<br/>cómo se componen clases]
+    
+    E --> S6[6 Adapter<br/>interfaces incompatibles]
+    E --> S7[7 Decorator<br/>envolver objetos]
+    E --> S8[8 Facade<br/>interfaz simple]
+    E --> S9[9 Proxy<br/>controlar acceso]
+    E --> S10[10 Composite<br/>árbol parte-todo]
+    E --> S11[11 Bridge<br/>abstracción × implementación]
+    E --> S12[12 Flyweight<br/>compartir estado]
+    
+    class S6,S7,S8,S9,S10,S11,S12 estructural;
+```
 
 ### 6. Adapter — interfaces incompatibles → compatibles
 
@@ -135,6 +167,24 @@ echo 7 | dotnet run   # ejecutar un patrón directamente por número
 | 18 | Mediator | Torre de control: nadie coordina con nadie directamente |
 | 19 | Memento | Guardar la pizza a medio armar por si la arruinas |
 | 20 | Chain of Responsibility | La queja escala del mesero al dueño |
+
+```mermaid
+graph TD
+    classDef comportamiento fill:#dff0e2,stroke:#3d8b4a,stroke-width:2px;
+    
+    B[Comportamiento<br/>cómo se comunican objetos]
+    
+    B --> S13[13 Strategy<br/>algoritmos intercambiables]
+    B --> S14[14 Observer<br/>suscribirse y notificar]
+    B --> S15[15 Command<br/>solicitudes como objetos]
+    B --> S16[16 Template Method<br/>esqueleto fijo]
+    B --> S17[17 State<br/>cambiar según estado]
+    B --> S18[18 Mediator<br/>torre de control]
+    B --> S19[19 Memento<br/>guardar estado]
+    B --> S20[20 Chain of Resp.<br/>cadena de manejadores]
+    
+    class S13,S14,S15,S16,S17,S18,S19,S20 comportamiento;
+```
 
 ### 13. Strategy — algoritmos intercambiables
 
