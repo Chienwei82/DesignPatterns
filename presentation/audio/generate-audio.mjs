@@ -12,7 +12,7 @@
  *   # o desde la carpeta presentation/: npm run audio
  */
 
-import { writeFile } from "fs/promises";
+import { readFile, writeFile } from "fs/promises";
 
 const API_BASE = "https://api.fish.audio/v1/tts";
 const MODEL = process.env.FISH_MODEL ?? "s2.1-pro-free";
@@ -27,30 +27,9 @@ if (!API_KEY) {
   process.exit(1);
 }
 
-// Una entrada por escena: [archivo, texto]
-// Los textos resumen el guion de presentación/guion.md.
-const ESCENAS = [
-  [
-    "01-portada.mp3",
-    "Los patrones de diseño son soluciones probadas y reutilizables a problemas comunes en el software orientado a objetos. Fueron catalogados por la Gang of Four en 1994 y se dividen en tres familias: creacionales, que resuelven cómo se crean los objetos; estructurales, que resuelven cómo se componen las clases; y de comportamiento, que resuelven cómo se comunican entre sí. En este repositorio encontrarás veinte de ellos implementados en C# y .NET 10, siempre en español.",
-  ],
-  [
-    "02-creacionales.mp3",
-    "Los patrones creacionales controlan cómo nacen los objetos. Singleton garantiza una única instancia global, ideal para loggers o configuración. Factory Method deja que las subclases decidan qué clase crear. Abstract Factory crea familias de objetos que deben combinarse entre sí. Builder separa la construcción compleja en pasos encadenables, evitando constructores gigantes. Y Prototype crea objetos copiando un prototipo existente en vez de partir desde cero.",
-  ],
-  [
-    "03-estructurales.mp3",
-    "Los patrones estructurales organizan cómo se componen las clases y objetos. Adapter hace compatible una interfaz ajena, como un adaptador de enchufe. Decorator añade responsabilidades nuevas sin modificar la clase original. Facade ofrece una interfaz simplificada sobre un subsistema complejo. Proxy controla el acceso a un objeto, por ejemplo con caché o seguridad. Composite trata objetos simples y compuestos de forma uniforme. Bridge desacopla una abstracción de su implementación. Y Flyweight comparte estado intrínseco para ahorrar memoria cuando hay muchos objetos similares.",
-  ],
-  [
-    "04-comportamiento.mp3",
-    "Los patrones de comportamiento gestionan la comunicación y las responsabilidades entre objetos. Strategy permite intercambiar algoritmos en tiempo de ejecución. Observer avisa a varios interesados cuando algo cambia, ideal para eventos de UI. Command encapsula una solicitud como objeto para deshacerla o encolarla. Template Method define el esqueleto de un algoritmo y deja que las subclases rellenen pasos. State hace que un objeto cambie de comportamiento según su estado interno. Mediator centraliza la comunicación mediante un intermediario. Memento captura y restaura estado sin romper el encapsulamiento. Y Chain of Responsibility pasa una solicitud por una cadena de manejadores hasta que alguien la resuelva.",
-  ],
-  [
-    "05-cierre.mp3",
-    "Este proyecto incluye veinte de los veintitrés patrones GoF. Faltan a propósito Interpreter, Iterator y Visitor: Iterator ya lo cubre C# con IEnumerable y LINQ, Visitor es muy especializado e Interpreter es raro en la práctica. Lo más poderoso es que los patrones se combinan: un Abstract Factory puede crear Strategies, coordinadas por un Mediator que notifica cambios vía Observer. Pruébalo tú mismo con dotnet run en el repositorio.",
-  ],
-];
+// Los textos viven en audio/narracion.json (fuente unica para audio y tiempos).
+const NARRACION = JSON.parse(await readFile(new URL("./narracion.json", import.meta.url), "utf8"));
+const ESCENAS = NARRACION.escenas.map((escena) => [escena.audio, escena.texto]);
 
 async function generarAudio() {
   console.log(`🎙️  Generando audio con fish.audio (modelo: ${MODEL}, formato: ${FORMAT})...`);
@@ -90,7 +69,7 @@ async function generarAudio() {
   }
 
   console.log(`🎧  Todo el audio generado en ${OUT_DIR}`);
-  console.log("   Revisa los tiempos frente a guion.md y ajusta index.html si es necesario.");
+  console.log("   Ejecuta `npm run timing` para recalcular el guion y los resaltes.");
 }
 
 generarAudio();

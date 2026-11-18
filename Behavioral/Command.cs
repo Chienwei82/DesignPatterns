@@ -1,14 +1,25 @@
 namespace DesignPatterns.Behavioral;
 
-/// PATRÓN COMMAND
-/// ──────────────
-/// Encapsula una SOLICITUD como un OBJETO, permitiendo parametrizar
-/// clientes con diferentes solicitudes, encolar o registrar solicitudes,
-/// y soportar operaciones reversibles (UNDO).
+/// ============================================================================
+/// PATRÓN COMMAND — Comandos como objetos (con UNDO/REDO)
+/// ============================================================================
+/// Intención: encapsular una solicitud como un objeto, permitiendo parametrizar
+/// clientes con diferentes solicitudes, encolarlas o registrarlas, y soportar
+/// operaciones reversibles (undo/redo).
 ///
-/// USO REAL: Botones de toolbar en editores, operaciones CRUD en
-///           sistemas transaccionales, colas de trabajos (jobs),
-///           macros de teclado, historial de Ctrl+Z.
+/// Analogía: pedir en un restaurante: el mesero escribe el pedido (comando),
+/// el cocinero lo ejecuta; el pedido se puede anular.
+///
+/// Cuándo usarlo: undo/redo (Ctrl+Z), colas de trabajos, macros, logging de
+/// acciones.
+///
+/// Cuándo NO usarlo: si la operación nunca se deshace, encola ni parametriza,
+/// una llamada directa es más simple.
+///
+/// USO REAL: Botones de toolbar en editores, operaciones CRUD en sistemas
+/// transaccionales, colas de trabajos (jobs), macros de teclado, historial
+/// de Ctrl+Z.
+/// ============================================================================
 
 // --- Command ---
 public interface IComandoComanda
@@ -29,7 +40,6 @@ public class Comanda
         Console.WriteLine($"    ➕ Anotado: \"{platillo}\"");
     }
 
-    // Quita el último platillo anotado y lo devuelve (o "" si está vacía)
     public string Quitar()
     {
         if (_platillos.Count == 0)
@@ -65,7 +75,6 @@ public class ComandoAgregar : IComandoComanda
     }
 
     public void Ejecutar() => _comanda.Agregar(_platillo);
-
     public void Deshacer() => _comanda.Quitar();
 }
 
@@ -139,7 +148,6 @@ public static class CommandDemo
         var comanda = new Comanda();
         var mesero = new MeseroComandas();
 
-        // Secuencia de anotaciones
         mesero.Ejecutar(new ComandoAgregar(comanda, "Pizza margarita"));
         comanda.Mostrar();
         Console.WriteLine();
@@ -149,19 +157,16 @@ public static class CommandDemo
         comanda.Mostrar();
         Console.WriteLine();
 
-        // El cliente se arrepiente del jugo
         Console.WriteLine("  ── Deshacer último platillo ──");
         mesero.Deshacer();
         comanda.Mostrar();
         Console.WriteLine();
 
-        // Y también de la ensalada
         Console.WriteLine("  ── Deshacer otra vez ──");
         mesero.Deshacer();
         comanda.Mostrar();
         Console.WriteLine();
 
-        // Se arrepiente de haberse arrepentido
         Console.WriteLine("  ── Rehacer ──");
         mesero.Rehacer();
         comanda.Mostrar();

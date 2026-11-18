@@ -2,14 +2,23 @@ using System.Diagnostics;
 
 namespace DesignPatterns.Structural;
 
-/// PATRÓN PROXY
-/// ────────────
-/// Proporciona un SUSTITUTO o REPRESENTANTE de otro objeto para
-/// controlar el acceso a él. Es como un intermediario que puede
-/// agregar lógica antes/después de la llamada al objeto real.
+/// ============================================================================
+/// PATRÓN PROXY — Control de acceso y optimización
+/// ============================================================================
+/// Intención: proporcionar un sustituto o representante de otro objeto para
+/// controlar el acceso a él, agregando lógica antes/después de la llamada.
 ///
-/// USO REAL: Lazy loading (Entity Framework), control de acceso,
-///           logging, caché, llamadas remotas (gRPC), virtual proxy.
+/// Analogía: el asistente personal que filtra llamadas antes de pasarlas al jefe.
+///
+/// Cuándo usarlo: cachear llamadas costosas, verificar permisos, lazy loading
+/// (Entity Framework lo usa).
+///
+/// Cuándo NO usarlo: si el objeto es barato y no hay reglas de acceso; el proxy
+/// solo agrega complejidad.
+///
+/// USO REAL: Lazy loading (Entity Framework), control de acceso, logging,
+/// caché, llamadas remotas (gRPC).
+/// ============================================================================
 
 // --- Sujeto (la interfaz común) ---
 public interface IChef
@@ -54,10 +63,7 @@ public class ProxyChefSeguridad : IChef
     private readonly ChefReal _real = new();
     private readonly string _rolUsuario;
 
-    public ProxyChefSeguridad(string rolUsuario)
-    {
-        _rolUsuario = rolUsuario;
-    }
+    public ProxyChefSeguridad(string rolUsuario) => _rolUsuario = rolUsuario;
 
     public string Cocinar(string plato)
     {
@@ -89,7 +95,7 @@ public static class ProxyDemo
         Console.WriteLine($"  Resultado:{r1}");
         Console.WriteLine($"  Tiempo: {sw.ElapsedMilliseconds}ms\n");
 
-        // Segunda vez el mismo plato — debe ser cache hit
+        // Segunda vez el mismo plato — cache hit (más rápido)
         sw.Restart();
         var r2 = proxyCache.Cocinar("Pizza");
         sw.Stop();

@@ -1,14 +1,23 @@
 namespace DesignPatterns.Structural;
 
-/// PATRÓN DECORATOR
-/// ────────────────
-/// Permite AÑADIR comportamientos a objetos de forma DINÁMICA,
-/// envolviéndolos en objetos "decorador". Es una alternativa flexible
-/// a la herencia para extender funcionalidad.
+/// ============================================================================
+/// PATRÓN DECORATOR — Añadir responsabilidades dinámicamente
+/// ============================================================================
+/// Intención: envolver un objeto con otros que le agregan comportamiento, sin
+/// herencia ni modificar la clase original. Los decoradores se apilan.
 ///
-/// USO REAL: Middleware en ASP.NET Core (logging, auth, caching),
-///           Streams con buffering/compresión en .NET, agregar
-///           funcionalidades a objetos GUI.
+/// Analogía: vestirse en capas: camiseta, suéter, abrigo — la persona es la
+/// misma, se agregan capas.
+///
+/// Cuándo usarlo: cuando tendrías una explosión de subclases (pastel con
+/// glaseado+chispas+velitas...). Es la base de streams y middleware en .NET.
+///
+/// Cuándo NO usarlo: si solo hay una variante posible, la herencia simple es
+/// más directa.
+///
+/// USO REAL: Middleware en ASP.NET Core (logging, auth, caching), Streams con
+/// buffering/compresión en .NET, agregar funcionalidades a objetos GUI.
+/// ============================================================================
 
 // --- Componente abstracto ---
 public interface IPastel
@@ -29,10 +38,7 @@ public abstract class PastelDecorator : IPastel
 {
     protected readonly IPastel _pastel;
 
-    protected PastelDecorator(IPastel pastel)
-    {
-        _pastel = pastel;
-    }
+    protected PastelDecorator(IPastel pastel) => _pastel = pastel;
 
     public virtual string GetDescripcion() => _pastel.GetDescripcion();
     public virtual decimal GetPrecio() => _pastel.GetPrecio();
@@ -42,34 +48,22 @@ public abstract class PastelDecorator : IPastel
 public class ConGlaseado : PastelDecorator
 {
     public ConGlaseado(IPastel pastel) : base(pastel) { }
-
-    public override string GetDescripcion() =>
-        $"{_pastel.GetDescripcion()} + glaseado de fresa";
-
-    public override decimal GetPrecio() =>
-        _pastel.GetPrecio() + 1500m;
+    public override string GetDescripcion() => $"{_pastel.GetDescripcion()} + glaseado de fresa";
+    public override decimal GetPrecio() => _pastel.GetPrecio() + 1500m;
 }
 
 public class ConChispas : PastelDecorator
 {
     public ConChispas(IPastel pastel) : base(pastel) { }
-
-    public override string GetDescripcion() =>
-        $"{_pastel.GetDescripcion()} + chispas de chocolate";
-
-    public override decimal GetPrecio() =>
-        _pastel.GetPrecio() + 800m;
+    public override string GetDescripcion() => $"{_pastel.GetDescripcion()} + chispas de chocolate";
+    public override decimal GetPrecio() => _pastel.GetPrecio() + 800m;
 }
 
 public class ConVelitas : PastelDecorator
 {
     public ConVelitas(IPastel pastel) : base(pastel) { }
-
-    public override string GetDescripcion() =>
-        $"{_pastel.GetDescripcion()} + velitas de cumpleaños";
-
-    public override decimal GetPrecio() =>
-        _pastel.GetPrecio() + 500m;
+    public override string GetDescripcion() => $"{_pastel.GetDescripcion()} + velitas de cumpleaños";
+    public override decimal GetPrecio() => _pastel.GetPrecio() + 500m;
 }
 
 public static class DecoratorDemo
@@ -81,31 +75,32 @@ public static class DecoratorDemo
 
         // Pastel básico
         IPastel pastel = new PastelVainilla();
-        Console.WriteLine($"  Base: {pastel.GetDescripcion(),-45} ¢{pastel.GetPrecio(),6:N0}");
+        Mostrar(pastel, "Base");
 
         // Vamos decorando paso a paso
         pastel = new ConGlaseado(pastel);
-        Console.WriteLine($"  +    {pastel.GetDescripcion(),-45} ¢{pastel.GetPrecio(),6:N0}");
+        Mostrar(pastel, "+ glaseado");
 
         pastel = new ConChispas(pastel);
-        Console.WriteLine($"  +    {pastel.GetDescripcion(),-45} ¢{pastel.GetPrecio(),6:N0}");
+        Mostrar(pastel, "+ chispas");
 
         pastel = new ConVelitas(pastel);
-        Console.WriteLine($"  +    {pastel.GetDescripcion(),-45} ¢{pastel.GetPrecio(),6:N0}");
+        Mostrar(pastel, "+ velitas");
 
         Console.WriteLine();
         Console.WriteLine($"  🧾 TOTAL: {pastel.GetDescripcion(),-45} ¢{pastel.GetPrecio(),6:N0}");
         Console.WriteLine();
 
-        // Otra combinación
+        // Otra combinación (chispas + velitas, sin glaseado)
         Console.WriteLine("  ── Otra combinación: Pastel + chispas + velitas ──");
-        IPastel otro = new PastelVainilla();
-        otro = new ConChispas(otro);
-        otro = new ConVelitas(otro);
+        IPastel otro = new ConVelitas(new ConChispas(new PastelVainilla()));
         Console.WriteLine($"  {otro.GetDescripcion(),-45} ¢{otro.GetPrecio(),6:N0}");
         Console.WriteLine();
 
         Console.WriteLine("  ✅ Los decoradores se pueden combinar en cualquier orden.");
         Console.WriteLine("     No necesitas crear N clases por cada combinación posible.");
     }
+
+    static void Mostrar(IPastel p, string etiqueta) =>
+        Console.WriteLine($"  {etiqueta,-12} {p.GetDescripcion(),-45} ¢{p.GetPrecio(),6:N0}");
 }

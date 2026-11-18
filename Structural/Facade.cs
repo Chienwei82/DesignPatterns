@@ -1,13 +1,23 @@
 namespace DesignPatterns.Structural;
 
-/// PATRÓN FACADE
-/// ─────────────
-/// Proporciona una interfaz SIMPLIFICADA para un subsistema complejo.
-/// Es como la fachada de un edificio — esconde la complejidad interna
-/// y expone solo lo que el cliente necesita.
+/// ============================================================================
+/// PATRÓN FACADE — Interfaz simple para subsistemas complejos
+/// ============================================================================
+/// Intención: exponer una interfaz simple que orchestre un subsistema complejo,
+/// escondiendo sus detalles internos.
 ///
-/// USO REAL: APIs de frameworks (un controller de ASP.NET simplifica
-///           el pipeline), bibliotecas de logging, sistemas de pedidos.
+/// Analogía: recepción de un hotel: un solo punto para todo (check-in, equipaje,
+/// conserjería).
+///
+/// Cuándo usarlo: cuando usar un sistema requiere llamar a varios subsistemas
+/// en orden (procesar un pedido: inventario → cocina → reparto → notificación).
+///
+/// Cuándo NO usarlo: si los clientes siempre necesitan el control fino del
+/// subsistema; una fachada innecesaria es una capa más de indirección.
+///
+/// USO REAL: APIs de frameworks (controller de ASP.NET simplifica el pipeline),
+/// bibliotecas de logging, sistemas de pedidos.
+/// ============================================================================
 
 // --- Subsistema complejo #1: Inventario ---
 public class Inventario
@@ -41,7 +51,6 @@ public class Cocina
     public bool Preparar(string platillo, int cantidad)
     {
         Console.WriteLine($"  [Cocina] Preparando {cantidad}x {platillo}...");
-        Thread.Sleep(100); // simula el tiempo de cocción
         Console.WriteLine("  [Cocina] ✅ Platillo listo");
         return true;
     }
@@ -98,7 +107,7 @@ public class ServicioDelivery
     // Un solo método que orquesta todo el proceso complejo.
     // Devuelve la guía del pedido, o null si algo falló.
     public string? PedirCombo(string cliente, string platillo, int cantidad,
-                              decimal precio, string direccion)
+                              string direccion)
     {
         Console.WriteLine($"\n  🍽️  Procesando pedido de {cliente}...");
         Console.WriteLine($"  Platillo: {platillo} x{cantidad}");
@@ -144,7 +153,6 @@ public static class FacadeDemo
             cliente: "María Rodríguez",
             platillo: "Pizza",
             cantidad: 1,
-            precio: 9500m,
             direccion: "Escazú, Plaza Itskatzú"
         );
 
@@ -159,7 +167,6 @@ public static class FacadeDemo
             cliente: "Pedro Gómez",
             platillo: "Pasta",
             cantidad: 100,   // solo hay 20 en stock
-            precio: 7500m,
             direccion: "Cartago, Centro"
         );
 

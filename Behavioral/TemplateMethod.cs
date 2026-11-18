@@ -1,22 +1,30 @@
 namespace DesignPatterns.Behavioral;
 
-/// PATRÓN TEMPLATE METHOD
-/// ──────────────────────
-/// Define el ESQUELETO de un algoritmo en un método, dejando que
-/// las subclases implementen ciertos pasos SIN cambiar la estructura
-/// del algoritmo. "Invertir el control" — Hollywood Principle:
-/// "No nos llames, nosotros te llamamos".
+/// ============================================================================
+/// PATRÓN TEMPLATE METHOD — Esqueleto de algoritmo
+/// ============================================================================
+/// Intención: definir el esqueleto de un algoritmo en un método, dejando que
+/// las subclases implementen ciertos pasos sin cambiar la estructura del
+/// algoritmo. "Hollywood Principle": "No nos llames, nosotros te llamamos".
 ///
-/// USO REAL: Pipelines de procesamiento de datos, generación de
-///           reportes (PDF/Excel/HTML), frameworks de testing,
-///           procesos ETL, recetas de cocina.
+/// Analogía: receta de pan: los pasos son fijos (mezclar, amasar, hornear);
+/// el tipo de harina lo eliges tú.
+///
+/// Cuándo usarlo: pipelines con pasos comunes que varían en el detalle
+/// (preparar pizza/sushi/pasta).
+///
+/// Cuándo NO usarlo: si cada implementación difiere mucho en el flujo, mejor
+/// composición (Strategy).
+///
+/// USO REAL: Pipelines de procesamiento de datos, generación de reportes
+/// (PDF/Excel/HTML), frameworks de testing, procesos ETL.
+/// ============================================================================
 
 // --- Clase abstracta con Template Method ---
 public abstract class RecetaBase
 {
-    /// Template Method — define la estructura del algoritmo.
-    /// No es virtual ni abstract, por lo que las subclases NO pueden
-    /// sobrescribirlo. Esto garantiza que el flujo siempre sea el mismo.
+    // Template Method: define la estructura del algoritmo. No es virtual ni
+    // abstract, por lo que las subclases NO pueden sobrescribirlo.
     public void Preparar(string nombrePlato)
     {
         Console.WriteLine("\n  ⚙️  Iniciando preparación...\n");
@@ -76,15 +84,11 @@ public class RecetaPizza : RecetaBase
         return "masa, tomate, queso";
     }
 
-    protected override void Cocinar(string ingredientes)
-    {
+    protected override void Cocinar(string ingredientes) =>
         Console.WriteLine($"  [Pizza] Horneando {ingredientes} a 250°C por 12 min");
-    }
 
-    protected override void Emplatar(string ingredientes)
-    {
+    protected override void Emplatar(string ingredientes) =>
         Console.WriteLine("  [Pizza] Cortando en 8 porciones y sirviendo en tabla");
-    }
 }
 
 // --- Subclase concreta: Sushi ---
@@ -96,21 +100,15 @@ public class RecetaSushi : RecetaBase
         return "arroz, salmón, algas";
     }
 
-    protected override void Cocinar(string ingredientes)
-    {
+    protected override void Cocinar(string ingredientes) =>
         Console.WriteLine($"  [Sushi] Sin cocción: armando rollos con {ingredientes}");
-    }
 
-    protected override void Emplatar(string ingredientes)
-    {
+    protected override void Emplatar(string ingredientes) =>
         Console.WriteLine("  [Sushi] Sirviendo en plato frío con wasabi y jengibre");
-    }
 
     // Hook sobrescrito: el sushi tiene su propia notificación
-    protected override void NotificarListo(string nombrePlato)
-    {
+    protected override void NotificarListo(string nombrePlato) =>
         Console.WriteLine($"  [Sushi] 🍣 '{nombrePlato}' listo. ¡Consumir de inmediato!");
-    }
 }
 
 // --- Subclase concreta: Pasta ---
@@ -122,15 +120,11 @@ public class RecetaPasta : RecetaBase
         return "pasta, salsa alfredo";
     }
 
-    protected override void Cocinar(string ingredientes)
-    {
+    protected override void Cocinar(string ingredientes) =>
         Console.WriteLine($"  [Pasta] Hirviendo {ingredientes} por 8 min");
-    }
 
-    protected override void Emplatar(string ingredientes)
-    {
+    protected override void Emplatar(string ingredientes) =>
         Console.WriteLine("  [Pasta] Sirviendo en plato hondo con parmesano");
-    }
 }
 
 public static class TemplateMethodDemo
@@ -141,7 +135,6 @@ public static class TemplateMethodDemo
         Console.WriteLine("  Escenario: Preparación de recetas (Pizza/Sushi/Pasta)\n");
         Console.WriteLine("  El flujo es siempre el mismo, pero cada paso varía");
 
-        // Preparar usando el template method
         var recetas = new (string nombre, RecetaBase receta)[]
         {
             ("Pizza margarita", new RecetaPizza()),

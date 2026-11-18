@@ -7,27 +7,32 @@ Un vídeo **faceless explainer** de 60 s que repasa los **20 patrones de diseño
 
 ## Estilo (al estilo hyperframes-video)
 - **Composición única** `index.html`: TEMA (CSS) · ESCENAS (HTML) · TIMELINE (script final).
-- Resolución **1920×1080**, duración total **60 s** en `#root`.
+- Resolución **1920×1080**, duración total **la de la narración** (171,7 s con el audio actual) en `#root`.
 - Tema visual: papel crudo (`--papel`), tinta casi negra (`--tinta`), acento terracota (`--acento`), reglas suaves (`--regla`), pizarra oscura para el cierre (`--tiza`), tres fuentes manuscritas (Caveat, Kalam, JetBrains Mono).
-- Escenas = clips con `data-start` / `data-duration` solapados 0,7 s (ese solape ES el crossfade).
-- Una sola línea de tiempo `window.__timelines["root"]` pausada; `tlRaiz.add(tlEscena, data-start)` con tiempos locales por escena.
+- Escenas = clips con `data-start` / `data-duration` solapados 0,8 s (ese solape ES el crossfade).
+- Una sola línea de tiempo `window.__timelines["root"]` pausada; `tlRaiz.add(tlEscena, escena.inicio)` con tiempos locales por escena.
+- **Resaltes sincronizados**: cada patrón (y cada término clave) lleva `data-mencion`; el guion marca cuándo se ilumina.
 - Velos `#velo-inicio` / `#velo-final` (fundido desde/hacia negro).
 - **Determinista**: sin `Date.now()`, `Math.random()`, fetches en render, `repeat: -1`.
 
-## Ritmo (60 s)
+## Ritmo (171,7 s = 2m51,7s)
 | Tiempo | Qué pasa |
 |--------|----------|
-| 0 – 0,6 | velo de apertura (fundido desde negro) |
-| 0 – 12 | Escena 1 · portada: qué son los patrones GoF, 3 familias, 20 patrones |
-| 11,3 – 12 | crossfade → escena 2 |
-| 12 – 24 | Escena 2 · creacionales: Singleton, Factory Method, Abstract Factory, Builder, Prototype |
-| 23,3 – 24 | crossfade → escena 3 |
-| 24 – 36 | Escena 3 · estructurales: Adapter, Decorator, Facade, Proxy, Composite, Bridge, Flyweight |
-| 35,3 – 36 | crossfade → escena 4 |
-| 36 – 48 | Escena 4 · comportamiento: Strategy, Observer, Command, Template Method, State, Mediator, Memento, Chain of Responsibility |
-| 47,3 – 48 | crossfade → escena 5 |
-| 48 – 58 | Escena 5 · cierre: no incluidos, combinaciones, call to action "dotnet run" |
-| 57,4 – 58 | velo final (fundido a negro; negro puro hasta 60) |
+| 0 – 0,8 | velo de apertura (fundido desde negro) |
+| 0 – 30,9 | Escena 1 · portada: qué son los patrones GoF, 3 familias (cada una se resalta al nombrarla), C#/.NET 10 |
+| 31,25 – 32,05 | crossfade → escena 2 |
+| 32,05 – 60,3 | Escena 2 · creacionales: Singleton, Factory Method, Abstract Factory, Builder, Prototype (card resaltada al nombrarla) |
+| 60,66 – 61,46 | crossfade → escena 3 |
+| 61,46 – 96,4 | Escena 3 · estructurales: Adapter, Decorator, Facade, Proxy, Composite, Bridge, Flyweight |
+| 96,84 – 97,64 | crossfade → escena 4 |
+| 97,64 – 143,8 | Escena 4 · comportamiento: Strategy, Observer, Command, Template Method, State, Mediator, Memento, Chain of Responsibility |
+| 144,20 – 145,00 | crossfade → escena 5 |
+| 145,00 – 170,1 | Escena 5 · cierre: no incluidos, combinaciones, call to action "dotnet run" |
+| 170,50 – 171,30 | velo final (fundido a negro; negro puro hasta el final) |
+
+Cada escena dura exactamente su MP3 + 1,2 s de silencio, así que **ninguna frase queda cortada**.
+Los tiempos los calcula `npm run timing` a partir de los MP3: si regeneras el audio, vuelve a
+ejecutarlo y todo (escenas, crossfades, resaltes y audio final) se recoloca solo.
 
 ## Cómo hacer el próximo vídeo
 1. Duplicar esta carpeta.

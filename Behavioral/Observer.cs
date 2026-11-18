@@ -1,14 +1,24 @@
 namespace DesignPatterns.Behavioral;
 
-/// PATRÓN OBSERVER
-/// ───────────────
-/// Define una dependencia UNO-A-MUCHOS entre objetos, de modo que
-/// cuando UN objeto cambia su estado, TODOS sus dependientes son
-/// notificados automáticamente. Es como un sistema de suscripción.
+/// ============================================================================
+/// PATRÓN OBSERVER — Suscripción uno-a-muchos
+/// ============================================================================
+/// Intención: definir una dependencia uno-a-muchos entre objetos, de modo que
+/// cuando un objeto cambia su estado, todos sus dependientes son notificados
+/// automáticamente.
 ///
-/// USO REAL: Eventos en UI (click, keypress), cotizaciones de bolsa
-///           en tiempo real, notificaciones push, actualización de
-///           vistas en MVVM, el patrón event/delegate de C#.
+/// Analogía: canal de YouTube: te suscribes y recibes cada video nuevo sin
+/// preguntar.
+///
+/// Cuándo usarlo: eventos de UI, notificaciones push, sincronizar vistas.
+///
+/// Cuándo NO usarlo: si un solo receptor escucha siempre, un callback directo
+/// es más simple. Cuidado con el orden de desuscripción (memory leaks).
+///
+/// USO REAL: Eventos en UI (click, keypress), cotizaciones de bolsa en tiempo
+/// real, notificaciones push, actualización de vistas en MVVM, events/delegates
+/// de C#.
+/// ============================================================================
 
 // --- Sujeto (observable) ---
 public interface IPublicadorPedidos
@@ -52,7 +62,7 @@ public class Cocina : IPublicadorPedidos
         Console.WriteLine();
     }
 
-    // Método de alto nivel: la cocina terminó un platillo
+    // La cocina terminó un platillo
     public void PedidoListo(string platillo, string mesa)
     {
         Console.WriteLine($"\n  🔔 COCINA: {platillo} listo para la mesa {mesa}");
@@ -61,39 +71,27 @@ public class Cocina : IPublicadorPedidos
 }
 
 // --- Observadores concretos ---
-
 public class MeseroNotificador : IObservadorPedido
 {
     public string Nombre { get; }
-
     public MeseroNotificador(string nombre) => Nombre = nombre;
-
-    public void RecibirPedido(string platillo, string mesa)
-    {
+    public void RecibirPedido(string platillo, string mesa) =>
         Console.WriteLine($"    🏃 [{Nombre}] Llevando {platillo} a la mesa {mesa}");
-    }
 }
 
 public class PantallaSalon : IObservadorPedido
 {
     public string Nombre => "Pantalla del salón";
-
-    public void RecibirPedido(string platillo, string mesa)
-    {
+    public void RecibirPedido(string platillo, string mesa) =>
         Console.WriteLine($"    🖥️  [Pantalla] Mostrando: \"{platillo} → mesa {mesa}\"");
-    }
 }
 
 public class AppCliente : IObservadorPedido
 {
     public string Nombre { get; }
-
     public AppCliente(string nombre) => Nombre = nombre;
-
-    public void RecibirPedido(string platillo, string mesa)
-    {
+    public void RecibirPedido(string platillo, string mesa) =>
         Console.WriteLine($"    📱 [App de {Nombre}] Notificación: \"{platillo} va en camino\"");
-    }
 }
 
 // --- Observador con filtro (solo le interesan los postres) ---
@@ -119,31 +117,25 @@ public static class ObserverDemo
         Console.WriteLine("  👁️  OBSERVER — Suscripción y notificación en tiempo real\n");
         Console.WriteLine("  Escenario: La cocina avisa cuando un pedido está listo\n");
 
-        // Sujeto
         var cocina = new Cocina();
 
-        // Crear suscriptores
         var luis = new MeseroNotificador("Luis");
         var pantalla = new PantallaSalon();
         var app = new AppCliente("María");
         var postres = new ObservadorDePostres();
 
-        // Suscribir
         cocina.Suscribir(luis);
         cocina.Suscribir(pantalla);
         cocina.Suscribir(app);
         cocina.Suscribir(postres);
         Console.WriteLine();
 
-        // Preparar pedidos
         cocina.PedidoListo("Pizza margarita", "Mesa 4");
         cocina.PedidoListo("Pastel de chocolate", "Mesa 2");
 
-        // Cancelar suscripción
         cocina.Desuscribir(app);
         Console.WriteLine();
 
-        // Otro pedido — la app ya no recibe
         cocina.PedidoListo("Ensalada césar", "Mesa 7");
 
         Console.WriteLine("  ✅ Observer desacopla el emisor de los receptores.");

@@ -1,13 +1,23 @@
 namespace DesignPatterns.Creational;
 
-/// PATRÓN FACTORY METHOD
-/// ─────────────────────
-/// Define una interfaz para crear objetos, pero DELEGA a las subclases
-/// qué clase concreta instanciar. Permite que una clase difiera la
-/// creación de sus objetos a las subclases.
+/// ============================================================================
+/// PATRÓN FACTORY METHOD — Creación delegada a subclases
+/// ============================================================================
+/// Intención: definir una interfaz para crear objetos, pero dejar que las
+/// subclases decidan qué clase concreta instanciar.
+///
+/// Analogía: franquicia de muebles: el proceso es estándar, pero cada taller
+/// decide si usa roble o pino.
+///
+/// Cuándo usarlo: no sabes de antemano los tipos exactos que crearás; quieres
+/// que otros extiendan tu librería sin modificarla.
+///
+/// Cuándo NO usarlo: si solo hay un tipo de producto y no habrá variaciones,
+/// un simple `new` es más simple.
 ///
 /// USO REAL: Frameworks ORM (DbConnection según la BD), generación de
-///           documentos (PDF, Excel, Word), factories de controles UI.
+/// documentos (PDF, Excel, Word), factories de controles UI.
+/// ============================================================================
 
 // --- Producto abstracto ---
 public interface IPlatillo
@@ -15,12 +25,12 @@ public interface IPlatillo
     void Preparar();
 }
 
-// --- Productos concretos: cada estación crea el suyo ---
+// --- Productos concretos ---
 public class CostillaBBQ : IPlatillo
 {
     public void Preparar()
     {
-        Console.WriteLine("  🍖 [Parrilla]    Costillas BBQ con salsa ahumada");
+        Console.WriteLine("  🍖 [Parrilla] Costillas BBQ con salsa ahumada");
     }
 }
 
@@ -28,7 +38,7 @@ public class Pastel : IPlatillo
 {
     public void Preparar()
     {
-        Console.WriteLine("  🎂 [Pastelería]  Pastel de chocolate recién horneado");
+        Console.WriteLine("  🎂 [Pastelería] Pastel de chocolate recién horneado");
     }
 }
 
@@ -36,17 +46,16 @@ public class Limonada : IPlatillo
 {
     public void Preparar()
     {
-        Console.WriteLine("  🍋 [Bar]         Limonada fría con hierbabuena");
+        Console.WriteLine("  🍋 [Bar] Limonada fría con hierbabuena");
     }
 }
 
-// --- Creator abstracto (Factory Method) ---
+// --- Creator abstracto ---
 public abstract class EstacionCocina
 {
-    // Factory Method — cada estación decide qué platillo crear
+    // Factory Method — cada estación decide qué crear
     public abstract IPlatillo CrearPlatillo();
 
-    // Método que usa el producto creado
     public void ServirPedido(string cliente)
     {
         Console.WriteLine($"  Pedido de {cliente}:");
@@ -76,10 +85,9 @@ public static class FactoryMethodDemo
     public static void Run()
     {
         Console.WriteLine("  🏭 FACTORY METHOD — Cada estación decide qué cocinar\n");
-        Console.WriteLine("  Escenario: Cocina de restaurante con estaciones especializadas\n");
+        Console.WriteLine("  Escenario: Cocina con estaciones especializadas\n");
 
-        // El cliente no sabe qué clase concreta se crea
-        var estaciones = new (string nombre, EstacionCocina estacion)[]
+        var estaciones = new (string cliente, EstacionCocina estacion)[]
         {
             ("Mesa 1", new EstacionParrilla()),
             ("Mesa 2", new EstacionPasteleria()),
@@ -93,7 +101,7 @@ public static class FactoryMethodDemo
         }
 
         Console.WriteLine("  ✅ El cliente depende de la abstracción (EstacionCocina),");
-        Console.WriteLine("     no de las clases concretas. Agregar una estación nueva");
-        Console.WriteLine("     solo requiere crear otra subclase.");
+        Console.WriteLine("     no de las clases concretas. Para agregar una estación,");
+        Console.WriteLine("     solo se crea otra subclase.");
     }
 }

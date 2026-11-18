@@ -1,10 +1,10 @@
 # Guion del vídeo · Patrones de Diseño GoF en C#
 
-Duración total: ~60 s. Texto de narración por escena (al estilo `apuntes.md`: intención, analogía, cuándo usar / cuándo no).
+Duración total: 171,7 s (~2m52s). Cada escena dura lo que dura su MP3 + 1,2 s de silencio. Texto de narración por escena (al estilo `apuntes.md`: intención, analogía, cuándo usar / cuándo no).
 
 ---
 
-## Escena 1 · Portada (0 – 12 s)
+## Escena 1 · Portada (0 – 30,9 s)
 
 **Visual:** título grande "Patrones de Diseño GoF en C#", subtítulo "20 patrones, 3 familias, un mismo propósito: escribir software más mantenible". Listado de las 3 familias.
 
@@ -13,7 +13,7 @@ Duración total: ~60 s. Texto de narración por escena (al estilo `apuntes.md`: 
 
 ---
 
-## Escena 2 · Creacionales (12 – 24 s)
+## Escena 2 · Creacionales (32,1 – 60,3 s)
 
 **Visual:** tarjetas por patrón: Singleton ("una sola instancia"), Factory Method ("delegar la creación"), Abstract Factory ("familias compatibles"), Builder ("paso a paso"), Prototype ("clonar").
 
@@ -22,7 +22,7 @@ Duración total: ~60 s. Texto de narración por escena (al estilo `apuntes.md`: 
 
 ---
 
-## Escena 3 · Estructurales (24 – 36 s)
+## Escena 3 · Estructurales (61,5 – 96,4 s)
 
 **Visual:** tarjetas: Adapter ("enchufe europeo a americano"), Decorator ("añadir responsabilidades"), Facade ("ventanilla única"), Proxy ("controlar acceso"), Composite ("árbol de objetos"), Bridge ("desacoplar abstracción"), Flyweight ("compartir estado").
 
@@ -31,7 +31,7 @@ Duración total: ~60 s. Texto de narración por escena (al estilo `apuntes.md`: 
 
 ---
 
-## Escena 4 · Comportamiento (36 – 48 s)
+## Escena 4 · Comportamiento (97,6 – 143,8 s)
 
 **Visual:** tarjetas: Strategy ("cambiar algoritmo en vuelo"), Observer ("suscribirse y notificar"), Command ("pedido como objeto"), Template Method ("esqueleto fijo"), State ("cambiar según estado"), Mediator ("torre de control"), Memento ("guardar partida"), Chain of Responsibility ("cadena de aprobación").
 
@@ -40,7 +40,7 @@ Duración total: ~60 s. Texto de narración por escena (al estilo `apuntes.md`: 
 
 ---
 
-## Escena 5 · Cierre (48 – 58 s)
+## Escena 5 · Cierre (145,0 – 170,1 s)
 
 **Visual:** pizarra oscura. Texto: "No están: Interpreter, Iterator, Visitor. ¿Por qué? Iterator ya lo cubre C# con IEnumerable y LINQ. Visitor es muy especializado. Interpreter es raro en la práctica." Y abajo: "Los patrones se combinan: un Abstract Factory puede crear Strategies manejadas por un Mediator. Prueba los ejemplos: dotnet run."
 
@@ -52,4 +52,5 @@ Duración total: ~60 s. Texto de narración por escena (al estilo `apuntes.md`: 
 ## Notas de producción
 - Voz: narración clara y pausada, español neutro.
 - Música de fondo opcional (no generada por fish.audio en este guion).
-- Los tiempos de `data-start` / `data-duration` en `index.html` deben coincidir con el ritmo del guion.
+- Los tiempos de `data-start` / `data-duration` y de los resaltes NO se editan a mano: los
+  calcula `npm run timing` a partir de los MP3 (ver `README.md`).

@@ -9,7 +9,9 @@
     "lint": "npx --yes hyperframes@0.8.81 lint",
     "snapshot": "npx --yes hyperframes@0.8.81 snapshot",
     "render": "bash audio/render-with-audio.sh",
-    "publish": "npx --yes hyperframes@0.8.81 publish",
-    "audio": "node audio/generate-audio.mjs"
+    "timing": "node audio/build-timeline.mjs",
+    "audio": "node audio/generate-audio.mjs",
+    "audio:compose": "node audio/build-audio.mjs",
+    "publish": "npx --yes hyperframes@0.8.81 publish"
   }
 }

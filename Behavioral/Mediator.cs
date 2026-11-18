@@ -1,13 +1,24 @@
 namespace DesignPatterns.Behavioral;
 
-/// PATRÓN MEDIATOR
-/// ───────────────
-/// Define un objeto que encapsula CÓMO interactúan un conjunto de objetos.
-/// Promueve el acoplamiento débil evitando que los objetos se referencien
-/// explícitamente entre sí. Es como un "switchboard" o una sala de chat.
+/// ============================================================================
+/// PATRÓN MEDIATOR — Comunicación centralizada
+/// ============================================================================
+/// Intención: definir un objeto que encapsula cómo interactúan un conjunto de
+/// objetos. Promueve el acoplamiento débil evitando que los objetos se
+/// referencien explícitamente entre sí.
 ///
-/// USO REAL: Salas de chat, control de tráfico aéreo, coordinadores
-///           de workflows, mediadores en frameworks UI (MVVM).
+/// Analogía: torre de control: ningún piloto coordina con otro directamente;
+/// todo pasa por la torre.
+///
+/// Cuándo usarlo: salas de chat, paneles UI que se afectan entre sí,
+/// coordinación de formularios.
+///
+/// Cuándo NO usarlo: si solo dos objetos se comunican, el mediador es un
+/// intermediario innecesario.
+///
+/// USO REAL: Salas de chat, control de tráfico aéreo, coordinadores de
+/// workflows, mediadores en frameworks UI (MVVM).
+/// ============================================================================
 
 // --- Mediator ---
 public interface IPaseCocina
@@ -22,10 +33,7 @@ public abstract class TrabajadorCocina
     public string Nombre { get; }
     private IPaseCocina? _pase;
 
-    protected TrabajadorCocina(string nombre)
-    {
-        Nombre = nombre;
-    }
+    protected TrabajadorCocina(string nombre) => Nombre = nombre;
 
     public void UnirseAlPase(IPaseCocina pase)
     {
@@ -39,7 +47,6 @@ public abstract class TrabajadorCocina
         _pase?.Enviar(mensaje, this);
     }
 
-    // Por defecto, cada uno reacciona a su manera
     public abstract void Recibir(string mensaje, string remitente);
 }
 
@@ -49,10 +56,7 @@ public class PaseCocina : IPaseCocina
     private readonly List<TrabajadorCocina> _trabajadores = [];
     private readonly string _nombre;
 
-    public PaseCocina(string nombre)
-    {
-        _nombre = nombre;
-    }
+    public PaseCocina(string nombre) => _nombre = nombre;
 
     public void Registrar(TrabajadorCocina trabajador)
     {
@@ -74,31 +78,22 @@ public class PaseCocina : IPaseCocina
 public class Mesero : TrabajadorCocina
 {
     public Mesero(string nombre) : base(nombre) { }
-
-    public override void Recibir(string mensaje, string remitente)
-    {
+    public override void Recibir(string mensaje, string remitente) =>
         Console.WriteLine($"    🧾 [{Nombre}] Anota lo de {remitente}: \"{mensaje}\"");
-    }
 }
 
 public class Cocinero : TrabajadorCocina
 {
     public Cocinero(string nombre) : base(nombre) { }
-
-    public override void Recibir(string mensaje, string remitente)
-    {
+    public override void Recibir(string mensaje, string remitente) =>
         Console.WriteLine($"    👨🍳 [{Nombre}] Prende la estufa por {remitente}: \"{mensaje}\"");
-    }
 }
 
 public class Repartidor : TrabajadorCocina
 {
     public Repartidor(string nombre) : base(nombre) { }
-
-    public override void Recibir(string mensaje, string remitente)
-    {
+    public override void Recibir(string mensaje, string remitente) =>
         Console.WriteLine($"    🛵 [{Nombre}] Arranca la moto por {remitente}: \"{mensaje}\"");
-    }
 }
 
 public static class MediatorDemo

@@ -1,0 +1,257 @@
+{
+  "pad": 1.2,
+  "cola": 1.6,
+  "fundido": 0.8,
+  "total": 171.703,
+  "escenas": [
+    {
+      "id": "escena-portada",
+      "inicio": 0,
+      "narracion": 30.851,
+      "clipInicio": 0,
+      "clipDuracion": 32.051,
+      "menciones": [
+        {
+          "sel": "#escena-portada [data-mencion=\"Gang of Four\"]",
+          "tipo": "texto",
+          "inicio": 8.695,
+          "fin": null
+        },
+        {
+          "sel": "#escena-portada [data-mencion=\"creacionales\"]",
+          "tipo": "bloque",
+          "inicio": 12.809,
+          "fin": 15.961
+        },
+        {
+          "sel": "#escena-portada [data-mencion=\"estructurales\"]",
+          "tipo": "bloque",
+          "inicio": 16.211,
+          "fin": 19.854
+        },
+        {
+          "sel": "#escena-portada [data-mencion=\"de comportamiento\"]",
+          "tipo": "bloque",
+          "inicio": 20.104,
+          "fin": 25.951
+        },
+        {
+          "sel": "#escena-portada [data-mencion=\"veinte de ellos\"]",
+          "tipo": "texto",
+          "inicio": 26.201,
+          "fin": null
+        },
+        {
+          "sel": "#escena-portada [data-mencion=\"C#\"]",
+          "tipo": "texto",
+          "inicio": 28.526,
+          "fin": null
+        }
+      ]
+    },
+    {
+      "id": "escena-creacionales",
+      "inicio": 32.051,
+      "narracion": 28.212,
+      "clipInicio": 31.251,
+      "clipDuracion": 30.212,
+      "menciones": [
+        {
+          "sel": "#escena-creacionales [data-mencion=\"Singleton\"]",
+          "tipo": "tarjeta",
+          "inicio": 35.541,
+          "fin": 40.627
+        },
+        {
+          "sel": "#escena-creacionales [data-mencion=\"Factory Method\"]",
+          "tipo": "tarjeta",
+          "inicio": 40.877,
+          "fin": 44.508
+        },
+        {
+          "sel": "#escena-creacionales [data-mencion=\"Abstract Factory\"]",
+          "tipo": "tarjeta",
+          "inicio": 44.758,
+          "fin": 48.98
+        },
+        {
+          "sel": "#escena-creacionales [data-mencion=\"Builder\"]",
+          "tipo": "tarjeta",
+          "inicio": 49.23,
+          "fin": 55.111
+        },
+        {
+          "sel": "#escena-creacionales [data-mencion=\"Prototype\"]",
+          "tipo": "tarjeta",
+          "inicio": 55.361,
+          "fin": 60.263
+        }
+      ]
+    },
+    {
+      "id": "escena-estructurales",
+      "inicio": 61.463,
+      "narracion": 34.978,
+      "clipInicio": 60.663,
+      "clipDuracion": 36.978,
+      "menciones": [
+        {
+          "sel": "#escena-estructurales [data-mencion=\"Adapter\"]",
+          "tipo": "tarjeta",
+          "inicio": 65.894,
+          "fin": 70.368
+        },
+        {
+          "sel": "#escena-estructurales [data-mencion=\"Decorator\"]",
+          "tipo": "tarjeta",
+          "inicio": 70.618,
+          "fin": 74.92
+        },
+        {
+          "sel": "#escena-estructurales [data-mencion=\"Facade\"]",
+          "tipo": "tarjeta",
+          "inicio": 75.17,
+          "fin": 79.225
+        },
+        {
+          "sel": "#escena-estructurales [data-mencion=\"Proxy\"]",
+          "tipo": "tarjeta",
+          "inicio": 79.475,
+          "fin": 83.854
+        },
+        {
+          "sel": "#escena-estructurales [data-mencion=\"Composite\"]",
+          "tipo": "tarjeta",
+          "inicio": 84.104,
+          "fin": 87.609
+        },
+        {
+          "sel": "#escena-estructurales [data-mencion=\"Bridge\"]",
+          "tipo": "tarjeta",
+          "inicio": 87.859,
+          "fin": 90.948
+        },
+        {
+          "sel": "#escena-estructurales [data-mencion=\"Flyweight\"]",
+          "tipo": "tarjeta",
+          "inicio": 91.198,
+          "fin": 96.441
+        }
+      ]
+    },
+    {
+      "id": "escena-comportamiento",
+      "inicio": 97.641,
+      "narracion": 46.158,
+      "clipInicio": 96.841,
+      "clipDuracion": 48.158,
+      "menciones": [
+        {
+          "sel": "#escena-comportamiento [data-mencion=\"Strategy\"]",
+          "tipo": "tarjeta",
+          "inicio": 103.324,
+          "fin": 107.213
+        },
+        {
+          "sel": "#escena-comportamiento [data-mencion=\"Observer\"]",
+          "tipo": "tarjeta",
+          "inicio": 107.463,
+          "fin": 112.777
+        },
+        {
+          "sel": "#escena-comportamiento [data-mencion=\"Command\"]",
+          "tipo": "tarjeta",
+          "inicio": 113.027,
+          "fin": 117.645
+        },
+        {
+          "sel": "#escena-comportamiento [data-mencion=\"Template Method\"]",
+          "tipo": "tarjeta",
+          "inicio": 117.895,
+          "fin": 123.895
+        },
+        {
+          "sel": "#escena-comportamiento [data-mencion=\"State\"]",
+          "tipo": "tarjeta",
+          "inicio": 124.145,
+          "fin": 128.637
+        },
+        {
+          "sel": "#escena-comportamiento [data-mencion=\"Mediator\"]",
+          "tipo": "tarjeta",
+          "inicio": 128.887,
+          "fin": 132.673
+        },
+        {
+          "sel": "#escena-comportamiento [data-mencion=\"Memento\"]",
+          "tipo": "tarjeta",
+          "inicio": 132.923,
+          "fin": 137.278
+        },
+        {
+          "sel": "#escena-comportamiento [data-mencion=\"Chain of Responsibility\"]",
+          "tipo": "tarjeta",
+          "inicio": 137.528,
+          "fin": 143.528
+        }
+      ]
+    },
+    {
+      "id": "escena-cierre",
+      "inicio": 144.999,
+      "narracion": 25.104,
+      "clipInicio": 144.199,
+      "clipDuracion": 27.504,
+      "menciones": [
+        {
+          "sel": "#escena-cierre [data-mencion=\"Interpreter\"]",
+          "tipo": "texto",
+          "inicio": 149.511,
+          "fin": null
+        },
+        {
+          "sel": "#escena-cierre [data-mencion=\"Iterator\"]",
+          "tipo": "texto",
+          "inicio": 150.312,
+          "fin": null
+        },
+        {
+          "sel": "#escena-cierre [data-mencion=\"Visitor\"]",
+          "tipo": "texto",
+          "inicio": 150.99,
+          "fin": null
+        },
+        {
+          "sel": "#escena-cierre [data-mencion=\"Abstract Factory\"]",
+          "tipo": "texto",
+          "inicio": 161.646,
+          "fin": null
+        },
+        {
+          "sel": "#escena-cierre [data-mencion=\"Strategies\"]",
+          "tipo": "texto",
+          "inicio": 163.184,
+          "fin": null
+        },
+        {
+          "sel": "#escena-cierre [data-mencion=\"Mediator\"]",
+          "tipo": "texto",
+          "inicio": 164.843,
+          "fin": null
+        },
+        {
+          "sel": "#escena-cierre [data-mencion=\"Observer\"]",
+          "tipo": "texto",
+          "inicio": 166.673,
+          "fin": null
+        },
+        {
+          "sel": "#escena-cierre [data-mencion=\"dotnet run\"]",
+          "tipo": "texto",
+          "inicio": 168.459,
+          "fin": null
+        }
+      ]
+    }
+  ]
+}

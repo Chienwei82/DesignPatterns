@@ -1,14 +1,22 @@
 namespace DesignPatterns.Behavioral;
 
-/// PATRÓN MEMENTO
-/// ─────────────
-/// Permite capturar y externalizar el estado interno de un objeto
-/// SIN violar su encapsulamiento, de modo que el objeto pueda ser
-/// restaurado a ese estado más tarde.
+/// ============================================================================
+/// PATRÓN MEMENTO — Guardar y restaurar estado
+/// ============================================================================
+/// Intención: capturar y externalizar el estado interno de un objeto SIN
+/// violar su encapsulamiento, de modo que el objeto pueda ser restaurado a
+/// ese estado más tarde.
 ///
-/// USO REAL: Guardado de juegos (checkpoints), undo en editores de
-///           gráficos, snapshots de máquinas virtuales, historial
-///           de configuraciones.
+/// Analogía: guardar partida en un videojuego y volver al checkpoint.
+///
+/// Cuándo usarlo: checkpoints, undo de estado completo, snapshots.
+///
+/// Cuándo NO usarlo: si el objeto es pequeño, guardar una copia simple basta;
+/// el patrón brilla con estado grande o privado.
+///
+/// USO REAL: Guardado de juegos (checkpoints), undo en editores de gráficos,
+/// snapshots de máquinas virtuales, historial de configuraciones.
+/// ============================================================================
 
 // --- Memento: almacena el estado (inmutable desde fuera) ---
 public record EstadoPizza(string Masa, string Salsa, List<string> Ingredientes, bool Horneada, DateTimeOffset GuardadoEn);

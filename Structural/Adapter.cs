@@ -1,14 +1,22 @@
 namespace DesignPatterns.Structural;
 
-/// PATRÓN ADAPTER
-/// ──────────────
-/// Permite que clases con interfaces INCOMPATIBLES trabajen juntas.
-/// Actúa como un "adaptador" o "traductor" entre dos mundos.
-/// Es como un adaptador de corriente — convierte un enchufe europeo
-/// a uno americano.
+/// ============================================================================
+/// PATRÓN ADAPTER — Interfaces incompatibles → compatibles
+/// ============================================================================
+/// Intención: permitir que clases con interfaces incompatibles trabajen
+/// juntas, traduciendo llamadas de una interfaz a otra.
+///
+/// Analogía: adaptador de corriente entre un enchufe europeo y uno americano.
+///
+/// Cuándo usarlo: integrar librerías de terceros o sistemas legacy cuya
+/// interfaz no puedes cambiar.
+///
+/// Cuándo NO usarlo: si controlas ambas interfaces y puedes cambiarlas,
+/// mejor ajustarlas directamente.
 ///
 /// USO REAL: Integración con APIs de terceros, wrappers de bibliotecas
-///           legacy, normalización de datos de distintos proveedores.
+/// legacy, normalización de datos de distintos proveedores.
+/// ============================================================================
 
 // --- Target: la interfaz que espera nuestra cocina ---
 public interface IProveedorIngredientes
@@ -21,59 +29,44 @@ public class ProveedorInternacional
 {
     public string Deliver(string item, double weightKg, string unit)
     {
-        Thread.Sleep(40); // simula procesamiento
         var codigo = Guid.NewGuid().ToString("N").ToUpper();
         return $"INTL-{codigo[..9]}";
     }
 }
 
-// --- Adapter: adapta ProveedorInternacional -> IProveedorIngredientes ---
+// --- Adapter: traduce IProveedorIngredientes -> ProveedorInternacional ---
 public class ProveedorInternacionalAdapter : IProveedorIngredientes
 {
     private readonly ProveedorInternacional _proveedor;
 
-    public ProveedorInternacionalAdapter(ProveedorInternacional proveedor)
-    {
-        _proveedor = proveedor;
-    }
+    public ProveedorInternacionalAdapter(ProveedorInternacional proveedor) => _proveedor = proveedor;
 
     public bool Entregar(string ingrediente, decimal kilos)
     {
         Console.WriteLine("  [Adapter] Traduciendo el pedido al formato internacional...");
 
-        // 1. Normalizar datos
-        var item = ingrediente.ToLower();
-        var weight = (double)kilos;
-        var unit = "kg";
+        var guia = _proveedor.Deliver(ingrediente.ToLower(), (double)kilos, "kg");
 
-        // 2. Llamar al proveedor con su interfaz nativa
-        var guia = _proveedor.Deliver(item, weight, unit);
-
-        // 3. Traducir la respuesta
         Console.WriteLine($"  [Adapter] Entrega confirmada con guía {guia}");
         return !string.IsNullOrEmpty(guia);
     }
 }
 
-// --- Otro Adaptee: distribuidor legacy (sistema antiguo) ---
+// --- Adaptee: distribuidor legacy (sistema antiguo) ---
 public class ProveedorLegacy
 {
     public string EnviarMercancia(string ingredienteEncriptado, string kilosTexto)
     {
-        Thread.Sleep(30);
         return $"LEGACY-{DateTime.Now.Ticks}";
     }
 }
 
-// --- Otro Adapter ---
+// --- Adapter: traduce IProveedorIngredientes -> ProveedorLegacy ---
 public class ProveedorLegacyAdapter : IProveedorIngredientes
 {
     private readonly ProveedorLegacy _legacy;
 
-    public ProveedorLegacyAdapter(ProveedorLegacy legacy)
-    {
-        _legacy = legacy;
-    }
+    public ProveedorLegacyAdapter(ProveedorLegacy legacy) => _legacy = legacy;
 
     public bool Entregar(string ingrediente, decimal kilos)
     {

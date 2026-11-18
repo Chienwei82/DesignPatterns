@@ -1,15 +1,26 @@
 namespace DesignPatterns.Structural;
 
-/// PATRÓN FLYWEIGHT
-/// ───────────────
-/// Comparte eficientemente objetos que se usan en GRAN CANTIDAD.
-/// Divide el estado en INTRÍNSECO (compartido entre instancias) y
-/// EXTRÍNSECO (proporcionado por el cliente/contexto).
+/// ============================================================================
+/// PATRÓN FLYWEIGHT — Compartir objetos en gran cantidad
+/// ============================================================================
+/// Intención: compartir eficientemente objetos que se usan en gran cantidad,
+/// dividiendo el estado en intrínseco (compartido) y extrínseco
+/// (proporcionado por el cliente/contexto).
+///
+/// Analogía: un solo molde de limonada reutilizado para servir mil comandas en
+/// mesas distintas.
+///
+/// Cuándo usarlo: muchísimos objetos similares en memoria (tiles de
+/// videojuegos, caracteres de un documento).
+///
+/// Cuándo NO usarlo: con pocos objetos o cuando no hay nada compartible; la
+/// factory complica sin beneficio.
 ///
 /// USO REAL: Renderizado de documentos (caracteres con fuente compartida),
-///           tiles en videojuegos, iconos en mapas, caché de objetos.
+/// tiles en videojuegos, iconos en mapas, caché de objetos.
+/// ============================================================================
 
-// --- Flyweight: la bebida compartida ---
+// --- Flyweight: la bebida compartida (estado intrínseco) ---
 public class TipoBebida
 {
     public string Nombre { get; }
@@ -23,10 +34,8 @@ public class TipoBebida
         Color = color;
     }
 
-    public void Servir(int mesa)
-    {
+    public void Servir(int mesa) =>
         Console.WriteLine($"    🥤 {Nombre} ({Color}) para la mesa {mesa}");
-    }
 }
 
 // --- Flyweight Factory: administra y reutiliza los flyweights ---
@@ -48,8 +57,7 @@ public class FabricaBebidas
     public int TiposCreados => _tipos.Count;
 }
 
-// --- Contexto: cada comanda apunta a una mesa (extrínseco)
-//     pero comparte el tipo de bebida (intrínseco) ---
+// --- Contexto: cada comanda apunta a una mesa (extrínseco) ---
 public class Comanda
 {
     private readonly TipoBebida _bebida;
@@ -91,7 +99,6 @@ public static class FlyweightDemo
             comandas.Add(new Comanda(bebida, random.Next(1, 50)));
         }
 
-        Console.WriteLine();
         Console.WriteLine("  📊 Resultado:");
         Console.WriteLine($"     Comandas levantadas: {comandas.Count}");
         Console.WriteLine($"     Tipos de bebida únicos en memoria: {fabrica.TiposCreados}");

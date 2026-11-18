@@ -1,14 +1,24 @@
 namespace DesignPatterns.Structural;
 
-/// PATRÓN BRIDGE
-/// ─────────────
-/// Separa una ABSTRACCIÓN de su IMPLEMENTACIÓN, permitiendo que ambas
-/// evolucionen independientemente. Es útil cuando una clase tiene
-/// múltiples dimensiones de variación (ej. forma + color).
+/// ============================================================================
+/// PATRÓN BRIDGE — Abstracción e implementación independientes
+/// ============================================================================
+/// Intención: separar una abstracción de su implementación, permitiendo que
+/// ambas evolucionen independientemente. Útil cuando una clase tiene múltiples
+/// dimensiones de variación.
+///
+/// Analogía: receta (casera/gourmet) × método (horno/freidora/parrilla): dos
+/// perillas independientes.
+///
+/// Cuándo usarlo: cuando tienes dos dimensiones de variación (sin Bridge: 2
+/// recetas × 3 métodos = 6 clases; con Bridge: 2 + 3 = 5).
+///
+/// Cuándo NO usarlo: con una sola dimensión, herencia simple basta.
 ///
 /// USO REAL: Drivers de base de datos (abstracción: consulta SQL,
-///             implementación: driver MySQL/PostgreSQL/SQLite),
-///             controles UI multiplataforma, APIs de pago.
+/// implementación: driver MySQL/PostgreSQL/SQLite), controles UI
+/// multiplataforma, APIs de pago.
+/// ============================================================================
 
 // --- Implementación (la parte que varía) ---
 public interface IMetodoCoccion
@@ -46,10 +56,7 @@ public abstract class RecetaBase
 {
     protected readonly IMetodoCoccion _metodo;
 
-    protected RecetaBase(IMetodoCoccion metodo)
-    {
-        _metodo = metodo;
-    }
+    protected RecetaBase(IMetodoCoccion metodo) => _metodo = metodo;
 
     public abstract void Preparar();
 }
@@ -60,7 +67,7 @@ public class RecetaCasera : RecetaBase
 
     public override void Preparar()
     {
-        Console.WriteLine($"  [Receta Casera] Sazonando con sal y limón");
+        Console.WriteLine("  [Receta Casera] Sazonando con sal y limón");
         _metodo.Cocinar("Papa");
     }
 }
@@ -71,7 +78,7 @@ public class RecetaGourmet : RecetaBase
 
     public override void Preparar()
     {
-        Console.WriteLine($"  [Receta Gourmet] Marinando con hierbas finas");
+        Console.WriteLine("  [Receta Gourmet] Marinando con hierbas finas");
         _metodo.Cocinar("Salmón");
     }
 }
@@ -83,18 +90,11 @@ public static class BridgeDemo
         Console.WriteLine("  🌉 BRIDGE — Abstracción e implementación independientes\n");
         Console.WriteLine("  Escenario: Recetas × métodos de cocción\n");
 
-        var metodos = new IMetodoCoccion[]
-        {
-            new Horno(),
-            new Freidora(),
-            new Parrilla()
-        };
+        var metodos = new IMetodoCoccion[] { new Horno(), new Freidora(), new Parrilla() };
 
         foreach (var metodo in metodos)
         {
             Console.WriteLine($"  ── Método: {metodo.Nombre} ──");
-
-            // La misma receta casera funciona con cualquier método
             var casera = new RecetaCasera(metodo);
             casera.Preparar();
             Console.WriteLine();

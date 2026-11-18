@@ -1,35 +1,37 @@
 namespace DesignPatterns.Behavioral;
 
-/// PATRÓN CHAIN OF RESPONSIBILITY
-/// ─────────────────────────────
-/// Permite pasar solicitudes a lo largo de una CADENA de manejadores.
-/// Cada manejador decide si procesa la solicitud o la pasa al
-/// siguiente eslabón. Desacopla el emisor del receptor.
+/// ============================================================================
+/// PATRÓN CHAIN OF RESPONSIBILITY — Cadena de manejadores
+/// ============================================================================
+/// Intención: pasar solicitudes a lo largo de una cadena de manejadores.
+/// Cada manejador decide si procesa la solicitud o la pasa al siguiente
+/// eslabón. Desacopla al emisor del receptor.
 ///
-/// USO REAL: Middleware en ASP.NET Core, filtros de validación,
-///           aprobaciones jerárquicas, soporte técnico escalable,
-///           manejo de quejas en un restaurante.
+/// Analogía: una queja en el restaurante: el mesero intenta resolverla; si no
+/// puede, escala al jefe de cocina, luego al gerente y por último al dueño.
+///
+/// Cuándo usarlo: middleware, validaciones encadenadas, escalado de aprobaciones.
+///
+/// Cuándo NO usarlo: si siempre sabes quién maneja la solicitud, un `switch`
+/// o llamada directa es más claro.
+///
+/// USO REAL: Middleware en ASP.NET Core, filtros de validación, aprobaciones
+/// jerárquicas, soporte técnico escalable, manejo de quejas en un restaurante.
+/// ============================================================================
 
 // --- Handler abstracto ---
 public abstract class ManejadorQueja
 {
     protected ManejadorQueja? _siguiente;
 
-    public void EstablecerSiguiente(ManejadorQueja siguiente)
-    {
-        _siguiente = siguiente;
-    }
+    public void EstablecerSiguiente(ManejadorQueja siguiente) => _siguiente = siguiente;
 
     public virtual void Manejar(Queja queja)
     {
         if (_siguiente != null)
-        {
             _siguiente.Manejar(queja);
-        }
         else
-        {
             Console.WriteLine($"    ❌ Queja #{queja.Id}: NADIE pudo atender '{queja.Motivo}'");
-        }
     }
 }
 
@@ -94,10 +96,8 @@ public class Gerente : ManejadorQueja
 
 public class Dueno : ManejadorQueja
 {
-    public override void Manejar(Queja queja)
-    {
+    public override void Manejar(Queja queja) =>
         Console.WriteLine($"    ✅ [Dueño] Queja #{queja.Id}: '{queja.Motivo}' atendida personalmente por el Dueño");
-    }
 }
 
 public static class ChainOfResponsibilityDemo

@@ -1,14 +1,23 @@
 namespace DesignPatterns.Creational;
 
-/// PATRÓN BUILDER
-/// ──────────────
-/// Separa la construcción de un objeto complejo de su representación,
-/// permitiendo que el MISMO proceso de construcción cree DIFERENTES
-/// representaciones. Ideal cuando un objeto tiene muchos parámetros
-/// opcionales o pasos de configuración.
+/// ============================================================================
+/// PATRÓN BUILDER — Construcción paso a paso
+/// ============================================================================
+/// Intención: separar la construcción de un objeto complejo de su
+/// representación, para que el mismo proceso pueda crear diferentes
+/// variantes. Ideal para objetos con muchos parámetros opcionales.
 ///
-/// USO REAL: Construcción de consultas SQL, objetos HTTP Request,
-///           armado de pizzas/hamburguesas, objetos con muchos campos.
+/// Analogía: armar una hamburguesa por pasos (pan, carne, extras).
+///
+/// Cuándo usarlo: objetos con muchos parámetros opcionales (consultas SQL,
+/// HTTP requests, pedidos).
+///
+/// Cuándo NO usarlo: con 2-3 parámetros simples; el patrón agrega más código
+/// del que resuelve.
+///
+/// USO REAL: Construcción de consultas SQL, objetos HTTP Request, armado de
+/// pizzas/hamburguesas, objetos con muchos campos.
+/// ============================================================================
 
 // --- Producto final ---
 public class Hamburguesa
@@ -99,17 +108,13 @@ public class HamburguesaBuilder : IHamburguesaBuilder
     }
 }
 
-// --- Director (opcional) — guía el proceso de construcción ---
+// --- Director (opcional): encapsula recetas predefinidas ---
 public class ChefDirector
 {
     private readonly IHamburguesaBuilder _builder;
 
-    public ChefDirector(IHamburguesaBuilder builder)
-    {
-        _builder = builder;
-    }
+    public ChefDirector(IHamburguesaBuilder builder) => _builder = builder;
 
-    // Receta predefinida: la clásica
     public Hamburguesa PrepararClasica()
     {
         _builder.ConPan("brioche");
@@ -119,7 +124,6 @@ public class ChefDirector
         return _builder.Construir();
     }
 
-    // Receta predefinida: la monstruosa, con todo
     public Hamburguesa PrepararMonstruosa()
     {
         _builder.ConPan("pretzel");
@@ -140,8 +144,8 @@ public static class BuilderDemo
         Console.WriteLine("  🧱 BUILDER — Armar una hamburguesa paso a paso\n");
         Console.WriteLine("  Escenario: El chef arma hamburguesas con distintas configuraciones\n");
 
-        // ── A medida: el cocinero encadena los pasos (API fluent) ──
-        Console.WriteLine("  ── Hamburguesa a medida (fluent API) ──");
+        // ── A medida: API fluida (fluent API) ──
+        Console.WriteLine("  ── Hamburguesa a medida (fluida) ──");
         var aMedida = new HamburguesaBuilder()
             .ConPan("brioche")
             .ConCarne("pollo crujiente")
@@ -152,23 +156,17 @@ public static class BuilderDemo
             .Construir();
         Console.WriteLine();
         aMedida.Resumen();
+
         Console.WriteLine();
-
-        // ── El Director encapsula recetas predefinidas ──
-        var chef = new ChefDirector(new HamburguesaBuilder());
-
         Console.WriteLine("  ── La Clásica (vía Director) ──");
-        var clasica = chef.PrepararClasica();
-        Console.WriteLine();
-        clasica.Resumen();
-        Console.WriteLine();
+        var chef = new ChefDirector(new HamburguesaBuilder());
+        chef.PrepararClasica().Resumen();
 
+        Console.WriteLine();
         Console.WriteLine("  ── La Monstruosa (vía Director) ──");
-        var monstruosa = chef.PrepararMonstruosa();
-        Console.WriteLine();
-        monstruosa.Resumen();
-        Console.WriteLine();
+        chef.PrepararMonstruosa().Resumen();
 
+        Console.WriteLine();
         Console.WriteLine("  ✅ El Builder permite crear objetos con diferentes");
         Console.WriteLine("     configuraciones sin constructores gigantes.");
         Console.WriteLine("     El Director reutiliza el mismo builder con recetas distintas.");

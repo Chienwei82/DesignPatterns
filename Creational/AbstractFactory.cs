@@ -1,57 +1,48 @@
 namespace DesignPatterns.Creational;
 
-/// PATRÓN ABSTRACT FACTORY
-/// ────────────────────────
-/// Proporciona una interfaz para crear FAMILIAS de objetos relacionados
-/// sin especificar sus clases concretas. Es como un Factory Method
-/// pero para crear múltiples productos que funcionan juntos.
+/// ============================================================================
+/// PATRÓN ABSTRACT FACTORY — Familias de objetos compatibles
+/// ============================================================================
+/// Intención: crear FAMILIAS de objetos relacionados sin acoplarse a sus
+/// clases concretas.
 ///
-/// USO REAL: Interfaces UI multiplataforma, conectores a distintos
-///           motores de BD, menús completos de distintas cocinas.
+/// Analogía: tienda de muebles con líneas "moderna" o "vintage": compras el
+/// set y todo combina.
+///
+/// Cuándo usarlo: menús completos de distintas cocinas, temas de UI,
+/// conectores a distintas bases de datos.
+///
+/// Cuándo NO usarlo: si solo hay un producto por familia (para eso es
+/// Factory Method, más simple).
+///
+/// USO REAL: Interfaces UI multiplataforma, conectores a distintos motores
+/// de BD, menús completos de distintas cocinas.
+/// ============================================================================
 
 // --- Productos abstractos ---
-public interface IEntrada
-{
-    void Servir();
-}
-
-public interface IPlatoFuerte
-{
-    void Servir();
-}
+public interface IEntrada { void Servir(); }
+public interface IPlatoFuerte { void Servir(); }
 
 // --- Familia: Menú Italiano ---
 public class Bruschetta : IEntrada
 {
-    public void Servir()
-    {
-        Console.WriteLine("  [🇮🇹 Entrada] Bruschetta con tomate y albahaca");
-    }
+    public void Servir() => Console.WriteLine("  [🇮🇹 Entrada] Bruschetta con tomate y albahaca");
 }
 
 public class Pizza : IPlatoFuerte
 {
-    public void Servir()
-    {
-        Console.WriteLine("  [🇮🇹 Fuerte]  Pizza margarita recién salida del horno");
-    }
+    public void Servir() => Console.WriteLine("  [🇮🇹 Fuerte]  Pizza margarita recién salida del horno");
 }
 
 // --- Familia: Menú Mexicano ---
 public class Nachos : IEntrada
 {
-    public void Servir()
-    {
-        Console.WriteLine("  [🇲🇽 Entrada] Nachos con guacamole y jalapeños");
-    }
+    public void Servir() => Console.WriteLine("  [🇲🇽 Entrada] Nachos con guacamole y jalapeños");
 }
 
 public class Tacos : IPlatoFuerte
 {
-    public void Servir()
-    {
-        Console.WriteLine("  [🇲🇽 Fuerte]  Tacos al pastor con piña");
-    }
+    public void Servir() => Console.WriteLine("  [🇲🇽 Fuerte]  Tacos al pastor con piña");
 }
 
 // --- Abstract Factory ---
@@ -74,7 +65,6 @@ public class MenuMexicanoFactory : IMenuFactory
     public IPlatoFuerte CrearPlatoFuerte() => new Tacos();
 }
 
-// --- Cliente ---
 public static class AbstractFactoryDemo
 {
     public static void Run()

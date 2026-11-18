@@ -1,14 +1,23 @@
 namespace DesignPatterns.Behavioral;
 
-/// PATRÓN STATE
-/// ────────────
-/// Permite que un objeto ALTERE su comportamiento cuando su ESTADO
+/// ============================================================================
+/// PATRÓN STATE — Comportamiento según el estado
+/// ============================================================================
+/// Intención: permitir que un objeto altere su comportamiento cuando su estado
 /// interno cambia. Parecerá que el objeto cambia de clase.
-/// Es como una máquina de estados finitos modelada con OOP.
 ///
-/// USO REAL: Máquinas de estados en videojuegos (idle, running,
-///           jumping), flujos de workflow (aprobación, rechazo),
-///           proceso de pedidos, conexiones TCP.
+/// Analogía: el mismo botón de teléfono hace cosas distintas según si suena,
+/// estás hablando o en espera.
+///
+/// Cuándo usarlo: flujos de pedidos, máquinas de estados de videojuegos,
+/// workflows de aprobación.
+///
+/// Cuándo NO usarlo: con 2 estados triviales, un `enum` + `switch` es más
+/// simple y suficiente.
+///
+/// USO REAL: Máquinas de estados en videojuegos (idle, running, jumping),
+/// flujos de workflow (aprobación, rechazo), proceso de pedidos, conexiones TCP.
+/// ============================================================================
 
 // --- State ---
 public interface IEstadoAnimo
@@ -41,16 +50,13 @@ public class Chef
 }
 
 // --- Estados concretos ---
-
 public class ChefFeliz : IEstadoAnimo
 {
     public static readonly ChefFeliz Instancia = new();
     public string Nombre => "😄 Feliz";
 
-    public void RecibirPedido(Chef chef)
-    {
+    public void RecibirPedido(Chef chef) =>
         Console.WriteLine($"  {chef.Nombre} sonríe: \"¡Con gusto, un pedido más!\"");
-    }
 
     public void Cocinar(Chef chef)
     {
@@ -58,10 +64,8 @@ public class ChefFeliz : IEstadoAnimo
         chef.CambiarEstado(ChefEstresado.Instancia);
     }
 
-    public void Descansar(Chef chef)
-    {
+    public void Descansar(Chef chef) =>
         Console.WriteLine($"  {chef.Nombre} se toma un café tranquilo");
-    }
 }
 
 public class ChefEstresado : IEstadoAnimo
@@ -75,10 +79,8 @@ public class ChefEstresado : IEstadoAnimo
         chef.CambiarEstado(ChefEnojado.Instancia);
     }
 
-    public void Cocinar(Chef chef)
-    {
+    public void Cocinar(Chef chef) =>
         Console.WriteLine($"  {chef.Nombre} cocina rapidísimo, sin perder la técnica");
-    }
 
     public void Descansar(Chef chef)
     {
@@ -92,15 +94,11 @@ public class ChefEnojado : IEstadoAnimo
     public static readonly ChefEnojado Instancia = new();
     public string Nombre => "😡 Enojado";
 
-    public void RecibirPedido(Chef chef)
-    {
+    public void RecibirPedido(Chef chef) =>
         Console.WriteLine($"  {chef.Nombre} golpea la mesa: \"¡Ni un pedido más!\"");
-    }
 
-    public void Cocinar(Chef chef)
-    {
+    public void Cocinar(Chef chef) =>
         Console.WriteLine($"  {chef.Nombre} cocina quemando el aceite de puro coraje");
-    }
 
     public void Descansar(Chef chef)
     {
@@ -121,7 +119,6 @@ public static class StateDemo
         Console.WriteLine($"  🏁 Estado inicial: {chef.Estado.Nombre}");
         Console.WriteLine();
 
-        // El servicio avanza y el humor cambia solo
         Console.WriteLine("  ── Llega un pedido ──");
         chef.RecibirPedido();
         Console.WriteLine($"     Humor ahora: {chef.Estado.Nombre}\n");
