@@ -7,9 +7,9 @@ namespace DesignPatterns.Behavioral;
 /// clientes con diferentes solicitudes, encolarlas o registrarlas, y soportar
 /// operaciones reversibles (undo/redo).
 ///
-/// Analogía: pedir en un restaurante: el mesero escribe el pedido (comando),
-/// el cocinero lo ejecuta; el pedido se puede anular. En este proyecto: un
-/// editor de texto donde cada inserción/borrado es un comando con undo/redo.
+/// Analogía: un videojuego tipo "rewind" (como Prince of Persia o Braid): cada
+/// acción del personaje (saltar, atacar) es un comando que puede ejecutarse y
+/// deshacerse (rebobinar el tiempo).
 ///
 /// Cuándo usarlo: undo/redo (Ctrl+Z), colas de trabajos, macros, logging de
 /// acciones.
@@ -30,74 +30,72 @@ public interface IComando
     void Deshacer();
 }
 
-// --- Receiver: el editor de texto real ---
-public class EditorTexto
+// --- Receiver: el personaje del videojuego ---
+public class Personaje
 {
-    private readonly List<string> _lineas = [];
+    private int _posX;
+    private int _posY;
 
-    public void AgregarLinea(string texto)
+    public Personaje(int x, int y)
     {
-        _lineas.Add(texto);
-        Console.WriteLine($"    ➕ Línea agregada: \"{texto}\"");
+        _posX = x;
+        _posY = y;
     }
 
-    public string QuitarLinea()
+    public void Mover(int dx, int dy)
     {
-        if (_lineas.Count == 0)
-        {
-            Console.WriteLine("    ⚠️  El editor está vacío");
-            return "";
-        }
+        _posX += dx;
+        _posY += dy;
+        Console.WriteLine($"    🚶 Se mueve a la posición ({_posX}, {_posY})");
+    }
 
-        var ultima = _lineas[^1];
-        _lineas.RemoveAt(_lineas.Count - 1);
-        Console.WriteLine($"    ➖ Línea eliminada: \"{ultima}\"");
-        return ultima;
+    public void Saltar()
+    {
+        Console.WriteLine($"    🦘 Salta desde ({_posX}, {_posY}) — altura +3");
     }
 
     public void Mostrar()
     {
-        var texto = _lineas.Count > 0 ? string.Join(" | ", _lineas) : "(vacío)";
-        Console.WriteLine($"    ── Editor actual: {texto}");
+        Console.WriteLine($"    ── Posición actual: ({_posX}, {_posY})");
     }
 }
 
 // --- Commands concretos ---
-public class InsertarLinea : IComando
+public class MoverComando : IComando
 {
-    private readonly EditorTexto _editor;
-    private readonly string _texto;
-    public string Nombre => $"Insertar \"{_texto}\"";
+    private readonly Personaje _personaje;
+    private readonly int _dx;
+    private readonly int _dy;
+    public string Nombre => $"Mover ({_dx}, {_dy})";
 
-    public InsertarLinea(EditorTexto editor, string texto)
+    public MoverComando(Personaje personaje, int dx, int dy)
     {
-        _editor = editor;
-        _texto = texto;
+        _personaje = personaje;
+        _dx = dx;
+        _dy = dy;
     }
 
-    public void Ejecutar() => _editor.AgregarLinea(_texto);
-    public void Deshacer() => _editor.QuitarLinea();
+    public void Ejecutar() => _personaje.Mover(_dx, _dy);
+    public void Deshacer() => _personaje.Mover(-_dx, -_dy);
 }
 
-public class BorrarLinea : IComando
+public class SaltarComando : IComando
 {
-    private readonly EditorTexto _editor;
-    private string _lineaBorrada = "";
-    public string Nombre => "Borrar última línea";
+    private readonly Personaje _personaje;
+    public string Nombre => "Saltar";
 
-    public BorrarLinea(EditorTexto editor) => _editor = editor;
+    public SaltarComando(Personaje personaje) => _personaje = personaje;
 
-    public void Ejecutar() => _lineaBorrada = _editor.QuitarLinea();
+    public void Ejecutar() => _personaje.Saltar();
 
-    public void Deshacer()
-    {
-        if (!string.IsNullOrEmpty(_lineaBorrada))
-            _editor.AgregarLinea(_lineaBorrada);
-    }
+    // Saltar es instantáneo: deshacer lo deja justo donde estaba (aunque el salto
+    // ya ocurrió). En un juego real, deshacer rebobinaría el estado completo.
+    public void Deshacer() =>
+        Console.WriteLine("    ⏪ Rebobinando el salto... (el personaje vuelve a su pose previa)");
 }
 
 // --- Invoker: maneja el historial y la ejecución ---
-public class EditorInvoker
+public class ControlDeJuego
 {
     private readonly Stack<IComando> _historial = new();
     private readonly Stack<IComando> _rehacer = new();
@@ -143,37 +141,36 @@ public static class CommandDemo
 {
     public static void Run()
     {
-        Console.WriteLine("  🎮 COMMAND — Comandos como objetos (con UNDO/REDO)\n");
-        Console.WriteLine("  Escenario: Un editor de texto donde el usuario inserta y borra líneas\n");
+        Console.WriteLine("  🎮 COMMAND — Comandos como objetos con UNDO/REDO (rewind de videojuego)\n");
+        Console.WriteLine("  Escenario: Un juego donde puedes rebobinar cada acción del personaje\n");
 
-        var editor = new EditorTexto();
-        var invoker = new EditorInvoker();
+        var heroe = new Personaje(0, 0);
+        var control = new ControlDeJuego();
 
-        invoker.Ejecutar(new InsertarLinea(editor, "línea 1: Hola mundo"));
-        editor.Mostrar();
+        control.Ejecutar(new MoverComando(heroe, 5, 0));
+        heroe.Mostrar();
         Console.WriteLine();
 
-        invoker.Ejecutar(new InsertarLinea(editor, "línea 2: Este es un ejemplo"));
-        invoker.Ejecutar(new InsertarLinea(editor, "línea 3: de patrón Command"));
-        editor.Mostrar();
+        control.Ejecutar(new SaltarComando(heroe));
+        control.Ejecutar(new MoverComando(heroe, 0, -3));
+        heroe.Mostrar();
         Console.WriteLine();
 
-        Console.WriteLine("  ── Deshacer última línea ──");
-        invoker.Deshacer();
-        editor.Mostrar();
+        Console.WriteLine("  ── Rebobinar el último movimiento ──");
+        control.Deshacer();
+        heroe.Mostrar();
         Console.WriteLine();
 
-        Console.WriteLine("  ── Deshacer otra vez ──");
-        invoker.Deshacer();
-        editor.Mostrar();
+        Console.WriteLine("  ── Rebobinar también el salto ──");
+        control.Deshacer();
+        heroe.Mostrar();
         Console.WriteLine();
 
         Console.WriteLine("  ── Rehacer ──");
-        invoker.Rehacer();
-        editor.Mostrar();
+        control.Rehacer();
         Console.WriteLine();
 
-        Console.WriteLine("  ✅ Cada comando es un objeto que sabe ejecutarse y deshacerse.");
-        Console.WriteLine("     Se pueden encolar, registrar en bitácora, o serializar.");
+        Console.WriteLine("  ✅ Cada comando sabe ejecutarse y deshacerse.");
+        Console.WriteLine("     Se pueden encolar, registrar en una bitácora o serializar.");
     }
 }

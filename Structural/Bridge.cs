@@ -7,11 +7,12 @@ namespace DesignPatterns.Structural;
 /// ambas evolucionen independientemente. Útil cuando una clase tiene múltiples
 /// dimensiones de variación.
 ///
-/// Analogía: receta (casera/gourmet) × método (horno/freidora/parrilla): dos
-/// perillas independientes.
+/// Analogía: en un RPG combinas un arma (espada, arco, bastón) con un elemento
+/// mágico (fuego, hielo, rayo). "Arma" y "elemento" son dos perillas
+/// independientes: no necesitas una clase por cada combinación.
 ///
-/// Cuándo usarlo: cuando tienes dos dimensiones de variación (sin Bridge: 2
-/// recetas × 3 métodos = 6 clases; con Bridge: 2 + 3 = 5).
+/// Cuándo usarlo: cuando tienes dos dimensiones de variación (sin Bridge: 3
+/// armas × 3 elementos = 9 clases; con Bridge: 3 + 3 = 6).
 ///
 /// Cuándo NO usarlo: con una sola dimensión, herencia simple basta.
 ///
@@ -20,63 +21,79 @@ namespace DesignPatterns.Structural;
 /// multiplataforma, APIs de pago.
 /// ============================================================================
 
-// --- Implementación (la parte que varía: el renderizador) ---
-public interface IRenderizador
+// --- Implementación (la parte que varía: el elemento mágico) ---
+public interface IElementoMagico
 {
     string Nombre { get; }
-    void Renderizar(string contenido);
+    void Aplicar(string arma);
 }
 
-public class RenderizadorPNG : IRenderizador
+public class Fuego : IElementoMagico
 {
-    public string Nombre => "PNG";
-    public void Renderizar(string contenido) =>
-        Console.WriteLine($"    [PNG] Generando imagen PNG con: {contenido}");
+    public string Nombre => "Fuego";
+    public void Aplicar(string arma) =>
+        Console.WriteLine($"    🔥 {arma} envuelta en llamas: daño de quemadura");
 }
 
-public class RenderizadorSVG : IRenderizador
+public class Hielo : IElementoMagico
 {
-    public string Nombre => "SVG";
-    public void Renderizar(string contenido) =>
-        Console.WriteLine($"    [SVG] Generando SVG vectorial con: {contenido}");
+    public string Nombre => "Hielo";
+    public void Aplicar(string arma) =>
+        Console.WriteLine($"    ❄️ {arma} cubierta de escarcha: congela al enemigo");
 }
 
-public class RenderizadorConsola : IRenderizador
+public class Rayo : IElementoMagico
 {
-    public string Nombre => "Consola";
-    public void Renderizar(string contenido) =>
-        Console.WriteLine($"    [Consola] Imprimiendo en terminal: {contenido}");
+    public string Nombre => "Rayo";
+    public void Aplicar(string arma) =>
+        Console.WriteLine($"    ⚡ {arma} crepita con electricidad: daño en cadena");
 }
 
-// --- Abstracción (la parte que el cliente usa: el gráfico) ---
-public abstract class ChartBase
+// --- Abstracción (la parte que el cliente usa: el arma) ---
+public abstract class ArmaElemental
 {
-    protected readonly IRenderizador _renderizador;
+    protected readonly IElementoMagico _elemento;
+    protected string NombreArma { get; }
 
-    protected ChartBase(IRenderizador renderizador) => _renderizador = renderizador;
-
-    public abstract void Mostrar();
-}
-
-public class ChartBarras : ChartBase
-{
-    public ChartBarras(IRenderizador renderizador) : base(renderizador) { }
-
-    public override void Mostrar()
+    protected ArmaElemental(string nombreArma, IElementoMagico elemento)
     {
-        Console.WriteLine("  [Chart de Barras] Preparando datos...");
-        _renderizador.Renderizar("Barras: [A:50, B:75, C:100]");
+        NombreArma = nombreArma;
+        _elemento = elemento;
+    }
+
+    public abstract void Atacar();
+}
+
+public class Arco : ArmaElemental
+{
+    public Arco(IElementoMagico elemento) : base("Arco del bosque", elemento) { }
+
+    public override void Atacar()
+    {
+        Console.WriteLine($"  🏹 [{NombreArma}] Preparando flecha...");
+        _elemento.Aplicar(NombreArma);
     }
 }
 
-public class ChartLineas : ChartBase
+public class Baston : ArmaElemental
 {
-    public ChartLineas(IRenderizador renderizador) : base(renderizador) { }
+    public Baston(IElementoMagico elemento) : base("Bastón arcano", elemento) { }
 
-    public override void Mostrar()
+    public override void Atacar()
     {
-        Console.WriteLine("  [Chart de Líneas] Preparando datos...");
-        _renderizador.Renderizar("Líneas: [Ene:10, Feb:25, Mar:40]");
+        Console.WriteLine($"  🪄 [{NombreArma}] Concentrando magia...");
+        _elemento.Aplicar(NombreArma);
+    }
+}
+
+public class EspadaElemental : ArmaElemental
+{
+    public EspadaElemental(IElementoMagico elemento) : base("Espada rúnica", elemento) { }
+
+    public override void Atacar()
+    {
+        Console.WriteLine($"  ⚔️ [{NombreArma}] Blandiendo el acero...");
+        _elemento.Aplicar(NombreArma);
     }
 }
 
@@ -84,29 +101,33 @@ public static class BridgeDemo
 {
     public static void Run()
     {
-        Console.WriteLine("  🌉 BRIDGE — Abstracción e implementación independientes\n");
-        Console.WriteLine("  Escenario: Gráficos × renderizadores (PNG/SVG/Consola)\n");
+        Console.WriteLine("  🌉 BRIDGE — Abstracción e implementación independientes (armas × elementos)\n");
+        Console.WriteLine("  Escenario: Un RPG combina cada arma con distintos elementos mágicos\n");
 
-        var renderizadores = new IRenderizador[] {
-            new RenderizadorPNG(),
-            new RenderizadorSVG(),
-            new RenderizadorConsola()
+        var elementos = new IElementoMagico[] {
+            new Fuego(),
+            new Hielo(),
+            new Rayo()
         };
 
-        foreach (var renderizador in renderizadores)
+        foreach (var elemento in elementos)
         {
-            Console.WriteLine($"  ── Renderizador: {renderizador.Nombre} ──");
-            var barras = new ChartBarras(renderizador);
-            barras.Mostrar();
+            Console.WriteLine($"  ── Elemento: {elemento.Nombre} ──");
+            var arco = new Arco(elemento);
+            arco.Atacar();
             Console.WriteLine();
         }
 
-        Console.WriteLine("  ── Gráfico de líneas en SVG ──");
-        var lineas = new ChartLineas(new RenderizadorSVG());
-        lineas.Mostrar();
+        Console.WriteLine("  ── Bastón con elemento Rayo ──");
+        new Baston(new Rayo()).Atacar();
         Console.WriteLine();
 
-        Console.WriteLine("  ✅ Agregar un renderizador NO requiere cambiar los gráficos.");
-        Console.WriteLine("     Agregar un tipo de gráfico NO requiere cambiar los renderizadores.");
+        Console.WriteLine("  ── Espada rúnica con elemento Fuego ──");
+        new EspadaElemental(new Fuego()).Atacar();
+        Console.WriteLine();
+
+        Console.WriteLine("  ✅ Agregar un elemento NO requiere cambiar las armas.");
+        Console.WriteLine("     Agregar un arma NO requiere cambiar los elementos.");
+        Console.WriteLine("     Las dos dimensiones evolucionan por separado (3 + 3, no 3 × 3).");
     }
 }

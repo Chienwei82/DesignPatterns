@@ -7,8 +7,8 @@ namespace DesignPatterns.Structural;
 /// uniforme. Los objetos se organizan en un árbol (parte-todo) y el cliente
 /// trata hojas y compuestos de la misma forma.
 ///
-/// Analogía: un sistema de archivos: un archivo y una carpeta completa responden
-/// la misma pregunta ("¿cuánto ocupa?").
+/// Analogía: los ejércitos de Poniente (Game of Thrones): un soldado suelto y
+/// una legión completa responden la misma pregunta ("¿cuántos hombres?").
 ///
 /// Cuándo usarlo: sistemas de archivos, menús, organigramas, árboles de
 /// componentes UI.
@@ -21,64 +21,59 @@ namespace DesignPatterns.Structural;
 /// ============================================================================
 
 // --- Componente ---
-public interface FSNode
+public interface IUnidad
 {
     string Nombre { get; }
-    int GetTamano();
-    void Listar(int indentacion = 0);
+    int ContarSoldados();
+    void Formar(int indentacion = 0);
 }
 
-// --- Hoja: un archivo individual ---
-public class FileLeaf : FSNode
+// --- Hoja: un soldado individual ---
+public class Soldado : IUnidad
 {
     public string Nombre { get; }
-    public int Tamano { get; }
 
-    public FileLeaf(string nombre, int tamano)
-    {
-        Nombre = nombre;
-        Tamano = tamano;
-    }
+    public Soldado(string nombre) => Nombre = nombre;
 
-    public int GetTamano() => Tamano;
+    public int ContarSoldados() => 1;
 
-    public void Listar(int indentacion = 0)
+    public void Formar(int indentacion = 0)
     {
         var indent = new string(' ', indentacion * 3);
-        Console.WriteLine($"{indent}📄 {Nombre} ({Tamano} KB)");
+        Console.WriteLine($"{indent}⚔️ {Nombre}");
     }
 }
 
-// --- Compuesto: un directorio que contiene archivos u otros directorios ---
-public class DirectoryComposite : FSNode
+// --- Compuesto: una legión que contiene soldados u otras legiones ---
+public class Legion : IUnidad
 {
     public string Nombre { get; }
-    private readonly List<FSNode> _hijos = [];
+    private readonly List<IUnidad> _hijos = [];
 
-    public DirectoryComposite(string nombre) => Nombre = nombre;
+    public Legion(string nombre) => Nombre = nombre;
 
-    public void Agregar(FSNode nodo)
+    public void Agregar(IUnidad unidad)
     {
-        _hijos.Add(nodo);
-        Console.WriteLine($"  [Dir {Nombre}] + {nodo.Nombre}");
+        _hijos.Add(unidad);
+        Console.WriteLine($"  [Legión {Nombre}] + {unidad.Nombre}");
     }
 
-    public void Remover(FSNode nodo)
+    public void Remover(IUnidad unidad)
     {
-        _hijos.Remove(nodo);
-        Console.WriteLine($"  [Dir {Nombre}] - {nodo.Nombre}");
+        _hijos.Remove(unidad);
+        Console.WriteLine($"  [Legión {Nombre}] - {unidad.Nombre}");
     }
 
     // El compuesto delega a sus hijos y suma resultados (LINQ)
-    public int GetTamano() => _hijos.Sum(h => h.GetTamano());
+    public int ContarSoldados() => _hijos.Sum(u => u.ContarSoldados());
 
-    public void Listar(int indentacion = 0)
+    public void Formar(int indentacion = 0)
     {
         var indent = new string(' ', indentacion * 3);
-        Console.WriteLine($"{indent}📁 {Nombre}/ ({GetTamano()} KB)");
+        Console.WriteLine($"{indent}🛡️ {Nombre} ({ContarSoldados()} hombres)");
 
         foreach (var hijo in _hijos)
-            hijo.Listar(indentacion + 1);
+            hijo.Formar(indentacion + 1);
     }
 }
 
@@ -86,49 +81,49 @@ public static class CompositeDemo
 {
     public static void Run()
     {
-        Console.WriteLine("  🌳 COMPOSITE — Estructuras árbol parte-todo\n");
-        Console.WriteLine("  Escenario: Sistema de archivos con directorios dentro de directorios\n");
+        Console.WriteLine("  🌳 COMPOSITE — Estructuras árbol parte-todo (ejércitos de Poniente)\n");
+        Console.WriteLine("  Escenario: Legiones de Game of Thrones con legiones dentro de legiones\n");
 
-        // ── Hojas: archivos ──
-        var readme = new FileLeaf("README.md", 12);
-        var config = new FileLeaf("config.json", 4);
-        var imagen = new FileLeaf("foto.png", 2048);
-        var video = new FileLeaf("video.mp4", 15360);
-        var codigo = new FileLeaf("Program.cs", 28);
-        var log = new FileLeaf("app.log", 512);
+        // ── Hojas: soldados ──
+        var arya = new Soldado("Arya Stark");
+        var jon = new Soldado("Jon Snow");
+        var brienne = new Soldado("Brienne de Tarth");
+        var drogon = new Soldado("Drogon");
+        var greyjoy = new Soldado("Yara Greyjoy");
+        var dothraki = new Soldado("Khal Drogo");
 
-        // ── Directorios (compuestos) ──
-        var docs = new DirectoryComposite("Documentos");
-        docs.Agregar(readme);
-        docs.Agregar(config);
+        // ── Compuestos: legiones ──
+        var norte = new Legion("Guardia de la Noche");
+        norte.Agregar(arya);
+        norte.Agregar(jon);
 
-        var media = new DirectoryComposite("Media");
-        media.Agregar(imagen);
-        media.Agregar(video);
+        var targaryen = new Legion("Hueste Targaryen");
+        targaryen.Agregar(drogon);
 
-        var proyecto = new DirectoryComposite("Proyecto");
-        proyecto.Agregar(docs);
-        proyecto.Agregar(media);
-        proyecto.Agregar(codigo);
-        proyecto.Agregar(log);
+        var alianza = new Legion("Gran Alianza del Norte");
+        alianza.Agregar(norte);
+        alianza.Agregar(targaryen);
+        alianza.Agregar(brienne);
+        alianza.Agregar(greyjoy);
+        alianza.Agregar(dothraki);
 
         // ── Mostrar estructura completa ──
-        Console.WriteLine("  Estructura de archivos:\n");
-        proyecto.Listar();
+        Console.WriteLine("\n  Formación del ejército:\n");
+        alianza.Formar();
         Console.WriteLine();
-        Console.WriteLine($"  💾 Tamaño total: {proyecto.GetTamano():N0} KB");
+        Console.WriteLine($"  💀 Total de hombres: {alianza.ContarSoldados()}");
         Console.WriteLine();
 
         // El compuesto también permite quitar elementos
-        Console.WriteLine("  ── Quitamos el log del proyecto ──");
-        proyecto.Remover(log);
+        Console.WriteLine("  ── Yara Greyjoy retira sus barcos ──");
+        alianza.Remover(greyjoy);
         Console.WriteLine();
-        proyecto.Listar();
+        alianza.Formar();
         Console.WriteLine();
-        Console.WriteLine($"  💾 Tamaño total ahora: {proyecto.GetTamano():N0} KB");
+        Console.WriteLine($"  💀 Total de hombres ahora: {alianza.ContarSoldados()}");
         Console.WriteLine();
 
-        Console.WriteLine("  ✅ GetTamano() funciona igual para un archivo o un directorio.");
+        Console.WriteLine("  ✅ ContarSoldados() funciona igual para un soldado o una legión.");
         Console.WriteLine("     El cliente no necesita saber si es hoja o compuesto.");
     }
 }

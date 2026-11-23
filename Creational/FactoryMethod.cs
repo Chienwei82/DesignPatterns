@@ -6,8 +6,9 @@ namespace DesignPatterns.Creational;
 /// Intención: definir una interfaz para crear objetos, pero dejar que las
 /// subclases decidan qué clase concreta instanciar.
 ///
-/// Analogía: franquicia de muebles: el proceso es estándar, pero cada taller
-/// decide si usa roble o pino.
+/// Analogía: en Pokémon, cada profesor regional (Oak, Elm, Birch) entrega un
+/// Pokémon inicial distinto; el proceso de "entregar inicial" es el mismo, pero
+/// cada laboratorio decide cuál crear.
 ///
 /// Cuándo usarlo: no sabes de antemano los tipos exactos que crearás; quieres
 /// que otros extiendan tu librería sin modificarla.
@@ -20,82 +21,98 @@ namespace DesignPatterns.Creational;
 /// ============================================================================
 
 // --- Producto abstracto ---
-public interface ITransporte
+public interface IInicialPokemon
 {
-    void Entregar(string paquete);
+    string Nombre { get; }
+    string Tipo { get; }
+    void Entregar(string entrenador);
 }
 
 // --- Productos concretos ---
-public class Moto : ITransporte
+public class Bulbasaur : IInicialPokemon
 {
-    public void Entregar(string paquete) =>
-        Console.WriteLine("  🏍️ [Moto] Entregando paquete por la ciudad en 20 min");
+    public string Nombre => "Bulbasaur";
+    public string Tipo => "Planta/Veneno";
+    public void Entregar(string entrenador) =>
+        Console.WriteLine($"  🌿 [{Nombre}] tipo {Tipo} entregado a {entrenador}");
 }
 
-public class Bicicleta : ITransporte
+public class Cyndaquil : IInicialPokemon
 {
-    public void Entregar(string paquete) =>
-        Console.WriteLine("  🚲 [Bici] Entregando paquete por ciclovía en 35 min");
+    public string Nombre => "Cyndaquil";
+    public string Tipo => "Fuego";
+    public void Entregar(string entrenador) =>
+        Console.WriteLine($"  🔥 [{Nombre}] tipo {Tipo} entregado a {entrenador}");
 }
 
-public class Auto : ITransporte
+public class Mudkip : IInicialPokemon
 {
-    public void Entregar(string paquete) =>
-        Console.WriteLine("  🚗 [Auto] Entregando paquete en furgón en 25 min");
+    public string Nombre => "Mudkip";
+    public string Tipo => "Agua";
+    public void Entregar(string entrenador) =>
+        Console.WriteLine($"  💧 [{Nombre}] tipo {Tipo} entregado a {entrenador}");
 }
 
 // --- Creator abstracto ---
-public abstract class RepartidorApp
+public abstract class LaboratorioPokemon
 {
-    // Factory Method — cada repartidor decide qué transporte usar
-    public abstract ITransporte CrearTransporte();
+    public string Region { get; }
 
-    public void AsignarPedido(string cliente, string paquete)
+    protected LaboratorioPokemon(string region) => Region = region;
+
+    // Factory Method — cada laboratorio decide qué inicial crear
+    public abstract IInicialPokemon CrearInicial();
+
+    public void EntregarInicial(string entrenador)
     {
-        Console.WriteLine($"  Pedido de {cliente}: {paquete}");
-        var transporte = CrearTransporte();
-        transporte.Entregar(paquete);
+        Console.WriteLine($"  Laboratorio de {Region}: preparando inicial para {entrenador}...");
+        var pokemon = CrearInicial();
+        pokemon.Entregar(entrenador);
+        Console.WriteLine($"     ¡Buena suerte, {entrenador}! Tu aventura empieza con {pokemon.Nombre}.");
     }
 }
 
 // --- Creators concretos ---
-public class RepartidorExpress : RepartidorApp
+public class LaboratorioKanto : LaboratorioPokemon
 {
-    public override ITransporte CrearTransporte() => new Moto();
+    public LaboratorioKanto() : base("Kanto (Prof. Oak)") { }
+    public override IInicialPokemon CrearInicial() => new Bulbasaur();
 }
 
-public class RepartidorEcologico : RepartidorApp
+public class LaboratorioJohto : LaboratorioPokemon
 {
-    public override ITransporte CrearTransporte() => new Bicicleta();
+    public LaboratorioJohto() : base("Johto (Prof. Elm)") { }
+    public override IInicialPokemon CrearInicial() => new Cyndaquil();
 }
 
-public class RepartidorCarga : RepartidorApp
+public class LaboratorioHoenn : LaboratorioPokemon
 {
-    public override ITransporte CrearTransporte() => new Auto();
+    public LaboratorioHoenn() : base("Hoenn (Prof. Birch)") { }
+    public override IInicialPokemon CrearInicial() => new Mudkip();
 }
 
 public static class FactoryMethodDemo
 {
     public static void Run()
     {
-        Console.WriteLine("  🏭 FACTORY METHOD — Cada repartidor decide qué transporte usar\n");
-        Console.WriteLine("  Escenario: App de delivery con repartidores especializados\n");
+        Console.WriteLine("  🏭 FACTORY METHOD — Cada laboratorio decide qué inicial entregar\n");
+        Console.WriteLine("  Escenario: Entrenadores reciben su Pokémon inicial en distintas regiones\n");
 
-        var repartos = new (string cliente, RepartidorApp repartidor)[]
+        var entregas = new (string entrenador, LaboratorioPokemon lab)[]
         {
-            ("Sofía", new RepartidorExpress()),
-            ("Diego", new RepartidorEcologico()),
-            ("Valeria", new RepartidorCarga())
+            ("Ash", new LaboratorioKanto()),
+            ("Ethan", new LaboratorioJohto()),
+            ("Brendan", new LaboratorioHoenn())
         };
 
-        foreach (var (cliente, repartidor) in repartos)
+        foreach (var (entrenador, lab) in entregas)
         {
-            repartidor.AsignarPedido(cliente, "Paquete estándar");
+            lab.EntregarInicial(entrenador);
             Console.WriteLine();
         }
 
-        Console.WriteLine("  ✅ El cliente depende de la abstracción (RepartidorApp),");
-        Console.WriteLine("     no de las clases concretas. Para agregar un transporte,");
-        Console.WriteLine("     solo se crea otra subclase.");
+        Console.WriteLine("  ✅ El cliente depende de la abstracción (LaboratorioPokemon),");
+        Console.WriteLine("     no de las clases concretas. Para una nueva región,");
+        Console.WriteLine("     solo se crea otra subclase de laboratorio.");
     }
 }

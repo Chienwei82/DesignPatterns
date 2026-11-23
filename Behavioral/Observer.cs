@@ -7,8 +7,9 @@ namespace DesignPatterns.Behavioral;
 /// cuando un objeto cambia su estado, todos sus dependientes son notificados
 /// automáticamente.
 ///
-/// Analogía: canal de YouTube: te suscribes y recibes cada video nuevo sin
-/// preguntar.
+/// Analogía: la Batiseñal de Gotham: cuando Gordon la enciende, todos los
+/// aliados de Batman (Robin, Alfred, la Liga) reaccionan sin que Batman tenga
+/// que llamarlos uno por uno.
 ///
 /// Cuándo usarlo: eventos de UI, notificaciones push, sincronizar vistas.
 ///
@@ -21,97 +22,92 @@ namespace DesignPatterns.Behavioral;
 /// ============================================================================
 
 // --- Sujeto (observable) ---
-public interface IOrderService
+public interface IBatSenal
 {
-    void Suscribir(IOrderObserver observador);
-    void Desuscribir(IOrderObserver observador);
-    void Notificar(string orderId, string producto);
+    void Suscribir(IAliado observador);
+    void Desuscribir(IAliado observador);
+    void EmitirSenal(string alerta, string amenaza);
 }
 
 // --- Observador ---
-public interface IOrderObserver
+public interface IAliado
 {
     string Nombre { get; }
-    void Recibir(string orderId, string producto);
+    void Recibir(string alerta, string amenaza);
 }
 
 // --- Sujeto concreto ---
-public class OrderService : IOrderService
+public class BatSenal : IBatSenal
 {
-    private readonly List<IOrderObserver> _suscriptores = [];
+    private readonly List<IAliado> _aliados = [];
 
-    public void Suscribir(IOrderObserver observador)
+    public void Suscribir(IAliado observador)
     {
-        _suscriptores.Add(observador);
-        Console.WriteLine($"  📦 [OrderService] {observador.Nombre} se suscribió a los eventos");
+        _aliados.Add(observador);
+        Console.WriteLine($"  🦇 [Batiseñal] {observador.Nombre} se unió a la red de alertas");
     }
 
-    public void Desuscribir(IOrderObserver observador)
+    public void Desuscribir(IAliado observador)
     {
-        _suscriptores.Remove(observador);
-        Console.WriteLine($"  📦 [OrderService] {observador.Nombre} canceló su suscripción");
+        _aliados.Remove(observador);
+        Console.WriteLine($"  🦇 [Batiseñal] {observador.Nombre} se dio de baja");
     }
 
-    public void Notificar(string orderId, string producto)
+    public void EmitirSenal(string alerta, string amenaza)
     {
-        Console.WriteLine($"    Avisando a {_suscriptores.Count} suscriptor(es)...");
+        Console.WriteLine($"    Iluminando el cielo de Gotham a { _aliados.Count} aliado(s)...");
 
-        foreach (var suscriptor in _suscriptores)
-            suscriptor.Recibir(orderId, producto);
+        foreach (var aliado in _aliados)
+            aliado.Recibir(alerta, amenaza);
 
         Console.WriteLine();
     }
 
-    // El servicio termina de procesar un pedido
-    public void PedidoConfirmado(string orderId, string producto)
+    // Gordon enciende la Batiseñal
+    public void EncenderSenal(string alerta, string amenaza)
     {
-        Console.WriteLine($"\n  🔔 ORDER SERVICE: Pedido #{orderId} confirmado — {producto}");
-        Notificar(orderId, producto);
+        Console.WriteLine($"\n  🚨 BATISEÑAL: {alerta} — {amenaza}");
+        EmitirSenal(alerta, amenaza);
     }
 }
 
 // --- Observadores concretos ---
-public class EmailNotifier : IOrderObserver
+public class Robin : IAliado
 {
-    public string Nombre { get; }
-    public EmailNotifier(string nombre) => Nombre = nombre;
-    public void Recibir(string orderId, string producto) =>
-        Console.WriteLine($"    ✉️ [{Nombre}] Enviando email: Tu pedido #{orderId} está confirmado");
+    public string Nombre => "Robin";
+    public void Recibir(string alerta, string amenaza) =>
+        Console.WriteLine($"    🎯 [Robin] '{alerta}': voy en camino a enfrentar a {amenaza}");
 }
 
-public class StockUpdater : IOrderObserver
+public class Alfred : IAliado
 {
-    public string Nombre => "Actualizador de stock";
-    public void Recibir(string orderId, string producto) =>
-        Console.WriteLine($"    📦 [Stock] Descontando 1 unidad de '{producto}' del inventario");
+    public string Nombre => "Alfred";
+    public void Recibir(string alerta, string amenaza) =>
+        Console.WriteLine($"    🇬🇧 [Alfred] Preparo el Batmóvil y el café, señor. ({alerta})");
 }
 
-public class AnalyticsLogger : IOrderObserver
+public class ComisionadoGordon : IAliado
 {
-    public string Nombre { get; }
-    public AnalyticsLogger(string nombre) => Nombre = nombre;
-    public void Recibir(string orderId, string producto) =>
-        Console.WriteLine($"    📊 [Analytics] Registrando evento: order_confirmed #{orderId}");
+    public string Nombre => "Comisionado Gordon";
+    public void Recibir(string alerta, string amenaza) =>
+        Console.WriteLine($"    👮 [Gordon] Registro el incidente '{alerta}' en la central");
 }
 
-// --- Observador con filtro (solo le interesan los productos de electrónica) ---
-public class ObservadorElectronica : IOrderObserver
+// --- Observador con filtro (solo le interesan las amenazas del Joker) ---
+public class VigilanteDelJoker : IAliado
 {
-    public string Nombre => "Departamento de electrónica";
+    public string Nombre => "Detective Bullock";
 
-    public void Recibir(string orderId, string producto)
+    public void Recibir(string alerta, string amenaza)
     {
-        var esElectronica = producto.Contains("Teclado") ||
-                            producto.Contains("Mouse") ||
-                            producto.Contains("Monitor") ||
-                            producto.Contains("Laptop");
+        var esJoker = amenaza.Contains("Joker", StringComparison.OrdinalIgnoreCase);
 
-        if (!esElectronica)
+        if (!esJoker)
         {
-            Console.WriteLine($"    🔇 [{Nombre}] Ignora '{producto}' (no es electrónica)");
+            Console.WriteLine($"    🔇 [Bullock] Ignoro '{alerta}' (no es el Joker)");
             return;
         }
-        Console.WriteLine($"    🔌 [{Nombre}] ¡Producto de electrónica vendido: {producto}!");
+        Console.WriteLine($"    🃏 [Bullock] ¡El Joker ataca de nuevo: {amenaza}!");
     }
 }
 
@@ -119,31 +115,31 @@ public static class ObserverDemo
 {
     public static void Run()
     {
-        Console.WriteLine("  👁️  OBSERVER — Suscripción y notificación en tiempo real\n");
-        Console.WriteLine("  Escenario: El servicio de pedidos avisa cuando se confirma una orden\n");
+        Console.WriteLine("  👁️  OBSERVER — Suscripción y notificación en tiempo real (Batiseñal)\n");
+        Console.WriteLine("  Escenario: Gordon enciende la Batiseñal y todos los aliados reaccionan\n");
 
-        var service = new OrderService();
+        var senal = new BatSenal();
 
-        var email = new EmailNotifier("Email");
-        var stock = new StockUpdater();
-        var analytics = new AnalyticsLogger("Analytics");
-        var electronica = new ObservadorElectronica();
+        var robin = new Robin();
+        var alfred = new Alfred();
+        var gordon = new ComisionadoGordon();
+        var bullock = new VigilanteDelJoker();
 
-        service.Suscribir(email);
-        service.Suscribir(stock);
-        service.Suscribir(analytics);
-        service.Suscribir(electronica);
+        senal.Suscribir(robin);
+        senal.Suscribir(alfred);
+        senal.Suscribir(gordon);
+        senal.Suscribir(bullock);
         Console.WriteLine();
 
-        service.PedidoConfirmado("ORD-001", "Teclado mecánico");
-        service.PedidoConfirmado("ORD-002", "Camiseta básica");
+        senal.EncenderSenal("RESCATE", "Dos Caras en el puerto");
+        senal.EncenderSenal("EMERGENCIA", "El Joker en el Gotham Trust");
 
-        service.Desuscribir(analytics);
+        senal.Desuscribir(gordon);
         Console.WriteLine();
 
-        service.PedidoConfirmado("ORD-003", "Mouse gamer");
+        senal.EncenderSenal("ALERTA", "Enigma en el museo");
 
-        Console.WriteLine("  ✅ Observer desacopla el emisor de los receptores.");
-        Console.WriteLine("     Nuevos canales se agregan sin modificar el OrderService.");
+        Console.WriteLine("  ✅ Observer desacopla al emisor (Batiseñal) de los aliados.");
+        Console.WriteLine("     Nuevos aliados se agregan sin modificar la Batiseñal.");
     }
 }

@@ -6,9 +6,9 @@ namespace DesignPatterns.Creational;
 /// Intención: crear FAMILIAS de objetos relacionados sin acoplarse a sus
 /// clases concretas.
 ///
-/// Analogía: tienda de muebles con líneas "moderna" o "vintage": compras el
-/// set y todo combina. En este proyecto: un tema de UI (claro/oscuro) donde
-/// botón, ventana y diálogo siempre combinan.
+/// Analogía: en Hogwarts cada casa tiene un conjunto a juego (estandarte,
+/// mascota, sala común, colores). La fábrica de Gryffindor produce el set rojo
+/// y dorado; la de Slytherin, el verde y plateado. Nunca mezclas piezas.
 ///
 /// Cuándo usarlo: familias de objetos que deben usarse juntos (temas de UI,
 /// conectores a distintas bases de datos, kits multiplataforma).
@@ -21,94 +21,90 @@ namespace DesignPatterns.Creational;
 /// ============================================================================
 
 // --- Productos abstractos ---
-public interface IBoton { void Dibujar(); }
-public interface IVentana { void Dibujar(); }
-public interface IDialogo { void Dibujar(); }
+public interface IEstandarte { void Mostrar(); }
+public interface IMascota { void Mostrar(); }
+public interface ISalaComun { void Mostrar(); }
 
-// --- Familia: Tema Claro ---
-public class BotonClaro : IBoton
+// --- Familia: Gryffindor ---
+public class EstandarteGryffindor : IEstandarte
 {
-    public void Dibujar() => Console.WriteLine("  [☀️ Botón claro] fondo blanco, texto oscuro");
+    public void Mostrar() => Console.WriteLine("  [🦁 Estandarte] rojo y dorado con un león");
 }
 
-public class VentanaClara : IVentana
+public class MascotaGryffindor : IMascota
 {
-    public void Dibujar() => Console.WriteLine("  [☀️ Ventana clara] borde gris suave, sombra ligera");
+    public void Mostrar() => Console.WriteLine("  [🦁 Mascota] el León, símbolo de valor");
 }
 
-public class DialogoClaro : IDialogo
+public class SalaGryffindor : ISalaComun
 {
-    public void Dibujar() => Console.WriteLine("  [☀️ Diálogo claro] fondo blanco, borde fino");
+    public void Mostrar() => Console.WriteLine("  [🏰 Sala común] Torre de Gryffindor, chimenea acogedora");
 }
 
-// --- Familia: Tema Oscuro ---
-public class BotonOscuro : IBoton
+// --- Familia: Slytherin ---
+public class EstandarteSlytherin : IEstandarte
 {
-    public void Dibujar() => Console.WriteLine("  [🌙 Botón oscuro] fondo negro, texto blanco");
+    public void Mostrar() => Console.WriteLine("  [🐍 Estandarte] verde y plateado con una serpiente");
 }
 
-public class VentanaOscura : IVentana
+public class MascotaSlytherin : IMascota
 {
-    public void Dibujar() => Console.WriteLine("  [🌙 Ventana oscura] borde gris oscuro, sin sombra");
+    public void Mostrar() => Console.WriteLine("  [🐍 Mascota] la Serpiente, símbolo de astucia");
 }
 
-public class DialogoOscuro : IDialogo
+public class SalaSlytherin : ISalaComun
 {
-    public void Dibujar() => Console.WriteLine("  [🌙 Diálogo oscuro] fondo gris carbón, borde luminoso");
+    public void Mostrar() => Console.WriteLine("  [🌊 Sala común] Mazmorra bajo el lago, luz verdosa");
 }
 
 // --- Abstract Factory ---
-public interface ITemaFactory
+public interface ICasaHogwartsFactory
 {
-    IBoton CrearBoton();
-    IVentana CrearVentana();
-    IDialogo CrearDialogo();
+    IEstandarte CrearEstandarte();
+    IMascota CrearMascota();
+    ISalaComun CrearSalaComun();
 }
 
 // --- Factories concretas ---
-public class TemaClaroFactory : ITemaFactory
+public class GryffindorFactory : ICasaHogwartsFactory
 {
-    public IBoton CrearBoton() => new BotonClaro();
-    public IVentana CrearVentana() => new VentanaClara();
-    public IDialogo CrearDialogo() => new DialogoClaro();
+    public IEstandarte CrearEstandarte() => new EstandarteGryffindor();
+    public IMascota CrearMascota() => new MascotaGryffindor();
+    public ISalaComun CrearSalaComun() => new SalaGryffindor();
 }
 
-public class TemaOscuroFactory : ITemaFactory
+public class SlytherinFactory : ICasaHogwartsFactory
 {
-    public IBoton CrearBoton() => new BotonOscuro();
-    public IVentana CrearVentana() => new VentanaOscura();
-    public IDialogo CrearDialogo() => new DialogoOscuro();
+    public IEstandarte CrearEstandarte() => new EstandarteSlytherin();
+    public IMascota CrearMascota() => new MascotaSlytherin();
+    public ISalaComun CrearSalaComun() => new SalaSlytherin();
 }
 
 public static class AbstractFactoryDemo
 {
     public static void Run()
     {
-        Console.WriteLine("  🏭🏭 ABSTRACT FACTORY — Familias de componentes que combinan\n");
-        Console.WriteLine("  Escenario: La app arma pantallas completas por tema visual\n");
+        Console.WriteLine("  🏰 ABSTRACT FACTORY — Familias de piezas que combinan (casas de Hogwarts)\n");
+        Console.WriteLine("  Escenario: El Sombrero Seleccionador arma el set completo de cada casa\n");
 
-        var temas = new (string nombre, ITemaFactory factory)[]
+        var casas = new (string nombre, ICasaHogwartsFactory factory)[]
         {
-            ("Claro", new TemaClaroFactory()),
-            ("Oscuro", new TemaOscuroFactory())
+            ("Gryffindor", new GryffindorFactory()),
+            ("Slytherin", new SlytherinFactory())
         };
 
-        foreach (var (nombre, factory) in temas)
+        foreach (var (nombre, factory) in casas)
         {
-            Console.WriteLine($"  ── TEMA {nombre.ToUpper()} ──");
+            Console.WriteLine($"  ── CASA {nombre.ToUpper()} ──");
 
             // El cliente usa la factory sin saber qué clases concretas se crean
-            var boton = factory.CrearBoton();
-            var ventana = factory.CrearVentana();
-            var dialogo = factory.CrearDialogo();
-
-            boton.Dibujar();
-            ventana.Dibujar();
-            dialogo.Dibujar();
+            factory.CrearEstandarte().Mostrar();
+            factory.CrearMascota().Mostrar();
+            factory.CrearSalaComun().Mostrar();
             Console.WriteLine();
         }
 
-        Console.WriteLine("  ✅ Los componentes de cada familia son compatibles entre sí.");
-        Console.WriteLine("  ✅ Cambiar de tema = cambiar de factory. El cliente no cambia.");
+        Console.WriteLine("  ✅ Las piezas de cada familia combinan entre sí.");
+        Console.WriteLine("  ✅ Cambiar de casa = cambiar de factory. El cliente no cambia.");
     }
 }

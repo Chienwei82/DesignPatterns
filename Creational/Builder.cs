@@ -7,8 +7,9 @@ namespace DesignPatterns.Creational;
 /// representación, para que el mismo proceso pueda crear diferentes
 /// variantes. Ideal para objetos con muchos parámetros opcionales.
 ///
-/// Analogía: armar una hamburguesa por pasos (pan, carne, extras): el mismo
-/// proceso construye variantes distintas.
+/// Analogía: armar un sable de luz de Star Wars pieza por pieza (empuñadura,
+/// cristal kyber, color de hoja, extras): el mismo proceso construye el sable
+/// de un Jedi o el de un Sith.
 ///
 /// Cuándo usarlo: objetos con muchos parámetros opcionales (consultas SQL,
 /// HTTP requests, pedidos).
@@ -21,112 +22,112 @@ namespace DesignPatterns.Creational;
 /// ============================================================================
 
 // --- Producto final ---
-public class ConsultaSQL
+public class SableDeLuz
 {
-    public List<string> Columnas { get; set; } = [];
-    public string Tabla { get; set; } = "";
-    public List<string> Condiciones { get; set; } = [];
-    public string Orden { get; set; } = "";
-    public int? Limite { get; set; }
+    public string Empunadura { get; set; } = "";
+    public string Cristal { get; set; } = "";
+    public string Color { get; set; } = "";
+    public bool DobleFilo { get; set; }
+    public bool Electrico { get; set; }
 
-    public override string ToString()
+    public void Descripcion()
     {
-        var cols = Columnas.Count > 0 ? string.Join(", ", Columnas) : "*";
-        var sql = $"SELECT {cols} FROM {Tabla}";
-        if (Condiciones.Count > 0)
-            sql += " WHERE " + string.Join(" AND ", Condiciones);
-        if (!string.IsNullOrEmpty(Orden))
-            sql += $" ORDER BY {Orden}";
-        if (Limite.HasValue)
-            sql += $" LIMIT {Limite.Value}";
-        return sql + ";";
+        Console.WriteLine($"  🗡️  Empuñadura: {Empunadura}");
+        Console.WriteLine($"  💎 Cristal kyber: {Cristal}");
+        Console.WriteLine($"  🌈 Hoja: {Color}{(DobleFilo ? " (doble filo)" : "")}{(Electrico ? " ⚡ (hoja eléctrica)" : "")}");
     }
 }
 
 // --- Builder ---
-public interface IConsultaSQLBuilder
+public interface ISableBuilder
 {
-    IConsultaSQLBuilder Select(params string[] columnas);
-    IConsultaSQLBuilder From(string tabla);
-    IConsultaSQLBuilder Where(string condicion);
-    IConsultaSQLBuilder OrderBy(string campo, bool descendente = false);
-    IConsultaSQLBuilder Limit(int cantidad);
-    ConsultaSQL Build();
+    ISableBuilder ConEmpunadura(string material);
+    ISableBuilder ConCristal(string cristal);
+    ISableBuilder ConColor(string color);
+    ISableBuilder DobleFilo();
+    ISableBuilder ConDescargaElectrica();
+    SableDeLuz Build();
 }
 
 // --- Builder concreto ---
-public class ConsultaSQLBuilder : IConsultaSQLBuilder
+public class SableBuilder : ISableBuilder
 {
-    private ConsultaSQL _consulta = new();
+    private SableDeLuz _sable = new();
 
-    public IConsultaSQLBuilder Select(params string[] columnas)
+    public ISableBuilder ConEmpunadura(string material)
     {
-        _consulta.Columnas.AddRange(columnas);
-        Console.WriteLine($"  📋 SELECT: {string.Join(", ", columnas)}");
+        _sable.Empunadura = material;
+        Console.WriteLine($"  🔧 Empuñadura: {material}");
         return this;
     }
 
-    public IConsultaSQLBuilder From(string tabla)
+    public ISableBuilder ConCristal(string cristal)
     {
-        _consulta.Tabla = tabla;
-        Console.WriteLine($"  📋 FROM: {tabla}");
+        _sable.Cristal = cristal;
+        Console.WriteLine($"  💎 Cristal kyber: {cristal}");
         return this;
     }
 
-    public IConsultaSQLBuilder Where(string condicion)
+    public ISableBuilder ConColor(string color)
     {
-        _consulta.Condiciones.Add(condicion);
-        Console.WriteLine($"  📋 WHERE: {condicion}");
+        _sable.Color = color;
+        Console.WriteLine($"  🌈 Color de hoja: {color}");
         return this;
     }
 
-    public IConsultaSQLBuilder OrderBy(string campo, bool descendente = false)
+    public ISableBuilder DobleFilo()
     {
-        _consulta.Orden = $"{campo}{(descendente ? " DESC" : " ASC")}";
-        Console.WriteLine($"  📋 ORDER BY: {_consulta.Orden}");
+        _sable.DobleFilo = true;
+        Console.WriteLine("  🌀 Montando hoja de doble filo");
         return this;
     }
 
-    public IConsultaSQLBuilder Limit(int cantidad)
+    public ISableBuilder ConDescargaElectrica()
     {
-        _consulta.Limite = cantidad;
-        Console.WriteLine($"  📋 LIMIT: {cantidad}");
+        _sable.Electrico = true;
+        Console.WriteLine("  ⚡ Añadiendo módulo de carga eléctrica");
         return this;
     }
 
-    public ConsultaSQL Build()
+    public SableDeLuz Build()
     {
-        Console.WriteLine("  🏁 Consulta SQL construida");
-        var resultado = _consulta;
-        _consulta = new ConsultaSQL(); // Reset para permitir reutilización
+        Console.WriteLine("  🏁 Sable ensamblado");
+        var resultado = _sable;
+        _sable = new SableDeLuz(); // Reset para permitir reutilización
         return resultado;
     }
 }
 
-// --- Director (opcional): encapsula consultas predefinidas ---
-public class ConsultorDirector
+// --- Director (opcional): encapsula recetas predefinidas ---
+public class ArtificeDirector
 {
-    private readonly IConsultaSQLBuilder _builder;
+    private readonly ISableBuilder _builder;
 
-    public ConsultorDirector(IConsultaSQLBuilder builder) => _builder = builder;
+    public ArtificeDirector(ISableBuilder builder) => _builder = builder;
 
-    public ConsultaSQL TopUsuarios()
+    public SableDeLuz SableJedi()
     {
-        _builder.Select("id", "nombre", "email")
-               .From("usuarios")
-               .Where("activo = 1")
-               .OrderBy("nombre")
-               .Limit(10);
+        _builder.ConEmpunadura("aleación ligera")
+               .ConCristal("kyber azul")
+               .ConColor("azul");
         return _builder.Build();
     }
 
-    public ConsultaSQL VentasRecientes()
+    public SableDeLuz SableSith()
     {
-        _builder.Select("producto_id", "cantidad", "total")
-               .From("ventas")
-               .Where("fecha >= '2024-01-01'")
-               .OrderBy("fecha", descendente: true)
-               .Limit(50);
+        _builder.ConEmpunadura("metal negro")
+               .ConCristal("kyber rojo sintético")
+               .ConColor("rojo")
+               .ConDescargaElectrica();
+        return _builder.Build();
+    }
+
+    public SableDeLuz SableDobleFilo()
+    {
+        _builder.ConEmpunadura("mango largo")
+               .ConCristal("kyber doble")
+               .ConColor("rojo")
+               .DobleFilo();
         return _builder.Build();
     }
 }
@@ -135,33 +136,33 @@ public static class BuilderDemo
 {
     public static void Run()
     {
-        Console.WriteLine("  🧱 BUILDER — Construir una consulta SQL paso a paso\n");
-        Console.WriteLine("  Escenario: El backend arma consultas SQL con distintas configuraciones\n");
+        Console.WriteLine("  🧱 BUILDER — Forjar un sable de luz paso a paso (Star Wars)\n");
+        Console.WriteLine("  Escenario: Un artífice arma sables con distintas configuraciones\n");
 
         // ── A medida: API fluida (fluent API) ──
-        Console.WriteLine("  ── Consulta a medida (fluida) ──");
-        var aMedida = new ConsultaSQLBuilder()
-            .Select("id", "nombre")
-            .From("productos")
-            .Where("precio > 100")
-            .OrderBy("precio", descendente: true)
-            .Limit(20)
+        Console.WriteLine("  ── Sable a medida (fluida) ──");
+        var aMedida = new SableBuilder()
+            .ConEmpunadura("madera de afromosia")
+            .ConCristal("kyber verde")
+            .ConColor("verde")
             .Build();
-        Console.WriteLine();
-        Console.WriteLine($"  {aMedida}");
+        aMedida.Descripcion();
 
         Console.WriteLine();
-        Console.WriteLine("  ── Top Usuarios (vía Director) ──");
-        var director = new ConsultorDirector(new ConsultaSQLBuilder());
-        Console.WriteLine($"  {director.TopUsuarios()}");
+        Console.WriteLine("  ── Sable Jedi (vía Director) ──");
+        var director = new ArtificeDirector(new SableBuilder());
+        director.SableJedi().Descripcion();
 
         Console.WriteLine();
-        Console.WriteLine("  ── Ventas Recientes (vía Director) ──");
-        Console.WriteLine($"  {director.VentasRecientes()}");
+        Console.WriteLine("  ── Sable Sith (vía Director) ──");
+        director.SableSith().Descripcion();
 
         Console.WriteLine();
-        Console.WriteLine("  ✅ El Builder permite crear objetos con diferentes");
-        Console.WriteLine("     configuraciones sin constructores gigantes.");
-        Console.WriteLine("     El Director reutiliza el mismo builder con consultas distintas.");
+        Console.WriteLine("  ── Sable de doble filo (vía Director) ──");
+        director.SableDobleFilo().Descripcion();
+
+        Console.WriteLine();
+        Console.WriteLine("  ✅ El Builder crea objetos con distintas configuraciones");
+        Console.WriteLine("     sin constructores gigantes. El Director reutiliza el mismo builder.");
     }
 }

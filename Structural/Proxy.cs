@@ -6,13 +6,13 @@ namespace DesignPatterns.Structural;
 /// Intención: proporcionar un sustituto o representante de otro objeto para
 /// controlar el acceso a él, agregando lógica antes/después de la llamada.
 ///
-/// Analogía: el asistente personal que filtra llamadas antes de pasarlas al jefe.
+/// Analogía: los archivos clasificados de S.H.I.E.L.D.: nunca accedes directo al
+/// bóveda. Un Proxy de seguridad exige el nivel de credencial correcto y un
+/// Proxy de caché recuerda los expedientes ya consultados.
 ///
-/// Cuándo usarlo: cachear llamadas costosas, verificar permisos, lazy loading
-/// (Entity Framework lo usa).
+/// Cuándo usarlo: cachear llamadas costosas, verificar permisos, lazy loading.
 ///
-/// Cuándo NO usarlo: si el objeto es barato y no hay reglas de acceso; el proxy
-/// solo agrega complejidad.
+/// Cuándo NO usarlo: si el objeto es barato y no hay reglas de acceso.
 ///
 /// USO REAL: Lazy loading (Entity Framework), control de acceso, logging,
 /// caché, llamadas remotas (gRPC).
@@ -21,28 +21,28 @@ namespace DesignPatterns.Structural;
 using System.Diagnostics;
 
 // --- Sujeto (la interfaz común) ---
-public interface IRepositorio
+public interface IRepositorioClasificado
 {
-    string Obtener(string id);
+    string ConsultarExpediente(string id);
 }
 
-// --- Sujeto real (costoso y lento: consulta a BD) ---
-public class RepositorioReal : IRepositorio
+// --- Sujeto real (costoso: consulta a la bóveda de S.H.I.E.L.D.) ---
+public class ArchivoReal : IRepositorioClasificado
 {
-    public string Obtener(string id)
+    public string ConsultarExpediente(string id)
     {
-        Thread.Sleep(200); // simula una consulta lenta a base de datos
-        return $"  📦 [BD] Registro {id} - Nombre de ejemplo";
+        Thread.Sleep(200); // simula abrir una bóveda física de alta seguridad
+        return $"  🗂️ [BÓVEDA] Expediente {id.ToUpper()} — AGENTE: Phil Coulson";
     }
 }
 
-// --- Proxy de Caché: recuerda registros ya consultados ---
-public class RepositorioCacheProxy : IRepositorio
+// --- Proxy de Caché: recuerda expedientes ya consultados ---
+public class ExpedienteCacheProxy : IRepositorioClasificado
 {
-    private readonly RepositorioReal _real = new();
+    private readonly ArchivoReal _real = new();
     private readonly Dictionary<string, string> _cache = new();
 
-    public string Obtener(string id)
+    public string ConsultarExpediente(string id)
     {
         if (_cache.TryGetValue(id, out var guardado))
         {
@@ -50,32 +50,32 @@ public class RepositorioCacheProxy : IRepositorio
             return guardado;
         }
 
-        Console.WriteLine($"  [Proxy-Cache] 🔴 Cache miss: {id} (consultando BD)");
-        var resultado = _real.Obtener(id);
+        Console.WriteLine($"  [Proxy-Cache] 🔴 Cache miss: {id} (abriendo la bóveda)");
+        var resultado = _real.ConsultarExpediente(id);
         _cache[id] = resultado;
         return resultado;
     }
 }
 
-// --- Proxy de Seguridad: solo roles autorizados pueden acceder ---
-public class RepositorioSeguridadProxy : IRepositorio
+// --- Proxy de Seguridad: solo credenciales autorizadas acceden ---
+public class ExpedienteSeguridadProxy : IRepositorioClasificado
 {
-    private readonly RepositorioReal _real = new();
-    private readonly string _rol;
+    private readonly ArchivoReal _real = new();
+    private readonly string _credencial;
 
-    public RepositorioSeguridadProxy(string rol) => _rol = rol;
+    public ExpedienteSeguridadProxy(string credencial) => _credencial = credencial;
 
-    public string Obtener(string id)
+    public string ConsultarExpediente(string id)
     {
-        // Simulación: solo 'admin' puede ver registros con id 'secret-*'
-        if (id.StartsWith("secret-") && _rol != "admin")
+        // Simulación: solo credencial 'director' ve expedientes 'nivel-10'
+        if (id.StartsWith("nivel-10") && _credencial != "director")
         {
-            Console.WriteLine($"  [Proxy-Seguridad] 🚫 Rol '{_rol}' sin acceso a '{id}'");
-            return "  ❌ Acceso denegado";
+            Console.WriteLine($"  [Proxy-Seguridad] 🚫 Credencial '{_credencial}' sin acceso a '{id}'");
+            return "  ❌ ACCESO DENEGADO — se requiere Nivel 10";
         }
 
-        Console.WriteLine($"  [Proxy-Seguridad] ✅ Acceso permitido para '{_rol}'");
-        return _real.Obtener(id);
+        Console.WriteLine($"  [Proxy-Seguridad] ✅ Acceso concedido a '{_credencial}'");
+        return _real.ConsultarExpediente(id);
     }
 }
 
@@ -83,22 +83,21 @@ public static class ProxyDemo
 {
     public static void Run()
     {
-        Console.WriteLine("  🎭 PROXY — Control de acceso y optimización\n");
-        Console.WriteLine("  Escenario: Repositorio de datos con caché y permisos\n");
+        Console.WriteLine("  🎭 PROXY — Control de acceso y optimización (archivos de S.H.I.E.L.D.)\n");
+        Console.WriteLine("  Escenario: Expedientes clasificados con caché y nivel de credencial\n");
 
         // ── Proxy de Caché ──
         Console.WriteLine("  ── Proxy de Caché ──");
-        var proxyCache = new RepositorioCacheProxy();
+        var proxyCache = new ExpedienteCacheProxy();
 
         var sw = Stopwatch.StartNew();
-        var r1 = proxyCache.Obtener("user-123");
+        var r1 = proxyCache.ConsultarExpediente("agent-coulson");
         sw.Stop();
         Console.WriteLine($"  Resultado:{r1}");
         Console.WriteLine($"  Tiempo: {sw.ElapsedMilliseconds}ms\n");
 
-        // Segunda vez el mismo registro — cache hit (más rápido)
         sw.Restart();
-        var r2 = proxyCache.Obtener("user-123");
+        var r2 = proxyCache.ConsultarExpediente("agent-coulson");
         sw.Stop();
         Console.WriteLine($"  Resultado:{r2}");
         Console.WriteLine($"  Tiempo: {sw.ElapsedMilliseconds}ms (mucho más rápido 🚀)\n");
@@ -106,18 +105,16 @@ public static class ProxyDemo
         // ── Proxy de Seguridad ──
         Console.WriteLine("  ── Proxy de Seguridad ──");
 
-        // Usuario normal intentando acceder a recurso restringido
-        var proxyUser = new RepositorioSeguridadProxy(rol: "user");
-        var denegado = proxyUser.Obtener("secret-keys");
+        var agente = new ExpedienteSeguridadProxy(credencial: "agente");
+        var denegado = agente.ConsultarExpediente("nivel-10-ikari");
         Console.WriteLine($"  Resultado:{denegado}\n");
 
-        // Admin con acceso permitido
-        var proxyAdmin = new RepositorioSeguridadProxy(rol: "admin");
-        var permitido = proxyAdmin.Obtener("secret-keys");
+        var director = new ExpedienteSeguridadProxy(credencial: "director");
+        var permitido = director.ConsultarExpediente("nivel-10-ikari");
         Console.WriteLine($"  Resultado:{permitido}");
         Console.WriteLine();
 
-        Console.WriteLine("  ✅ El Proxy evita llamar al objeto real si no es necesario.");
+        Console.WriteLine("  ✅ El Proxy evita tocar el objeto real si no hace falta.");
         Console.WriteLine("     Útil para: caché, permisos, logging, lazy loading.");
     }
 }

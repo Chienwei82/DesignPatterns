@@ -27,28 +27,28 @@ Una aplicación de consola interactiva en **.NET 10** que demuestra **20 de los 
 
 ## Tabla rápida de patrones
 
-| # | Patrón | Categoría | Intención en una frase | Analogía |
+| # | Patrón | Categoría | Intención en una frase | Analogía (cultura popular) |
 |---|--------|-----------|------------------------|----------|
-| 1 | Singleton | Creacional | Una sola instancia global, punto de acceso único | Configuración global de la app: solo hay una |
-| 2 | Factory Method | Creacional | Delegar la creación de objetos a subclases | App de delivery: cada repartidor elige su transporte |
-| 3 | Abstract Factory | Creacional | Crear familias de objetos compatibles | Tema visual de UI: todos los componentes combinan |
-| 4 | Builder | Creacional | Construcción paso a paso de objetos complejos | Constructor de consultas SQL: SELECT, FROM, WHERE... |
-| 5 | Prototype | Creacional | Clonar objetos existentes en vez de crear desde cero | Fotocopia de un documento prellenado |
-| 6 | Adapter | Estructural | Hacer compatibles interfaces incompatibles | Pasarela de pago: Stripe ↔ PayPal con la misma interfaz |
-| 7 | Decorator | Estructural | Añadir responsabilidades dinámicamente | Notificaciones: email + retraso + reintento + bitácora |
-| 8 | Facade | Estructural | Interfaz simple sobre un subsistema complejo | Compra online: un solo método orquesta 4 subsistemas |
-| 9 | Proxy | Estructural | Controlar el acceso a un objeto | Repositorio de datos: caché + permisos antes de la BD |
-| 10 | Composite | Estructural | Tratar individuales y compuestos de forma uniforme | Sistema de archivos: archivos y directorios |
-| 11 | Bridge | Estructural | Separar abstracción de implementación | Gráficos × renderizadores (PNG/SVG/Consola) |
-| 12 | Flyweight | Estructural | Compartir objetos en gran cantidad | Juego 2D: 1,000 tiles con 3 sprites compartidos |
-| 13 | Strategy | Comportamiento | Algoritmos intercambiables en tiempo de ejecución | Envío: Estándar, Express o Recoger en tienda |
-| 14 | Observer | Comportamiento | Notificar a suscriptores cuando cambia el estado | Eventos de dominio: OrderService notifica a suscriptores |
-| 15 | Command | Comportamiento | Encapsular solicitudes como objetos (undo/redo) | Editor de texto: insertar y borrar líneas con undo/redo |
-| 16 | Template Method | Comportamiento | Esqueleto fijo de algoritmo, pasos variables | Pipeline de datos: Extraer → Transformar → Cargar |
-| 17 | State | Comportamiento | Cambiar comportamiento según el estado interno | Ciclo de vida de un pedido: Recibido → Enviado → Entregado |
-| 18 | Mediator | Comportamiento | Comunicación centralizada mediante intermediario | Chat room: todos hablan a través del mediador |
-| 19 | Memento | Comportamiento | Guardar y restaurar estado sin romper encapsulamiento | Editor con checkpoints: guardar y restaurar versiones |
-| 20 | Chain of Responsibility | Comportamiento | Pasar una solicitud por una cadena de manejadores | Soporte: Nivel 1 → Nivel 2 → Gerente → Director |
+| 1 | Singleton | Creacional | Una sola instancia global, punto de acceso único | El Anillo Único (ESDLA): solo existe uno |
+| 2 | Factory Method | Creacional | Delegar la creación de objetos a subclases | Pokémon: cada laboratorio entrega su inicial |
+| 3 | Abstract Factory | Creacional | Crear familias de objetos compatibles | Casas de Hogwarts: estandarte, mascota y sala a juego |
+| 4 | Builder | Creacional | Construcción paso a paso de objetos complejos | Forjar un sable de luz (Star Wars) pieza por pieza |
+| 5 | Prototype | Creacional | Clonar objetos existentes en vez de crear desde cero | Los soldados clon de Star Wars |
+| 6 | Adapter | Estructural | Hacer compatibles interfaces incompatibles | Emulador que juega ROMs de consolas retro |
+| 7 | Decorator | Estructural | Añadir responsabilidades dinámicamente | Encantar un arma de RPG con runas apiladas |
+| 8 | Facade | Estructural | Interfaz simple sobre un subsistema complejo | Protocolo Vengadores: una orden, 4 subsistemas |
+| 9 | Proxy | Estructural | Controlar el acceso a un objeto | Archivos clasificados de S.H.I.E.L.D.: caché + credencial |
+| 10 | Composite | Estructural | Tratar individuales y compuestos de forma uniforme | Ejércitos de Poniente (GoT): soldado vs legión |
+| 11 | Bridge | Estructural | Separar abstracción de implementación | RPG: armas × elementos mágicos |
+| 12 | Flyweight | Estructural | Compartir objetos en gran cantidad | Ejército de droides (Star Wars): 1000 unidades, 3 modelos |
+| 13 | Strategy | Comportamiento | Algoritmos intercambiables en tiempo de ejecución | Ryu cambia su estilo de pelea según el rival |
+| 14 | Observer | Comportamiento | Notificar a suscriptores cuando cambia el estado | La Batiseñal (DC): todos los aliados reaccionan |
+| 15 | Command | Comportamiento | Encapsular solicitudes como objetos (undo/redo) | Rewind de videojuego: rebobinar cada acción |
+| 16 | Template Method | Comportamiento | Esqueleto fijo de algoritmo, pasos variables | El Viaje del Héroe: Luke y Frodo, mismo monomito |
+| 17 | State | Comportamiento | Cambiar comportamiento según el estado interno | Evolución Pokémon: Charmander → Charizard |
+| 18 | Mediator | Comportamiento | Comunicación centralizada mediante intermediario | Party de raid (WoW): todos hablan por el chat |
+| 19 | Memento | Comportamiento | Guardar y restaurar estado sin romper encapsulamiento | El Pensadero (Harry Potter): revivir recuerdos |
+| 20 | Chain of Responsibility | Comportamiento | Pasar una solicitud por una cadena de manejadores | Escalada de amenazas: Guardián → Héroe → Liga |
 
 ---
 
@@ -160,47 +160,52 @@ flowchart TD
 
 ```mermaid
 classDiagram
-    class AppSettings {
-        - static AppSettings _instancia
-        - Lazy<AppSettings> _lazy
-        + static AppSettings Instancia
-        - AppSettings()
+    class AnilloUnico {
+        - static AnilloUnico _instancia
+        - Lazy~AnilloUnico~ _lazy
+        + static AnilloUnico Instancia
+        - AnilloUnico()
+        + string Portador
+        + void Reclamar(nombre)
+        + void UsarInvisibilidad()
         + void Mostrar()
     }
-    class ModuloLogging {
-        + void Inicializar()
-        + void Preparar()
+    class Frodo {
+        + void Reclama()
     }
-    ModuloLogging --> AppSettings : usa la única instancia
-    ModuloDatos --> AppSettings : usa la única instancia
+    class Gandalf {
+        + void Consulta()
+    }
+    Frodo --> AnilloUnico : usa la única instancia
+    Gandalf --> AnilloUnico : usa la única instancia
 ```
 
 ### Strategy — algoritmos intercambiables
 
 ```mermaid
 classDiagram
-    class IEnvioStrategy {
+    class IEstiloCombate {
         <<interface>>
-        + decimal Calcular(subtotal, pesoKg)
+        + string DescribirAtaque(rival)
     }
-    class EnvioEstandar {
-        + decimal Calcular(subtotal, pesoKg)
+    class EstiloAgresivo {
+        + string DescribirAtaque(rival)
     }
-    class EnvioExpress {
-        + decimal Calcular(subtotal, pesoKg)
+    class EstiloDefensivo {
+        + string DescribirAtaque(rival)
     }
-    class RecogerEnTienda {
-        + decimal Calcular(subtotal, pesoKg)
+    class EstiloEquilibrado {
+        + string DescribirAtaque(rival)
     }
-    class CalculadoraEnvio {
-        - IEnvioStrategy _estrategia
-        + CambiarEstrategia(estrategia)
-        + Cotizar(producto, subtotal, pesoKg)
+    class Luchador {
+        - IEstiloCombate _estilo
+        + CambiarEstilo(nuevo)
+        + Pelear(rival)
     }
-    IEnvioStrategy <|.. EnvioEstandar
-    IEnvioStrategy <|.. EnvioExpress
-    IEnvioStrategy <|.. RecogerEnTienda
-    CalculadoraEnvio o-- IEnvioStrategy : usa
+    IEstiloCombate <|.. EstiloAgresivo
+    IEstiloCombate <|.. EstiloDefensivo
+    IEstiloCombate <|.. EstiloEquilibrado
+    Luchador o-- IEstiloCombate : usa
 ```
 
 ---

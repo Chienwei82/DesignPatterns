@@ -7,9 +7,9 @@ namespace DesignPatterns.Structural;
 /// dividiendo el estado en intrínseco (compartido) y extrínseco
 /// (proporcionado por el cliente/contexto).
 ///
-/// Analogía: un solo molde reutilizado para servir mil porciones en mesas
-/// distintas. En este proyecto: un mismo sprite de tile compartido por miles
-/// de casillas de un mapa 2D.
+/// Analogía: el ejército de droides de batalla de Star Wars: miles de unidades,
+/// pero todas del mismo "modelo" comparten el mismo diseño en memoria; solo
+/// cambia su posición en el terreno.
 ///
 /// Cuándo usarlo: muchísimos objetos similares en memoria (tiles de
 /// videojuegos, caracteres de un documento).
@@ -21,97 +21,97 @@ namespace DesignPatterns.Structural;
 /// tiles en videojuegos, iconos en mapas, caché de objetos.
 /// ============================================================================
 
-// --- Flyweight: el tile compartido (estado intrínseco) ---
-public class TileSprite
+// --- Flyweight: el modelo de droide compartido (estado intrínseco) ---
+public class ModeloDroide
 {
-    public string Textura { get; }
+    public string Tipo { get; }
     public string Color { get; }
 
-    public TileSprite(string textura, string color)
+    public ModeloDroide(string tipo, string color)
     {
-        Textura = textura;
+        Tipo = tipo;
         Color = color;
     }
 
-    public void Dibujar(int x, int y) =>
-        Console.WriteLine($"    🎮 [{Textura} {Color}] en ({x}, {y})");
+    public void Desplegar(int x, int y) =>
+        Console.WriteLine($"    🤖 [{Tipo} {Color}] en posición ({x}, {y})");
 }
 
 // --- Flyweight Factory: administra y reutiliza los flyweights ---
-public class FabricaSprites
+public class FabricaDroides
 {
-    private readonly Dictionary<string, TileSprite> _tipos = new();
+    private readonly Dictionary<string, ModeloDroide> _modelos = new();
 
-    public TileSprite ObtenerSprite(string textura, string color)
+    public ModeloDroide ObtenerModelo(string tipo, string color)
     {
-        var clave = $"{textura}:{color}";
-        if (!_tipos.TryGetValue(clave, out var sprite))
+        var clave = $"{tipo}:{color}";
+        if (!_modelos.TryGetValue(clave, out var modelo))
         {
-            sprite = new TileSprite(textura, color);
-            _tipos[clave] = sprite;
-            Console.WriteLine($"  [Factory] Nuevo sprite creado: {clave}");
+            modelo = new ModeloDroide(tipo, color);
+            _modelos[clave] = modelo;
+            Console.WriteLine($"  [Factory] Nuevo modelo creado: {clave}");
         }
-        return sprite;
+        return modelo;
     }
 
-    public int TiposCreados => _tipos.Count;
+    public int ModelosCreados => _modelos.Count;
 }
 
-// --- Contexto: cada tile apunta a una posición (extrínseco) ---
-public class Tile
+// --- Contexto: cada droide apunta a una posición (extrínseco) ---
+public class Droide
 {
-    private readonly TileSprite _sprite;
+    private readonly ModeloDroide _modelo;
     private readonly int _x;
     private readonly int _y;
 
-    public Tile(TileSprite sprite, int x, int y)
+    public Droide(ModeloDroide modelo, int x, int y)
     {
-        _sprite = sprite;
+        _modelo = modelo;
         _x = x;
         _y = y;
     }
 
-    public void Dibujar() => _sprite.Dibujar(_x, _y);
+    public void Desplegar() => _modelo.Desplegar(_x, _y);
 }
 
 public static class FlyweightDemo
 {
     public static void Run()
     {
-        Console.WriteLine("  🍃 FLYWEIGHT — Compartir objetos en gran cantidad\n");
-        Console.WriteLine("  Escenario: Un juego 2D con miles de tiles del mismo tipo\n");
+        Console.WriteLine("  🍃 FLYWEIGHT — Compartir objetos en gran cantidad (ejército de droides)\n");
+        Console.WriteLine("  Escenario: La Federación despliega 1,000 droides del mismo modelo\n");
 
-        var fabrica = new FabricaSprites();
-        var tiles = new List<Tile>();
+        var fabrica = new FabricaDroides();
+        var droides = new List<Droide>();
         var random = new Random(42);
 
-        // Solo 3 tipos de tile, pero 1,000 tiles en el mapa
-        var tipos = new (string textura, string color)[]
+        // Solo 3 tipos de droide, pero 1,000 unidades desplegadas
+        var tipos = new (string tipo, string color)[]
         {
-            ("pasto", "verde"),
-            ("arena", "amarillo"),
-            ("agua", "azul")
+            ("B1 de batalla", "bronce"),
+            ("Super de combate", "gris"),
+            ("Droideka", "azul")
         };
 
-        Console.WriteLine("  Generando 1,000 tiles del mapa...\n");
+        Console.WriteLine("  Desplegando 1,000 droides...\n");
         for (int i = 0; i < 1000; i++)
         {
-            var (textura, color) = tipos[i % 3];
-            var sprite = fabrica.ObtenerSprite(textura, color);
-            tiles.Add(new Tile(sprite, random.Next(0, 100), random.Next(0, 100)));
+            var (tipo, color) = tipos[i % 3];
+            var modelo = fabrica.ObtenerModelo(tipo, color);
+            droides.Add(new Droide(modelo, random.Next(0, 100), random.Next(0, 100)));
         }
 
         Console.WriteLine("  📊 Resultado:");
-        Console.WriteLine($"     Tiles creados: {tiles.Count}");
-        Console.WriteLine($"     Sprites únicos en memoria: {fabrica.TiposCreados}");
-        Console.WriteLine($"     Memoria ahorrada: ~{(1 - (double)fabrica.TiposCreados / tiles.Count) * 100:F1}%");
+        Console.WriteLine($"     Droides desplegados: {droides.Count}");
+        Console.WriteLine($"     Modelos únicos en memoria: {fabrica.ModelosCreados}");
+        Console.WriteLine($"     Memoria ahorrada: ~{(1 - (double)fabrica.ModelosCreados / droides.Count) * 100:F1}%");
         Console.WriteLine();
 
-        Console.WriteLine("  Muestra de tiles:");
-        for (int i = 0; i < 5; i++) tiles[i].Dibujar();
+        Console.WriteLine("  Muestra de droides:");
+        for (int i = 0; i < 5; i++) droides[i].Desplegar();
         Console.WriteLine();
 
         Console.WriteLine("  ✅ Flyweight evita crear 1,000 objetos idénticos.");
-        Console.WriteLine("     Solo se crean 3 sprites compartidos + 1,000 contextos ligeros.");
+        Console.WriteLine("     Solo hay 3 modelos compartidos + 1,000 contextos ligeros (posición).");
     }
 }

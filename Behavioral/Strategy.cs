@@ -7,8 +7,9 @@ namespace DesignPatterns.Behavioral;
 /// intercambiables. Permite que el algoritmo varíe independientemente del
 /// cliente que lo usa.
 ///
-/// Analogía: elegir cómo ir al trabajo: auto, bici o bus. El destino es el
-/// mismo; el medio cambia.
+/// Analogía: en un juego de pelea (o RPG) eliges el estilo de combate de tu
+/// luchador: agresivo, defensivo o equilibrado. El personaje es el mismo; solo
+/// cambia la estrategia con la que pelea.
 ///
 /// Cuándo usarlo: varios "motores" intercambiables (impuestos por país, métodos
 /// de pago, compresión).
@@ -21,54 +22,57 @@ namespace DesignPatterns.Behavioral;
 /// ============================================================================
 
 // --- Strategy ---
-public interface IEnvioStrategy
+public interface IEstiloCombate
 {
     string Nombre { get; }
-    decimal Calcular(decimal subtotal, decimal pesoKg);
+    string DescribirAtaque(string rival);
 }
 
 // --- Estrategias concretas ---
-public class EnvioEstandar : IEnvioStrategy
+public class EstiloAgresivo : IEstiloCombate
 {
-    public string Nombre => "Estándar (5-7 días)";
-    public decimal Calcular(decimal subtotal, decimal pesoKg) => subtotal * 0.05m + pesoKg * 0.5m;
+    public string Nombre => "Agresivo (todo al ataque)";
+    public string DescribirAtaque(string rival) =>
+        $"💥 Combo veloz sobre {rival}: mucho daño, defensa baja";
 }
 
-public class EnvioExpress : IEnvioStrategy
+public class EstiloDefensivo : IEstiloCombate
 {
-    public string Nombre => "Express (1-2 días)";
-    public decimal Calcular(decimal subtotal, decimal pesoKg) => subtotal * 0.15m + pesoKg * 1.0m;
+    public string Nombre => "Defensivo (bloqueo y contraataque)";
+    public string DescribirAtaque(string rival) =>
+        $"🛡️ Bloqueas a {rival} y contraatacas con precisión";
 }
 
-public class RecogerEnTienda : IEnvioStrategy
+public class EstiloEquilibrado : IEstiloCombate
 {
-    public string Nombre => "Recoger en tienda (gratis)";
-    public decimal Calcular(decimal subtotal, decimal pesoKg) => 0m;
+    public string Nombre => "Equilibrado";
+    public string DescribirAtaque(string rival) =>
+        $"⚖️ Alternas ataque y defensa contra {rival}";
 }
 
 // --- Context ---
-public class CalculadoraEnvio
+public class Luchador
 {
-    private IEnvioStrategy _estrategia;
+    public string Nombre { get; }
+    private IEstiloCombate _estilo;
 
-    public CalculadoraEnvio(IEnvioStrategy estrategia) => _estrategia = estrategia;
-
-    // Clave del patrón: cambiar la estrategia en tiempo de ejecución
-    public void CambiarEstrategia(IEnvioStrategy nuevaEstrategia)
+    public Luchador(string nombre, IEstiloCombate estiloInicial)
     {
-        Console.WriteLine($"  ↪ Cambiando estrategia: {_estrategia.Nombre} → {nuevaEstrategia.Nombre}");
-        _estrategia = nuevaEstrategia;
+        Nombre = nombre;
+        _estilo = estiloInicial;
     }
 
-    public void Cotizar(string producto, decimal subtotal, decimal pesoKg)
+    // Clave del patrón: cambiar la estrategia en tiempo de ejecución
+    public void CambiarEstilo(IEstiloCombate nuevo)
     {
-        var costo = _estrategia.Calcular(subtotal, pesoKg);
+        Console.WriteLine($"  ↪ {Nombre} cambia de estilo: {_estilo.Nombre} → {nuevo.Nombre}");
+        _estilo = nuevo;
+    }
 
-        Console.WriteLine($"  Producto: {producto}");
-        Console.WriteLine($"  Subtotal:   ¢{subtotal,10:N2}");
-        Console.WriteLine($"  Envío ({_estrategia.Nombre}): ¢{costo,10:N2}");
-        Console.WriteLine("  ─────────────────────────");
-        Console.WriteLine($"  TOTAL:      ¢{subtotal + costo,10:N2}");
+    public void Pelear(string rival)
+    {
+        Console.WriteLine($"  {Nombre} [{_estilo.Nombre}] vs {rival}");
+        Console.WriteLine($"     {_estilo.DescribirAtaque(rival)}");
     }
 }
 
@@ -76,27 +80,27 @@ public static class StrategyDemo
 {
     public static void Run()
     {
-        Console.WriteLine("  🧠 STRATEGY — Algoritmos intercambiables\n");
-        Console.WriteLine("  Escenario: La app calcula el costo de envío según el método elegido\n");
+        Console.WriteLine("  🧠 STRATEGY — Algoritmos intercambiables (estilos de combate)\n");
+        Console.WriteLine("  Escenario: Ryu cambia su estilo de pelea según el rival\n");
 
-        var calc = new CalculadoraEnvio(new EnvioEstandar());
+        var ryu = new Luchador("Ryu", new EstiloEquilibrado());
 
-        Console.WriteLine("  ── Envío #1: método estándar ──");
-        calc.Cotizar("Teclado mecánico", 5000m, 1.5m);
+        Console.WriteLine("  ── Combate #1: estilo equilibrado ──");
+        ryu.Pelear("Ken");
         Console.WriteLine();
 
-        calc.CambiarEstrategia(new EnvioExpress());
-        Console.WriteLine("  ── Envío #2: el cliente paga por rapidez ──");
-        calc.Cotizar("Monitor 4K", 15000m, 5.0m);
+        ryu.CambiarEstilo(new EstiloAgresivo());
+        Console.WriteLine("  ── Combate #2: contra un rival resistente, ataca a fondo ──");
+        ryu.Pelear("M. Bison");
         Console.WriteLine();
 
-        calc.CambiarEstrategia(new RecogerEnTienda());
-        Console.WriteLine("  ── Envío #3: recoger en tienda ──");
-        calc.Cotizar("Laptop gaming", 45000m, 2.5m);
+        ryu.CambiarEstilo(new EstiloDefensivo());
+        Console.WriteLine("  ── Combate #3: contra un rival veloz, defiende y contraataca ──");
+        ryu.Pelear("Cammy");
         Console.WriteLine();
 
-        Console.WriteLine("  ✅ Sin Strategy: if/else por cada tipo de envío.");
-        Console.WriteLine("     Con Strategy: cada método de envío es una clase separada.");
-        Console.WriteLine("     Fácil de extender — solo agregas una clase más.");
+        Console.WriteLine("  ✅ Sin Strategy: un if/else gigante por cada estilo.");
+        Console.WriteLine("     Con Strategy: cada estilo es una clase intercambiable.");
+        Console.WriteLine("     Fácil de extender — solo agregas otra clase de estilo.");
     }
 }

@@ -7,7 +7,9 @@ namespace DesignPatterns.Behavioral;
 /// violar su encapsulamiento, de modo que el objeto pueda ser restaurado a
 /// ese estado más tarde.
 ///
-/// Analogía: guardar partida en un videojuego y volver al checkpoint.
+/// Analogía: el Pensadero de Harry Potter: Dumbledore extrae un recuerdo, lo
+/// guarda en un frasco y puede volver a sumergirse en él exactamente como era.
+/// El Pensadero (Caretaker) guarda recuerdos sin alterar la mente del mago.
 ///
 /// Cuándo usarlo: checkpoints, undo de estado completo, snapshots.
 ///
@@ -18,66 +20,74 @@ namespace DesignPatterns.Behavioral;
 /// snapshots de máquinas virtuales, historial de configuraciones.
 /// ============================================================================
 
-// --- Memento: almacena el estado (inmutable desde fuera) ---
-public record DocumentoMemento(string Titulo, string Contenido, DateTimeOffset GuardadoEn);
+// --- Memento: almacena un recuerdo (inmutable desde fuera) ---
+public record RecuerdoMemento(string Titulo, string Descripcion, int Emocion, DateTimeOffset GuardadoEn);
 
-// --- Originator: el objeto cuyo estado se guarda ---
-public class DocumentoEditor
+// --- Originator: el mago cuya "memoria" se guarda ---
+public class Mago
 {
-    public string Titulo { get; set; } = "Sin título";
-    public string Contenido { get; set; } = "";
+    public string Nombre { get; set; } = "Harry";
+    public List<string> Recuerdos { get; set; } = [];
+    public int Emocion { get; set; } = 50;
 
-    public DocumentoMemento Guardar()
+    public RecuerdoMemento ExtraerRecuerdo()
     {
-        Console.WriteLine("  💾 Guardando el estado del documento...");
-        return new DocumentoMemento(Titulo, Contenido, DateTimeOffset.UtcNow);
+        var descripcion = string.Join("; ", Recuerdos);
+        Console.WriteLine("  🧠 Extrayendo un recuerdo hacia el Pensadero...");
+        return new RecuerdoMemento(Nombre, descripcion, Emocion, DateTimeOffset.UtcNow);
     }
 
-    public void Restaurar(DocumentoMemento estado)
+    public void Restaurar(RecuerdoMemento estado)
     {
-        Console.WriteLine($"  ⏪ Restaurando documento desde {estado.GuardadoEn:HH:mm:ss}Z...");
-        Titulo = estado.Titulo;
-        Contenido = estado.Contenido;
+        Console.WriteLine($"  ⏪ Reviviendo el recuerdo de {estado.Titulo} desde {estado.GuardadoEn:HH:mm:ss}Z...");
+        Nombre = estado.Titulo;
+        Recuerdos = estado.Descripcion.Length > 0
+            ? estado.Descripcion.Split("; ").ToList()
+            : [];
+        Emocion = estado.Emocion;
     }
 
     public void Mostrar()
     {
-        var preview = Contenido.Length > 50 ? Contenido[..50] + "..." : Contenido;
-        Console.WriteLine($"    📄 [{Titulo}] {preview}");
+        var lista = Recuerdos.Count > 0 ? string.Join(", ", Recuerdos) : "(sin recuerdos)";
+        var preview = lista.Length > 50 ? lista[..50] + "..." : lista;
+        Console.WriteLine($"    🧙 [{Nombre}] Recuerdos: {preview} · Emoción: {Emocion}");
     }
 
-    public void Escribir(string texto)
+    public void AgregarRecuerdo(string recuerdo)
     {
-        Contenido += texto;
-        Console.WriteLine($"    ➕ Agregado: \"{texto}\"");
+        Recuerdos.Add(recuerdo);
+        Emocion = Math.Min(100, Emocion + 10);
+        Console.WriteLine($"    ➕ Recuerdo añadido: \"{recuerdo}\"");
     }
 
-    public void BorrarTodo()
+    public void SufrirDesmemorizacion()
     {
-        Contenido = "";
-        Console.WriteLine("    🗑️ Contenido borrado");
+        Recuerdos = [];
+        Emocion = 0;
+        Console.WriteLine("    🗑️ ¡Obliviate! Los recuerdos se han borrado.");
     }
 }
 
-// --- Caretaker: administra los mementos (historial de guardados) ---
-public class HistorialVersiones
+// --- Caretaker: administra los mementos (el Pensadero) ---
+public class Pensadero
 {
-    private readonly Stack<DocumentoMemento> _versiones = new();
+    private readonly Stack<RecuerdoMemento> _recuerdos = new();
 
-    public void Guardar(DocumentoMemento estado)
+    public void Guardar(RecuerdoMemento estado)
     {
-        _versiones.Push(estado);
-        Console.WriteLine($"    📚 Versiones guardadas: {_versiones.Count}");
+        _recuerdos.Push(estado);
+        Console.WriteLine($"    🏺 Recuerdos en el Pensadero: {_recuerdos.Count}");
     }
 
-    public DocumentoMemento? Restaurar()
+    public RecuerdoMemento? Restaurar()
     {
-        if (_versiones.Count == 0)
+        if (_recuerdos.Count == 0)
         {
-            Console.WriteLine("    ⚠️  No hay versiones guardadas");
+            Console.WriteLine("    ⚠️  El Pensadero está vacío");
             return null;
         }
-        return _versiones.Pop();
+        return _recuerdos.Pop();
     }
 }
 
@@ -85,55 +95,54 @@ public static class MementoDemo
 {
     public static void Run()
     {
-        Console.WriteLine("  💾 MEMENTO — Guardar y restaurar estado sin romper encapsulamiento\n");
-        Console.WriteLine("  Escenario: Un editor de documentos donde guardas versiones por si arruinas el contenido\n");
+        Console.WriteLine("  💾 MEMENTO — Guardar y restaurar estado (el Pensadero de Dumbledore)\n");
+        Console.WriteLine("  Escenario: Un mago guarda recuerdos por si un Obliviate le borra la memoria\n");
 
-        var doc = new DocumentoEditor();
-        var historial = new HistorialVersiones();
+        var mago = new Mago();
+        var pensadero = new Pensadero();
 
         // Inicio
-        Console.WriteLine("  ── Empezamos el documento ──");
-        doc.Titulo = "Informe mensual";
-        doc.Contenido = "Introducción...";
-        doc.Mostrar();
-        historial.Guardar(doc.Guardar());
+        Console.WriteLine("  ── Primer recuerdo ──");
+        mago.AgregarRecuerdo("Recibí mi carta de Hogwarts");
+        mago.Mostrar();
+        pensadero.Guardar(mago.ExtraerRecuerdo());
         Console.WriteLine();
 
-        // Agregamos contenido
-        Console.WriteLine("  ── Agregando secciones ──");
-        doc.Escribir("Sección 1: Resultados");
-        doc.Escribir("Sección 2: Análisis");
-        doc.Mostrar();
-        historial.Guardar(doc.Guardar());
+        // Más recuerdos
+        Console.WriteLine("  ── La ceremonia del Sombrero Seleccionador ──");
+        mago.AgregarRecuerdo("Gryffindor!");
+        mago.AgregarRecuerdo("Mi primera clase de Defensas");
+        mago.Mostrar();
+        pensadero.Guardar(mago.ExtraerRecuerdo());
         Console.WriteLine();
 
-        // Se arruina
-        Console.WriteLine("  ── ¡Desastre! Borraste todo por accidente ──");
-        doc.BorrarTodo();
-        doc.Mostrar();
+        // Desastre
+        Console.WriteLine("  ── ¡Desastre! Un Death Eater lanza Obliviate ──");
+        mago.SufrirDesmemorizacion();
+        mago.Mostrar();
         Console.WriteLine();
 
-        // Restaurar al último checkpoint
-        Console.WriteLine("  ── Restaurando el último checkpoint ──");
-        var checkpoint = historial.Restaurar();
+        // Restaurar el último recuerdo
+        Console.WriteLine("  ── Sumergirse en el último recuerdo del Pensadero ──");
+        var checkpoint = pensadero.Restaurar();
         if (checkpoint is not null)
         {
-            doc.Restaurar(checkpoint);
-            doc.Mostrar();
+            mago.Restaurar(checkpoint);
+            mago.Mostrar();
         }
         Console.WriteLine();
 
-        // Restaurar al inicio
-        Console.WriteLine("  ── Restaurando al inicio ──");
-        var inicio = historial.Restaurar();
+        // Restaurar al primer recuerdo
+        Console.WriteLine("  ── Sumergirse en el primer recuerdo ──");
+        var inicio = pensadero.Restaurar();
         if (inicio is not null)
         {
-            doc.Restaurar(inicio);
-            doc.Mostrar();
+            mago.Restaurar(inicio);
+            mago.Mostrar();
         }
         Console.WriteLine();
 
-        Console.WriteLine("  ✅ El memento encapsula el estado sin exponer el Documento.");
-        Console.WriteLine("     El Historial (Caretaker) nunca modifica el estado directamente.");
+        Console.WriteLine("  ✅ El memento encapsula el estado sin exponer los detalles internos.");
+        Console.WriteLine("     El Pensadero (Caretaker) nunca modifica los recuerdos directamente.");
     }
 }

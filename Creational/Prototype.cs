@@ -7,10 +7,12 @@ namespace DesignPatterns.Creational;
 /// construirlos desde cero. La copia puede ser superficial (comparte
 /// referencias) o profunda (todo nuevo).
 ///
-/// Analogía: fotocopia de un formulario prellenado que luego personalizas.
+/// Analogía: los soldados clon de Star Wars se producen copiando un "prototipo"
+/// (el clon original). Un clon superficial comparte equipo; uno profundo es
+/// totalmente independiente.
 ///
-/// Cuándo usarlo: duplicar recetas/documentos plantilla, crear muchos
-/// enemigos similares en un videojuego.
+/// Cuándo usarlo: duplicar documentos plantilla, crear muchos enemigos
+/// similares en un videojuego.
 ///
 /// Cuándo NO usarlo: cuando el objeto es simple y barato de crear con `new`.
 ///
@@ -21,101 +23,92 @@ namespace DesignPatterns.Creational;
 /// creación de enemigos en videojuegos, evitar costos de inicialización.
 /// ============================================================================
 
-// ICloneable es la interfaz nativa de .NET para clonación, aunque devuelve
-// object (no genérica). Hoy se prefiere un método propio como DeepClone().
-
-// --- Prototipo concreto: Documento ---
-public class Documento : ICloneable
+// --- Prototipo concreto: Soldado Clon ---
+public class SoldadoClon : ICloneable
 {
-    public string Titulo { get; set; } = "";
-    public string Autor { get; set; } = "";
-    public List<string> Clausulas { get; set; } = [];
-    public Firmante Firmante { get; set; } = new();
+    public string Nombre { get; set; } = "";
+    public string Designacion { get; set; } = "";
+    public List<string> Equipo { get; set; } = [];
+    public RegistroAD Registro { get; set; } = new();
 
-    public Documento(string titulo)
+    public SoldadoClon(string designacion)
     {
-        Titulo = titulo;
-        Firmante = new Firmante();
+        Designacion = designacion;
+        Registro = new RegistroAD();
     }
 
     // Clone(): copia superficial (shallow) — listas y objetos se COMPARTEN
     public object Clone() => MemberwiseClone();
 
     // DeepClone(): copia profunda — TODO se duplica
-    public Documento DeepClone()
+    public SoldadoClon DeepClone()
     {
-        var copia = (Documento)MemberwiseClone();
-        copia.Clausulas = new List<string>(Clausulas);
-        copia.Firmante = Firmante with { }; // record inmutable: `with` crea uno nuevo
+        var copia = (SoldadoClon)MemberwiseClone();
+        copia.Equipo = new List<string>(Equipo);
+        copia.Registro = Registro with { }; // record inmutable: `with` crea uno nuevo
         return copia;
     }
 
     public void Mostrar()
     {
-        Console.WriteLine($"  Documento:  {Titulo}");
-        Console.WriteLine($"  Autor:      {Autor}");
-        Console.WriteLine($"  Cláusulas:  {(Clausulas.Count > 0 ? string.Join(", ", Clausulas) : "(ninguna)")}");
-        Console.WriteLine($"  Firmante:   {Firmante.Nombre} ({Firmante.Empresa})");
+        Console.WriteLine($"  Clon:       {Nombre}");
+        Console.WriteLine($"  Designación:{Designacion}");
+        Console.WriteLine($"  Equipo:     {(Equipo.Count > 0 ? string.Join(", ", Equipo) : "(ninguno)")}");
+        Console.WriteLine($"  AD:         {Registro.Codigo} · origen {Registro.PlanetaOrigen}");
     }
 }
 
-public record Firmante(string Nombre = "", string Empresa = "", string Email = "");
+public record RegistroAD(string Codigo = "", string PlanetaOrigen = "");
 
 public static class PrototypeDemo
 {
     public static void Run()
     {
-        Console.WriteLine("  🧬 PROTOTYPE — Clonar documentos plantilla\n");
-        Console.WriteLine("  Escenario: El equipo legal clona su plantilla maestra para crear");
-        Console.WriteLine("  variantes sin empezar de cero\n");
+        Console.WriteLine("  🧬 PROTOTYPE — Clonar soldados plantilla (Star Wars)\n");
+        Console.WriteLine("  Escenario: Los kaminoanos clonan al soldado máster original para formar un ejército\n");
 
-        // ── Documento original (prototipo base) ──
-        var docBase = new Documento("Contrato de servicios")
+        // ── Soldado original (prototipo base) ──
+        var original = new SoldadoClon("CT-original")
         {
-            Autor = "Departamento Legal",
-            Clausulas = ["Confidencialidad", "Propiedad intelectual", "Jurisdicción"],
-            Firmante = new Firmante
-            {
-                Nombre = "Ana Torres",
-                Empresa = "Acme S.A.",
-                Email = "ana@acme.com"
-            }
+            Nombre = "CT-7567 'Rex'",
+            Equipo = ["Blaster DC-15", "Armadura Phase I", "Comlink"],
+            Registro = new RegistroAD { Codigo = "JADE-SHAWEPI", PlanetaOrigen = "Kamino" }
         };
 
-        Console.WriteLine("  📄 DOCUMENTO ORIGINAL (prototipo):")
-        ;
-        docBase.Mostrar();
+        Console.WriteLine("  🧬 SOLDADO ORIGINAL (prototipo):");
+        original.Mostrar();
         Console.WriteLine();
 
-        // ── Clon superficial: la lista se COMPARTE ──
+        // ── Clon superficial: el equipo se COMPARTE ──
         Console.WriteLine("  ── CLON SUPERFICIAL (shallow copy) ──");
-        var docClon = (Documento)docBase.Clone();
-        docClon.Titulo = "Contrato de confidencialidad (copia)";
-        docClon.Clausulas.Add("No divulgación"); // ⚠️ afecta al original
-        Console.WriteLine("  (le agregamos una cláusula a la copia...)");
+        var clon = (SoldadoClon)original.Clone();
+        clon.Nombre = "CT-0000 'Echo'";
+        clon.Equipo.Add("Casco extra"); // ⚠️ afecta al original
+        Console.WriteLine("  (le agregamos 'Casco extra' al clon...)");
         Console.WriteLine();
 
-        Console.WriteLine("  📄 DOCUMENTO ORIGINAL después de modificar la copia:");
-        docBase.Mostrar();
+        Console.WriteLine("  🧬 SOLDADO ORIGINAL después de modificar el clon:");
+        original.Mostrar();
         Console.WriteLine();
-        Console.WriteLine("  ⚠️  ¡La 'No divulgación' apareció en el original!");
-        Console.WriteLine("     El clon superficial comparte la lista.\n");
+        Console.WriteLine("  ⚠️  ¡El 'Casco extra' apareció en el original!");
+        Console.WriteLine("     El clon superficial comparte la lista de equipo.\n");
 
         // ── Clon profundo: todo se duplica ──
         Console.WriteLine("  ── CLON PROFUNDO (deep copy) ──");
-        var docDeep = docBase.DeepClone();
-        docDeep.Titulo = "Contrato de arrendamiento (deep)";
-        docDeep.Clausulas.Add("Caución"); // solo en el deep clone
-        Console.WriteLine("  (le agregamos 'Caución' a la copia profunda...)");
+        var clonDeep = original.DeepClone();
+        clonDeep.Nombre = "CT-5597 'Fives'";
+        clonDeep.Equipo.Add("Medpack"); // solo en el deep clone
+        clonDeep.Registro = clonDeep.Registro with { Codigo = "CTI-5597" }; // AD independiente
+        Console.WriteLine("  (le agregamos 'Medpack' y AD propio al clon profundo...)");
         Console.WriteLine();
 
-        Console.WriteLine("  📄 DOCUMENTO ORIGINAL (sin cambios):")
+        Console.WriteLine("  🧬 SOLDADO ORIGINAL (sin cambios):")
         ;
-        docBase.Mostrar();
+        original.Mostrar();
         Console.WriteLine();
-        Console.WriteLine("  📄 Copia profunda (modificada):")
+        Console.WriteLine("  🧬 Clon profundo (independiente):")
         ;
-        docDeep.Mostrar();
+        clonDeep.Mostrar();
         Console.WriteLine();
         Console.WriteLine("  ✅ Con deep copy, las modificaciones no afectan al original.");
         Console.WriteLine("     Útil cuando necesitas variantes de algo costoso de crear.");

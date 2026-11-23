@@ -6,11 +6,11 @@ namespace DesignPatterns.Structural;
 /// Intención: envolver un objeto con otros que le agregan comportamiento, sin
 /// herencia ni modificar la clase original. Los decoradores se apilan.
 ///
-/// Analogía: vestirse en capas: camiseta, suéter, abrigo — la persona es la
-/// misma, se agregan capas.
+/// Analogía: encantar un arma de un RPG (una espada base) con runas de fuego,
+/// hielo y rayo: la espada es la misma, pero cada encantamiento añade poder.
 ///
-/// Cuándo usarlo: cuando tendrías una explosión de subclases (pastel con
-/// glaseado+chispas+velitas...). Es la base de streams y middleware en .NET.
+/// Cuándo usarlo: cuando tendrías una explosión de subclases (espada con
+/// fuego+hielo+rayo...). Es la base de streams y middleware en .NET.
 ///
 /// Cuándo NO usarlo: si solo hay una variante posible, la herencia simple es
 /// más directa.
@@ -20,57 +20,72 @@ namespace DesignPatterns.Structural;
 /// ============================================================================
 
 // --- Componente abstracto ---
-public interface INotificador
+public interface IArma
 {
-    void Enviar(string mensaje);
+    string Nombre { get; }
+    int Danio { get; }
+    void Atacar();
 }
 
 // --- Componente concreto ---
-public class EmailNotificador : INotificador
+public class EspadaBasica : IArma
 {
-    public void Enviar(string mensaje) =>
-        Console.WriteLine($"  [Email] ✉️ Enviando: '{mensaje}'");
+    public string Nombre => "Espada";
+    public int Danio => 10;
+    public void Atacar() => Console.WriteLine($"  ⚔️ {Nombre}: golpe básico ({Danio} de daño)");
 }
 
 // --- Decorador base ---
-public abstract class NotificadorDecorator : INotificador
+public abstract class ArmaDecorator : IArma
 {
-    protected readonly INotificador _notificador;
+    protected readonly IArma _arma;
 
-    protected NotificadorDecorator(INotificador notificador) => _notificador = notificador;
+    protected ArmaDecorator(IArma arma) => _arma = arma;
 
-    public virtual void Enviar(string mensaje) => _notificador.Enviar(mensaje);
-}
+    public abstract string Nombre { get; }
+    public abstract int Danio { get; }
 
-// --- Decoradores concretos ---
-public class ConRetraso : NotificadorDecorator
-{
-    public ConRetraso(INotificador notificador) : base(notificador) { }
-    public override void Enviar(string mensaje)
+    public virtual void Atacar()
     {
-        Console.WriteLine("  [Retraso] ⏳ Esperando 1s antes de enviar...");
-        Thread.Sleep(100);
-        base.Enviar(mensaje);
+        _arma.Atacar();
+        Console.WriteLine($"     ✨ {Nombre} añade {Danio - _arma.Danio} de daño → total {Danio}");
     }
 }
 
-public class ConReintento : NotificadorDecorator
+// --- Decoradores concretos (encantamientos) ---
+public class EncantamientoFuego : ArmaDecorator
 {
-    public ConReintento(INotificador notificador) : base(notificador) { }
-    public override void Enviar(string mensaje)
+    public EncantamientoFuego(IArma arma) : base(arma) { }
+    public override string Nombre => "Encantamiento de Fuego";
+    public override int Danio => _arma.Danio + 8;
+    public override void Atacar()
     {
-        Console.WriteLine("  [Reintento] 🔁 Reintentando hasta 3 veces...");
-        base.Enviar(mensaje);
+        base.Atacar();
+        Console.WriteLine("     🔥 ¡La hoja arde en llamas!");
     }
 }
 
-public class ConBitacora : NotificadorDecorator
+public class EncantamientoHielo : ArmaDecorator
 {
-    public ConBitacora(INotificador notificador) : base(notificador) { }
-    public override void Enviar(string mensaje)
+    public EncantamientoHielo(IArma arma) : base(arma) { }
+    public override string Nombre => "Encantamiento de Hielo";
+    public override int Danio => _arma.Danio + 5;
+    public override void Atacar()
     {
-        Console.WriteLine($"  [Bitácora] 📝 Registrando envío: '{mensaje}'");
-        base.Enviar(mensaje);
+        base.Atacar();
+        Console.WriteLine("     ❄️ El enemigo queda ralentizado");
+    }
+}
+
+public class EncantamientoRayo : ArmaDecorator
+{
+    public EncantamientoRayo(IArma arma) : base(arma) { }
+    public override string Nombre => "Encantamiento de Rayo";
+    public override int Danio => _arma.Danio + 12;
+    public override void Atacar()
+    {
+        base.Atacar();
+        Console.WriteLine("     ⚡ ¡Descarga en cadena a enemigos cercanos!");
     }
 }
 
@@ -78,41 +93,38 @@ public static class DecoratorDemo
 {
     public static void Run()
     {
-        Console.WriteLine("  🎄 DECORATOR — Añadir funcionalidad dinámicamente\n");
-        Console.WriteLine("  Escenario: Notificaciones por email con extras\n");
+        Console.WriteLine("  🎄 DECORATOR — Encantar un arma dinámicamente (RPG)\n");
+        Console.WriteLine("  Escenario: Una espada base recibe encantamientos apilados\n");
 
-        // Notificador básico
-        INotificador notificador = new EmailNotificador();
-        Mostrar(notificador, "Base");
+        IArma arma = new EspadaBasica();
+        Mostrar(arma, "Base");
 
-        // Vamos decorando paso a paso
-        notificador = new ConRetraso(notificador);
-        Mostrar(notificador, "+ retraso");
+        arma = new EncantamientoFuego(arma);
+        Mostrar(arma, "+ fuego");
 
-        notificador = new ConReintento(notificador);
-        Mostrar(notificador, "+ reintento");
+        arma = new EncantamientoHielo(arma);
+        Mostrar(arma, "+ hielo");
 
-        notificador = new ConBitacora(notificador);
-        Mostrar(notificador, "+ bitácora");
+        arma = new EncantamientoRayo(arma);
+        Mostrar(arma, "+ rayo");
 
         Console.WriteLine();
-        Console.WriteLine($"  🧾 Resultado: {notificador.GetType().Name}");
+        Console.WriteLine($"  🧾 Arma final: {arma.GetType().Name} (daño {arma.Danio})");
         Console.WriteLine();
 
-        // Otra combinación (solo bitácora + reintento)
-        Console.WriteLine("  ── Otra combinación: Base + bitácora + reintento ──");
-        INotificador otro = new ConReintento(new ConBitacora(new EmailNotificador()));
-        Mostrar(otro, "Otra");
-        Console.WriteLine();
+        // Otra combinación (rayo + fuego)
+        Console.WriteLine("  ── Otra combinación: Espada + rayo + fuego ──");
+        IArma otra = new EncantamientoFuego(new EncantamientoRayo(new EspadaBasica()));
+        Mostrar(otra, "Otra");
 
-        Console.WriteLine("  ✅ Los decoradores se pueden combinar en cualquier orden.");
-        Console.WriteLine("     No necesitas crear N clases por cada combinación posible.");
+        Console.WriteLine("  ✅ Los encantamientos se combinan en cualquier orden.");
+        Console.WriteLine("     No necesitas una clase por cada combinación posible.");
     }
 
-    static void Mostrar(INotificador n, string etiqueta)
+    static void Mostrar(IArma arma, string etiqueta)
     {
         Console.WriteLine($"  [{etiqueta}]");
-        n.Enviar("Tu pedido ha sido confirmado");
+        arma.Atacar();
         Console.WriteLine();
     }
 }

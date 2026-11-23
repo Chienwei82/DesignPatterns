@@ -7,10 +7,9 @@ namespace DesignPatterns.Behavioral;
 /// Cada manejador decide si procesa la solicitud o la pasa al siguiente
 /// eslabón. Desacopla al emisor del receptor.
 ///
-/// Analogía: una queja en el restaurante: el mesero intenta resolverla; si no
-/// puede, escala al jefe de cocina, luego al gerente y por último al dueño. En
-/// este proyecto: un ticket de soporte que escala Nivel 1 → Nivel 2 → Gerente
-/// → Director.
+/// Analogía: la escalada de una amenaza entre superhéroes (Liga de la Justicia):
+/// el guardián local intenta manejarla; si no puede, escala a un superhéroe,
+/// luego al equipo y por último a la Liga completa.
 ///
 /// Cuándo usarlo: middleware, validaciones encadenadas, escalado de aprobaciones.
 ///
@@ -22,121 +21,121 @@ namespace DesignPatterns.Behavioral;
 /// ============================================================================
 
 // --- Handler abstracto ---
-public abstract class ManejadorTicket
+public abstract class ManejadorAmenaza
 {
-    protected ManejadorTicket? _siguiente;
+    protected ManejadorAmenaza? _siguiente;
 
-    public void EstablecerSiguiente(ManejadorTicket siguiente) => _siguiente = siguiente;
+    public void EstablecerSiguiente(ManejadorAmenaza siguiente) => _siguiente = siguiente;
 
-    public virtual void Manejar(Ticket ticket)
+    public virtual void Manejar(Amenaza amenaza)
     {
         if (_siguiente != null)
-            _siguiente.Manejar(ticket);
+            _siguiente.Manejar(amenaza);
         else
-            Console.WriteLine($"    ❌ Ticket #{ticket.Id}: NADIE pudo atender '{ticket.Asunto}'");
+            Console.WriteLine($"    ❌ Amenaza #{amenaza.Id}: ¡NADIE pudo detener '{amenaza.Asunto}'!");
     }
 }
 
-public enum PrioridadTicket
+public enum NivelAmenaza
 {
-    Baja = 1,
-    Media,
+    Menor = 1,
+    Moderada,
     Alta,
-    Urgente
+    Apocaliptica
 }
 
-public record Ticket(int Id, string Asunto, PrioridadTicket Prioridad);
+public record Amenaza(int Id, string Asunto, NivelAmenaza Nivel);
 
 // --- Handlers concretos ---
-public class SoporteNivel1 : ManejadorTicket
+public class GuardianCiudad : ManejadorAmenaza
 {
-    public override void Manejar(Ticket ticket)
+    public override void Manejar(Amenaza amenaza)
     {
-        if (ticket.Prioridad <= PrioridadTicket.Baja)
+        if (amenaza.Nivel <= NivelAmenaza.Menor)
         {
-            Console.WriteLine($"    ✅ [Nivel 1] Ticket #{ticket.Id}: '{ticket.Asunto}' resuelto (FAQ)");
+            Console.WriteLine($"    ✅ [Guardián] Amenaza #{amenaza.Id}: '{amenaza.Asunto}' neutralizada (un carterista)");
         }
         else
         {
-            Console.WriteLine($"    ⏩ [Nivel 1] Ticket #{ticket.Id}: Escalando al Nivel 2...");
-            base.Manejar(ticket);
+            Console.WriteLine($"    ⏩ [Guardián] Amenaza #{amenaza.Id}: Escalando a un superhéroe...");
+            base.Manejar(amenaza);
         }
     }
 }
 
-public class SoporteNivel2 : ManejadorTicket
+public class Superheroe : ManejadorAmenaza
 {
-    public override void Manejar(Ticket ticket)
+    public override void Manejar(Amenaza amenaza)
     {
-        if (ticket.Prioridad <= PrioridadTicket.Media)
+        if (amenaza.Nivel <= NivelAmenaza.Moderada)
         {
-            Console.WriteLine($"    ✅ [Nivel 2] Ticket #{ticket.Id}: '{ticket.Asunto}' resuelto (técnico)");
+            Console.WriteLine($"    ✅ [Superhéroe] Amenaza #{amenaza.Id}: '{amenaza.Asunto}' resuelta (un villano menor)");
         }
         else
         {
-            Console.WriteLine($"    ⏩ [Nivel 2] Ticket #{ticket.Id}: Escalando al Gerente...");
-            base.Manejar(ticket);
+            Console.WriteLine($"    ⏩ [Superhéroe] Amenaza #{amenaza.Id}: Escalando al equipo...");
+            base.Manejar(amenaza);
         }
     }
 }
 
-public class GerenteTienda : ManejadorTicket
+public class Vengadores : ManejadorAmenaza
 {
-    public override void Manejar(Ticket ticket)
+    public override void Manejar(Amenaza amenaza)
     {
-        if (ticket.Prioridad <= PrioridadTicket.Alta)
+        if (amenaza.Nivel <= NivelAmenaza.Alta)
         {
-            Console.WriteLine($"    ✅ [Gerente] Ticket #{ticket.Id}: '{ticket.Asunto}' resuelto (decisión gerencial)");
+            Console.WriteLine($"    ✅ [Vengadores] Amenaza #{amenaza.Id}: '{amenaza.Asunto}' contenida (¡Vengadores, reúnanse!)");
         }
         else
         {
-            Console.WriteLine($"    ⏩ [Gerente] Ticket #{ticket.Id}: Escalando al Director...");
-            base.Manejar(ticket);
+            Console.WriteLine($"    ⏩ [Vengadores] Amenaza #{amenaza.Id}: ¡Es Apocalíptica! Escalando a la Liga...");
+            base.Manejar(amenaza);
         }
     }
 }
 
-public class DirectorGeneral : ManejadorTicket
+public class LigaDeLaJusticia : ManejadorAmenaza
 {
-    public override void Manejar(Ticket ticket) =>
-        Console.WriteLine($"    ✅ [Director] Ticket #{ticket.Id}: '{ticket.Asunto}' atendido personalmente por el Director");
+    public override void Manejar(Amenaza amenaza) =>
+        Console.WriteLine($"    ✅ [Liga de la Justicia] Amenaza #{amenaza.Id}: '{amenaza.Asunto}' detenida por Superman y Wonder Woman");
 }
 
 public static class ChainOfResponsibilityDemo
 {
     public static void Run()
     {
-        Console.WriteLine("  🔗 CHAIN OF RESPONSIBILITY — Cadena de manejadores\n");
-        Console.WriteLine("  Escenario: Los tickets de soporte escalan según su prioridad\n");
+        Console.WriteLine("  🔗 CHAIN OF RESPONSIBILITY — Cadena de manejadores (escalada de amenazas)\n");
+        Console.WriteLine("  Escenario: Las amenazas escalan por la cadena de héroes según su gravedad\n");
 
         // Construir la cadena
-        var nivel1 = new SoporteNivel1();
-        var nivel2 = new SoporteNivel2();
-        var gerente = new GerenteTienda();
-        var director = new DirectorGeneral();
+        var guardian = new GuardianCiudad();
+        var heroe = new Superheroe();
+        var vengadores = new Vengadores();
+        var liga = new LigaDeLaJusticia();
 
-        nivel1.EstablecerSiguiente(nivel2);
-        nivel2.EstablecerSiguiente(gerente);
-        gerente.EstablecerSiguiente(director);
+        guardian.EstablecerSiguiente(heroe);
+        heroe.EstablecerSiguiente(vengadores);
+        vengadores.EstablecerSiguiente(liga);
 
-        // Tickets de prueba
-        var tickets = new Ticket[]
+        // Amenazas de prueba
+        var amenazas = new Amenaza[]
         {
-            new(101, "No puedo iniciar sesión", PrioridadTicket.Baja),
-            new(102, "Error al cargar el carrito", PrioridadTicket.Media),
-            new(103, "Página caída en producción", PrioridadTicket.Alta),
-            new(104, "¡Fuga de datos críticos!", PrioridadTicket.Urgente),
+            new(101, "Un carterista en el metro", NivelAmenaza.Menor),
+            new(102, "El Pingüino roba un banco", NivelAmenaza.Moderada),
+            new(103, "Loki invade Nueva York", NivelAmenaza.Alta),
+            new(104, "Darkseid ataca la Tierra", NivelAmenaza.Apocaliptica),
         };
 
-        foreach (var ticket in tickets)
+        foreach (var amenaza in amenazas)
         {
-            Console.WriteLine($"  ── Ticket #{ticket.Id} ({ticket.Prioridad}): {ticket.Asunto} ──");
-            nivel1.Manejar(ticket);
+            Console.WriteLine($"  ── Amenaza #{amenaza.Id} ({amenaza.Nivel}): {amenaza.Asunto} ──");
+            guardian.Manejar(amenaza);
             Console.WriteLine();
         }
 
-        Console.WriteLine("  ✅ Cada nivel decide si puede resolverlo o pasa al siguiente.");
-        Console.WriteLine("     El cliente no sabe QUIÉN lo resolverá.");
-        Console.WriteLine("     Se pueden reordenar, agregar o quitar niveles sin tocar al cliente.");
+        Console.WriteLine("  ✅ Cada nivel decide si puede manejarla o la pasa al siguiente.");
+        Console.WriteLine("     El emisor no sabe QUIÉN la resolverá.");
+        Console.WriteLine("     Se pueden reordenar, agregar o quitar niveles sin tocar al emisor.");
     }
 }

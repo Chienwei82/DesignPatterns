@@ -7,8 +7,9 @@ namespace DesignPatterns.Behavioral;
 /// las subclases implementen ciertos pasos sin cambiar la estructura del
 /// algoritmo. "Hollywood Principle": "No nos llames, nosotros te llamamos".
 ///
-/// Analogía: receta de pan: los pasos son fijos (mezclar, amasar, hornear);
-/// el tipo de harina lo eliges tú.
+/// Analogía: el "Viaje del Héroe" (monomito de Joseph Campbell) que siguen
+/// Luke Skywalker, Frodo o Simba: los pasos son fijos (llamado → pruebas →
+/// retorno), pero cada héroe los vive a su manera.
 ///
 /// Cuándo usarlo: pipelines con pasos comunes que varían en el detalle
 /// (procesar CSV/JSON, generar reportes).
@@ -21,118 +22,121 @@ namespace DesignPatterns.Behavioral;
 /// ============================================================================
 
 // --- Clase abstracta con Template Method ---
-public abstract class DataPipeline
+public abstract class ViajeDelHeroe
 {
-    // Template Method: define la estructura del algoritmo. No es virtual ni
-    // abstract, por lo que las subclases NO pueden sobrescribirlo.
-    public void Procesar(string fuente)
-    {
-        Console.WriteLine("\n  ⚙️  Iniciando pipeline de datos...\n");
+    public string NombreHeroe { get; }
 
-        // Paso 1: Validar (hook opcional)
-        if (!ValidarFuente(fuente))
+    protected ViajeDelHeroe(string nombreHeroe) => NombreHeroe = nombreHeroe;
+
+    // Template Method: define la estructura del algoritmo. Las subclases NO
+    // pueden sobrescribirlo (no es virtual).
+    public void VivirAventura()
+    {
+        Console.WriteLine($"\n  ⚙️  Comienza el viaje de {NombreHeroe}...\n");
+
+        // Paso 1: Llamado a la aventura (hook opcional)
+        if (!RecibirLlamado())
         {
-            Console.WriteLine("  ❌ Fuente inválida. Abortando.");
+            Console.WriteLine("  ❌ El héroe ignora el llamado. No hay aventura.");
             return;
         }
 
-        // Paso 2: Extraer (varía según la fuente)
-        var datos = Extraer(fuente);
+        // Paso 2: Travesía y pruebas (varía según el héroe)
+        var prueba = SuperarPruebas();
 
-        // Paso 3: Transformar (varía según la fuente)
-        Transformar(datos);
+        // Paso 3: Transformación (varía según el héroe)
+        Transformarse(prueba);
 
-        // Paso 4: Cargar (varía según la fuente)
-        Cargar(datos);
+        // Paso 4: Retorno con el don (varía según el héroe)
+        Retornar(prueba);
 
-        // Paso 5: Notificar (hook opcional)
-        NotificarListo(fuente);
+        // Paso 5: Celebración (hook opcional)
+        CelebrarFinal();
 
-        Console.WriteLine("  ✅ Procesamiento completado.\n");
+        Console.WriteLine($"  ✅ La aventura de {NombreHeroe} ha concluido.\n");
     }
 
     // Pasos abstractos — las subclases DEBEN implementarlos
-    protected abstract string Extraer(string fuente);
-    protected abstract void Transformar(string datos);
-    protected abstract void Cargar(string datos);
+    protected abstract string SuperarPruebas();
+    protected abstract void Transformarse(string prueba);
+    protected abstract void Retornar(string prueba);
 
     // Paso con implementación por defecto (común a todos)
-    protected virtual bool ValidarFuente(string fuente)
+    protected virtual bool RecibirLlamado()
     {
-        if (string.IsNullOrEmpty(fuente))
-        {
-            Console.WriteLine("  [Validación] No hay fuente especificada");
-            return false;
-        }
-        Console.WriteLine($"  [Validación] Fuente válida: {fuente}");
+        Console.WriteLine($"  [Llamado] {NombreHeroe} recibe una señal de aventura");
         return true;
     }
 
     // Hook — las subclases PUEDEN sobrescribirlo, pero no es obligatorio
-    protected virtual void NotificarListo(string fuente)
+    protected virtual void CelebrarFinal()
     {
-        Console.WriteLine($"  [Notificación] Proceso desde '{fuente}' listo.");
+        Console.WriteLine($"  [Final] {NombreHeroe} es aclamado como héroe.");
     }
 }
 
-// --- Subclase concreta: CSV Pipeline ---
-public class CsvPipeline : DataPipeline
+// --- Subclase concreta: Luke Skywalker ---
+public class LukeSkywalker : ViajeDelHeroe
 {
-    protected override string Extraer(string fuente)
+    public LukeSkywalker() : base("Luke Skywalker") { }
+
+    protected override string SuperarPruebas()
     {
-        Console.WriteLine("  [CSV] Leyendo archivo .csv...");
-        return "datos CSV: id,nombre,valor\n1,Ana,100\n2,Luis,200";
+        Console.WriteLine("  [Luke] Entrena con Yoda en Dagobah y se enfrenta a Vader");
+        return "la Fuerza";
     }
 
-    protected override void Transformar(string datos) =>
-        Console.WriteLine($"  [CSV] Convirtiendo a JSON: {datos}\n  → JSON generado");
+    protected override void Transformarse(string prueba) =>
+        Console.WriteLine($"  [Luke] Domina {prueba} y se convierte en Caballero Jedi");
 
-    protected override void Cargar(string datos) =>
-        Console.WriteLine("  [CSV] Cargando en base de datos SQL...");
+    protected override void Retornar(string prueba) =>
+        Console.WriteLine("  [Luke] Regresa para salvar la Rebelión y redime a su padre");
 }
 
-// --- Subclase concreta: JSON API Pipeline ---
-public class JsonPipeline : DataPipeline
+// --- Subclase concreta: Frodo Bolsón ---
+public class FrodoBolsón : ViajeDelHeroe
 {
-    protected override string Extraer(string fuente)
+    public FrodoBolsón() : base("Frodo Bolsón") { }
+
+    protected override string SuperarPruebas()
     {
-        Console.WriteLine("  [JSON] Consumiendo API REST...");
-        return "{\"status\":200,\"data\":[...]}";
+        Console.WriteLine("  [Frodo] Cruza Mordor cargando el Anillo Único");
+        return "el Anillo";
     }
 
-    protected override void Transformar(string datos) =>
-        Console.WriteLine($"  [JSON] Validando schema JSON: {datos}\n  → Schema OK");
+    protected override void Transformarse(string prueba) =>
+        Console.WriteLine($"  [Frodo] Resiste la tentación de {prueba} hasta el Monte del Destino");
 
-    protected override void Cargar(string datos) =>
-        Console.WriteLine("  [JSON] Guardando en almacén NoSQL (MongoDB)...");
+    protected override void Retornar(string prueba) =>
+        Console.WriteLine("  [Frodo] Destruye el Anillo y regresa a la Comarca");
 
-    // Hook sobrescrito: el pipeline JSON tiene su propia notificación
-    protected override void NotificarListo(string fuente) =>
-        Console.WriteLine($"  [JSON] 🍣 '{fuente}' procesado. ¡Listo para consumir!");
+    // Hook sobrescrito: Frodo no celebra como los demás (queda marcado)
+    protected override void CelebrarFinal() =>
+        Console.WriteLine("  [Final] Frodo parte hacia los Puertos Grises con los Elfos.");
 }
 
 public static class TemplateMethodDemo
 {
     public static void Run()
     {
-        Console.WriteLine("  📋 TEMPLATE METHOD — Esqueleto de algoritmo\n");
-        Console.WriteLine("  Escenario: Pipelines de procesamiento de datos (CSV/JSON)\n");
+        Console.WriteLine("  📋 TEMPLATE METHOD — Esqueleto de algoritmo (El Viaje del Héroe)\n");
+        Console.WriteLine("  Escenario: Distintos héroes recorren el mismo monomito paso a paso\n");
         Console.WriteLine("  El flujo es siempre el mismo, pero cada paso varía");
 
-        var pipelines = new (string nombre, DataPipeline pipeline)[]
+        var heroes = new (string nombre, ViajeDelHeroe heroe)[]
         {
-            ("CSV de ventas", new CsvPipeline()),
-            ("API de productos", new JsonPipeline()),
+            ("Luke Skywalker", new LukeSkywalker()),
+            ("Frodo Bolsón", new FrodoBolsón()),
         };
 
-        foreach (var (nombre, pipeline) in pipelines)
+        foreach (var (nombre, heroe) in heroes)
         {
-            Console.WriteLine($"\n  ══ Procesando: {nombre} ══");
-            pipeline.Procesar(nombre);
+            Console.WriteLine($"\n  ══ Aventura de: {nombre} ══");
+            heroe.VivirAventura();
         }
 
         Console.WriteLine("  ✅ El Template Method define el QUÉ y el ORDEN.");
         Console.WriteLine("     Las subclases definen el CÓMO de cada paso.");
-        Console.WriteLine("     El algoritmo NUNCA cambia su estructura.");
+        Console.WriteLine("     El esqueleto del viaje NUNCA cambia.");
     }
 }

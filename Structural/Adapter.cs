@@ -6,7 +6,9 @@ namespace DesignPatterns.Structural;
 /// Intención: permitir que clases con interfaces incompatibles trabajen
 /// juntas, traduciendo llamadas de una interfaz a otra.
 ///
-/// Analogía: adaptador de corriente entre un enchufe europeo y uno americano.
+/// Analogía: un emulador que deja jugar cartuchos de consolas clásicas (NES,
+/// arcade) en una sola máquina: cada Adapter traduce la API antigua a la
+/// interfaz común del emulador.
 ///
 /// Cuándo usarlo: integrar librerías de terceros o sistemas legacy cuya
 /// interfaz no puedes cambiar.
@@ -18,61 +20,63 @@ namespace DesignPatterns.Structural;
 /// legacy, normalización de datos de distintos proveedores.
 /// ============================================================================
 
-// --- Target: la interfaz que espera nuestra app ---
-public interface IPasarelaPago
+// --- Target: la interfaz que espera nuestra app (el emulador) ---
+public interface IConsolaRetro
 {
-    bool Cobrar(decimal monto, string moneda);
+    bool Jugar(string rom);
 }
 
-// --- Adaptee: pasarela moderna con otra interfaz ---
-public class StripeLike
+// --- Adaptee 1: consola NES clásica ---
+public class ConsolaNES
 {
-    public string Charge(double amountCents, string currencyCode)
+    public bool Encender()
     {
-        var id = Guid.NewGuid().ToString("N").ToUpper();
-        return $"stripe-{id[..12]}";
+        Console.WriteLine("  [NES] Consola encendida. Soplando el cartucho...");
+        return true;
+    }
+
+    public bool InsertarCartucho(string cartucho)
+    {
+        Console.WriteLine($"  [NES] Cartucho '{cartucho}' insertado en el puerto 60 pines");
+        return true;
     }
 }
 
-// --- Adapter: traduce IPasarelaPago -> StripeLike ---
-public class StripeAdapter : IPasarelaPago
+// --- Adapter 1: traduce IConsolaRetro -> ConsolaNES ---
+public class ConsolaNesAdapter : IConsolaRetro
 {
-    private readonly StripeLike _stripe;
+    private readonly ConsolaNES _nes;
 
-    public StripeAdapter(StripeLike stripe) => _stripe = stripe;
+    public ConsolaNesAdapter(ConsolaNES nes) => _nes = nes;
 
-    public bool Cobrar(decimal monto, string moneda)
+    public bool Jugar(string rom)
     {
-        Console.WriteLine("  [StripeAdapter] Convirtiendo monto a centavos...");
-
-        var id = _stripe.Charge((double)(monto * 100), moneda.ToLower());
-
-        Console.WriteLine($"  [StripeAdapter] Cobro confirmado con id {id}");
-        return !string.IsNullOrEmpty(id);
+        _nes.Encender();
+        var ok = _nes.InsertarCartucho(rom);
+        Console.WriteLine("  [Adapter NES] ▶️  ¡Jugando 'Super Mario Bros'!");
+        return ok;
     }
 }
 
-// --- Adaptee: pasarela legacy (sistema antiguo) ---
-public class PaypalLegacy
+// --- Adaptee 2: máquina arcade original ---
+public class ArcadeOriginal
 {
-    public string SendPayment(string amountTexto, string currency)
-    {
-        return $"pp-legacy-{DateTime.Now.Ticks}";
-    }
+    public string InsertarMonedas(int creditos) => $"ARCADE-CREDITO-{creditos}";
+    public void EsperarAttractMode() => Console.WriteLine("  [Arcade] Pantalla de 'INSERT COIN' parpadeando...");
 }
 
-// --- Adapter: traduce IPasarelaPago -> PaypalLegacy ---
-public class PaypalAdapter : IPasarelaPago
+// --- Adapter 2: traduce IConsolaRetro -> ArcadeOriginal ---
+public class ArcadeAdapter : IConsolaRetro
 {
-    private readonly PaypalLegacy _legacy;
+    private readonly ArcadeOriginal _arcade;
 
-    public PaypalAdapter(PaypalLegacy legacy) => _legacy = legacy;
+    public ArcadeAdapter(ArcadeOriginal arcade) => _arcade = arcade;
 
-    public bool Cobrar(decimal monto, string moneda)
+    public bool Jugar(string rom)
     {
-        var montoTexto = monto.ToString("F2");
-        var id = _legacy.SendPayment(montoTexto, moneda);
-        Console.WriteLine($"  [PaypalAdapter] Cobro legacy confirmado: {id}");
+        _arcade.EsperarAttractMode();
+        var id = _arcade.InsertarMonedas(3);
+        Console.WriteLine($"  [Adapter Arcade] ▶️  ¡Partida de '{rom}' iniciada ({id})!");
         return true;
     }
 }
@@ -81,26 +85,25 @@ public static class AdapterDemo
 {
     public static void Run()
     {
-        Console.WriteLine("  🔌 ADAPTER — Interfaces incompatibles → compatibles\n");
-        Console.WriteLine("  Escenario: La app cobra a través de distintas pasarelas de pago\n");
+        Console.WriteLine("  🔌 ADAPTER — Interfaces incompatibles → compatibles (retro gaming)\n");
+        Console.WriteLine("  Escenario: Un emulador juega ROMs de consolas con APIs distintas\n");
 
-        // La app solo conoce IPasarelaPago
-        var pasarelas = new List<(string nombre, IPasarelaPago pasarela)>
+        // La app solo conoce IConsolaRetro
+        var consolas = new List<(string nombre, IConsolaRetro consola)>
         {
-            ("Stripe (Adapter)", new StripeAdapter(new StripeLike())),
-            ("PayPal Legacy (Adapter)", new PaypalAdapter(new PaypalLegacy()))
+            ("NES (Adapter)", new ConsolaNesAdapter(new ConsolaNES())),
+            ("Arcade (Adapter)", new ArcadeAdapter(new ArcadeOriginal()))
         };
 
-        foreach (var (nombre, pasarela) in pasarelas)
+        foreach (var (nombre, consola) in consolas)
         {
-            Console.WriteLine($"  ── Pasarela: {nombre} ──");
-            var resultado = pasarela.Cobrar(49.99m, "USD");
-            Console.WriteLine($"  Resultado: {(resultado ? "✅ Cobrado" : "❌ Falló")}");
+            Console.WriteLine($"  ── Consola: {nombre} ──");
+            var ok = consola.Jugar("Contra");
+            Console.WriteLine($"  Resultado: {(ok ? "✅ Partida en marcha" : "❌ Falló")}");
             Console.WriteLine();
         }
 
-        Console.WriteLine("  ✅ El Adapter permite que la app use cualquier");
-        Console.WriteLine("     pasarela sin modificar su código.");
-        Console.WriteLine("     Solo se necesita un nuevo Adapter por cada proveedor.");
+        Console.WriteLine("  ✅ El Adapter permite usar cualquier consola");
+        Console.WriteLine("     sin modificar el emulador. Solo un Adapter por sistema.");
     }
 }

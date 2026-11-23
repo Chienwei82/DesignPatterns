@@ -6,7 +6,8 @@ namespace DesignPatterns.Creational;
 /// Intención: garantizar que una clase tenga UNA ÚNICA instancia en toda la
 /// aplicación y proveer un punto de acceso global a ella.
 ///
-/// Analogía: el presidente del país: solo puede haber uno y todos lo consultan.
+/// Analogía: el Anillo Único de "El Señor de los Anillos": "Un anillo para
+/// gobernarlo todo... una sola instancia a la que todos acuden".
 ///
 /// Cuándo usarlo: configuración global, logger, caché compartida, pool de
 /// conexiones.
@@ -19,36 +20,39 @@ namespace DesignPatterns.Creational;
 /// ============================================================================
 
 // --- Versión thread-safe con Lazy<T> (segura con hilos concurrentes) ---
-public sealed class AppSettings
+public sealed class AnilloUnico
 {
-    private static readonly Lazy<AppSettings> _instancia =
-        new(() => new AppSettings());
+    private static readonly Lazy<AnilloUnico> _instancia =
+        new(() => new AnilloUnico());
 
-    public static AppSettings Instancia => _instancia.Value;
+    public static AnilloUnico Instancia => _instancia.Value;
 
-    // Constructor privado: nadie más puede crear otra instancia
-    private AppSettings()
+    // Constructor privado: nadie más puede forjar otro Anillo
+    private AnilloUnico()
     {
-        Console.WriteLine("  [AppSettings] Cargando la configuración global de la app...");
-        CargarValores();
+        Console.WriteLine("  💍 Forjando el Anillo Único en el Monte del Destino...");
+        Portador = "Nadie";
     }
 
-    public string Entorno { get; private set; } = "";
-    public string CadenaConexion { get; private set; } = "";
-    public int TimeoutSegundos { get; private set; }
+    public string Portador { get; private set; } = "";
+    public bool Invisible { get; private set; }
 
-    private void CargarValores()
+    public void Reclamar(string nombre)
     {
-        Entorno = "Producción";
-        CadenaConexion = "Server=db.local;Database=App;Integrated Security=true";
-        TimeoutSegundos = 30;
+        Portador = nombre;
+        Console.WriteLine($"  {nombre} reclama el Anillo Único.");
+    }
+
+    public void UsarInvisibilidad()
+    {
+        Invisible = !Invisible;
+        Console.WriteLine($"  El Anillo vuelve {Portador} {(Invisible ? "invisible" : "visible")}.");
     }
 
     public void Mostrar()
     {
-        Console.WriteLine($"  Entorno:       {Entorno}");
-        Console.WriteLine($"  Conexión:      {CadenaConexion}");
-        Console.WriteLine($"  Timeout:       {TimeoutSegundos} s");
+        Console.WriteLine($"  Portador actual: {Portador}");
+        Console.WriteLine($"  ¿Invisible?      {(Invisible ? "Sí" : "No")}");
     }
 }
 
@@ -56,22 +60,24 @@ public static class SingletonDemo
 {
     public static void Run()
     {
-        Console.WriteLine("  ⚙️ SINGLETON — Una sola configuración para toda la app\n");
+        Console.WriteLine("  💍 SINGLETON — Un Anillo para gobernarlo todo\n");
 
-        // Primera llamada → crea la instancia
-        Console.WriteLine("  1. El módulo de logging pide la configuración:");
-        var config1 = AppSettings.Instancia;
-        config1.Mostrar();
-
-        Console.WriteLine();
-        Console.WriteLine("  2. El módulo de datos pide la configuración:");
-        var config2 = AppSettings.Instancia;
-        Console.WriteLine($"     Encuentra el mismo entorno: {config2.Entorno}");
+        // Primera llamada → forja la instancia
+        Console.WriteLine("  1. Frodo encuentra el Anillo:");
+        var anillo1 = AnilloUnico.Instancia;
+        anillo1.Reclamar("Frodo");
+        anillo1.Mostrar();
 
         Console.WriteLine();
-        Console.WriteLine($"  3. ¿Es la misma instancia? {ReferenceEquals(config1, config2)}");
+        Console.WriteLine("  2. Gandalf consulta el Anillo:");
+        var anillo2 = AnilloUnico.Instancia;
+        Console.WriteLine($"     Ve el mismo portador: {anillo2.Portador}");
+        anillo2.UsarInvisibilidad();
+
         Console.WriteLine();
-        Console.WriteLine("  ✅ Conclusión: Solo existe UNA configuración. Todos los módulos");
-        Console.WriteLine("     leen los mismos valores, sin duplicar estado en memoria.");
+        Console.WriteLine($"  3. ¿Es la misma instancia? {ReferenceEquals(anillo1, anillo2)}");
+        Console.WriteLine();
+        Console.WriteLine("  ✅ Conclusión: Solo existe UNO. No importa quién lo pida,");
+        Console.WriteLine("     todos comparten el mismo Anillo y su estado.");
     }
 }

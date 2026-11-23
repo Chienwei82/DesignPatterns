@@ -6,8 +6,9 @@ namespace DesignPatterns.Behavioral;
 /// Intención: permitir que un objeto altere su comportamiento cuando su estado
 /// interno cambia. Parecerá que el objeto cambia de clase.
 ///
-/// Analogía: el mismo botón de teléfono hace cosas distintas según si suena,
-/// estás hablando o en espera.
+/// Analogía: la evolución de un Pokémon (Charmander → Charmeleon → Charizard):
+/// el mismo "ser" cambia de comportamiento y ataques según su estado
+/// evolutivo.
 ///
 /// Cuándo usarlo: flujos de pedidos, máquinas de estados de videojuegos,
 /// workflows de aprobación.
@@ -20,149 +21,114 @@ namespace DesignPatterns.Behavioral;
 /// ============================================================================
 
 // --- State ---
-public interface IEstadoPedido
+public interface IEstadoPokemon
 {
     string Nombre { get; }
-    void Recibir(Pedido pedido);
-    void Preparar(Pedido pedido);
-    void Enviar(Pedido pedido);
-    void Entregar(Pedido pedido);
+    void UsarMovimiento(Pokemon pokemon);
+    void Evolucionar(Pokemon pokemon);
 }
 
 // --- Context ---
-public class Pedido
+public class Pokemon
 {
-    public string Numero { get; }
-    public IEstadoPedido Estado { get; private set; }
+    public string Nombre { get; }
+    public IEstadoPokemon Estado { get; private set; }
 
-    public Pedido(string numero)
+    public Pokemon(string nombre)
     {
-        Numero = numero;
-        Estado = PedidoRecibido.Instancia; // Estado inicial (singleton)
+        Nombre = nombre;
+        Estado = CharmanderState.Instancia; // Estado inicial (singleton)
     }
 
-    // Solo el propio Pedido puede cambiar de estado
-    internal void CambiarEstado(IEstadoPedido nuevoEstado) => Estado = nuevoEstado;
+    // Solo el propio Pokemon puede cambiar de estado
+    internal void CambiarEstado(IEstadoPokemon nuevoEstado) => Estado = nuevoEstado;
 
     // Los métodos delegan al estado actual
-    public void Recibir() => Estado.Recibir(this);
-    public void Preparar() => Estado.Preparar(this);
-    public void Enviar() => Estado.Enviar(this);
-    public void Entregar() => Estado.Entregar(this);
+    public void UsarMovimiento() => Estado.UsarMovimiento(this);
+    public void Evolucionar() => Estado.Evolucionar(this);
 }
 
 // --- Estados concretos ---
-public class PedidoRecibido : IEstadoPedido
+public class CharmanderState : IEstadoPokemon
 {
-    public static readonly PedidoRecibido Instancia = new();
-    public string Nombre => "📥 Recibido";
+    public static readonly CharmanderState Instancia = new();
+    public string Nombre => "🔥 Charmander";
 
-    public void Recibir(Pedido pedido) =>
-        Console.WriteLine($"  [{pedido.Numero}] Pedido recibido. Esperando confirmación...");
+    public void UsarMovimiento(Pokemon pokemon) =>
+        Console.WriteLine($"  [{pokemon.Nombre}] Usa Ascuas (movimiento débil de fuego)");
 
-    public void Preparar(Pedido pedido)
+    public void Evolucionar(Pokemon pokemon)
     {
-        Console.WriteLine($"  [{pedido.Numero}] Empezando a preparar el pedido...");
-        pedido.CambiarEstado(PedidoEnPreparacion.Instancia);
-    }
-
-    public void Enviar(Pedido pedido) =>
-        Console.WriteLine($"  [{pedido.Numero}] ⚠️ No se puede enviar: el pedido aún no está preparado");
-
-    public void Entregar(Pedido pedido) =>
-        Console.WriteLine($"  [{pedido.Numero}] ⚠️ No se puede entregar: el pedido aún no está enviado");
-}
-
-public class PedidoEnPreparacion : IEstadoPedido
-{
-    public static readonly PedidoEnPreparacion Instancia = new();
-    public string Nombre => "👨‍🍳 En preparación";
-
-    public void Recibir(Pedido pedido) =>
-        Console.WriteLine($"  [{pedido.Numero}] ⚠️ Ya está en preparación, no se puede recibir");
-
-    public void Preparar(Pedido pedido) =>
-        Console.WriteLine($"  [{pedido.Numero}] Ya se está preparando el pedido...");
-
-    public void Enviar(Pedido pedido)
-    {
-        Console.WriteLine($"  [{pedido.Numero}] Empaquetando y enviando...");
-        pedido.CambiarEstado(PedidoEnviado.Instancia);
-    }
-
-    public void Entregar(Pedido pedido) =>
-        Console.WriteLine($"  [{pedido.Numero}] ⚠️ No se puede entregar: el pedido aún no está enviado");
-}
-
-public class PedidoEnviado : IEstadoPedido
-{
-    public static readonly PedidoEnviado Instancia = new();
-    public string Nombre => "🚚 Enviado";
-
-    public void Recibir(Pedido pedido) =>
-        Console.WriteLine($"  [{pedido.Numero}] ⚠️ Ya fue enviado, no se puede recibir");
-
-    public void Preparar(Pedido pedido) =>
-        Console.WriteLine($"  [{pedido.Numero}] ⚠️ Ya fue preparado, no se puede preparar");
-
-    public void Enviar(Pedido pedido) =>
-        Console.WriteLine($"  [{pedido.Numero}] ⚠️ Ya fue enviado, no se puede enviar");
-
-    public void Entregar(Pedido pedido)
-    {
-        Console.WriteLine($"  [{pedido.Numero}] Entregando al cliente...");
-        pedido.CambiarEstado(PedidoEntregado.Instancia);
+        Console.WriteLine($"  [{pokemon.Nombre}] ¡Está evolucionando...! ✨");
+        pokemon.CambiarEstado(CharmeleonState.Instancia);
     }
 }
 
-public class PedidoEntregado : IEstadoPedido
+public class CharmeleonState : IEstadoPokemon
 {
-    public static readonly PedidoEntregado Instancia = new();
-    public string Nombre => "✅ Entregado";
+    public static readonly CharmeleonState Instancia = new();
+    public string Nombre => "🔥 Charmeleon";
 
-    public void Recibir(Pedido pedido) =>
-        Console.WriteLine($"  [{pedido.Numero}] ⚠️ El pedido ya fue entregado");
+    public void UsarMovimiento(Pokemon pokemon) =>
+        Console.WriteLine($"  [{pokemon.Nombre}] Usa Lanzallamas (poderoso ataque de fuego)");
 
-    public void Preparar(Pedido pedido) =>
-        Console.WriteLine($"  [{pedido.Numero}] ⚠️ El pedido ya fue entregado");
+    public void Evolucionar(Pokemon pokemon)
+    {
+        Console.WriteLine($"  [{pokemon.Nombre}] ¡Está evolucionando...! ✨");
+        pokemon.CambiarEstado(CharizardState.Instancia);
+    }
+}
 
-    public void Enviar(Pedido pedido) =>
-        Console.WriteLine($"  [{pedido.Numero}] ⚠️ El pedido ya fue entregado");
+public class CharizardState : IEstadoPokemon
+{
+    public static readonly CharizardState Instancia = new();
+    public string Nombre => "🐉 Charizard (Fuego/Volador)";
 
-    public void Entregar(Pedido pedido) =>
-        Console.WriteLine($"  [{pedido.Numero}] ✅ El pedido ya fue entregado");
+    public void UsarMovimiento(Pokemon pokemon) =>
+        Console.WriteLine($"  [{pokemon.Nombre}] Usa Hiperrayo y despega a volar");
+
+    public void Evolucionar(Pokemon pokemon) =>
+        Console.WriteLine($"  [{pokemon.Nombre}] ⭐ Es su evolución final: no evoluciona más");
 }
 
 public static class StateDemo
 {
     public static void Run()
     {
-        Console.WriteLine("  🔄 STATE — Comportamiento que cambia según el estado\n");
-        Console.WriteLine("  Escenario: Ciclo de vida de un pedido de e-commerce\n");
+        Console.WriteLine("  🔄 STATE — Comportamiento que cambia según el estado (evolución Pokémon)\n");
+        Console.WriteLine("  Escenario: Charmander evoluciona y cambia su comportamiento\n");
 
-        var pedido = new Pedido("ORD-2024-001");
+        var ash = new Pokemon("Ash's Charmander");
 
-        Console.WriteLine($"  🏁 Estado inicial: {pedido.Estado.Nombre}");
+        Console.WriteLine($"  🏁 Estado inicial: {ash.Estado.Nombre}");
         Console.WriteLine();
 
-        Console.WriteLine("  ── Recibir pedido ──");
-        pedido.Recibir();
-        Console.WriteLine($"     Estado ahora: {pedido.Estado.Nombre}\n");
+        Console.WriteLine("  ── Charmander usa un movimiento ──");
+        ash.UsarMovimiento();
+        Console.WriteLine();
 
-        Console.WriteLine("  ── Preparar pedido ──");
-        pedido.Preparar();
-        Console.WriteLine($"     Estado ahora: {pedido.Estado.Nombre}\n");
+        Console.WriteLine("  ── Charmander evoluciona ──");
+        ash.Evolucionar();
+        Console.WriteLine($"     Estado ahora: {ash.Estado.Nombre}\n");
 
-        Console.WriteLine("  ── Enviar pedido ──");
-        pedido.Enviar();
-        Console.WriteLine($"     Estado ahora: {pedido.Estado.Nombre}\n");
+        Console.WriteLine("  ── Charmeleon usa un movimiento (¡más fuerte!) ──");
+        ash.UsarMovimiento();
+        Console.WriteLine();
 
-        Console.WriteLine("  ── Entregar pedido ──");
-        pedido.Entregar();
-        Console.WriteLine($"     Estado ahora: {pedido.Estado.Nombre}\n");
+        Console.WriteLine("  ── Charmeleon evoluciona otra vez ──");
+        ash.Evolucionar();
+        Console.WriteLine($"     Estado ahora: {ash.Estado.Nombre}\n");
 
-        Console.WriteLine("  ✅ Cada estado define CÓMO reacciona el pedido.");
+        Console.WriteLine("  ── Charizard usa su movimiento definitivo ──");
+        ash.UsarMovimiento();
+        Console.WriteLine();
+
+        Console.WriteLine("  ── Charizard intenta evolucionar ──");
+        ash.Evolucionar();
+        Console.WriteLine();
+
+        Console.WriteLine("  ✅ Cada estado define CÓMO reacciona el Pokémon.");
         Console.WriteLine("     Sin State: if/else gigante con flags y validaciones.");
-        Console.WriteLine("     Con State: cada estado es una clase independiente.");
+        Console.WriteLine("     Con State: cada etapa evolutiva es una clase independiente.");
     }
 }

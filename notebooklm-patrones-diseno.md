@@ -4,7 +4,7 @@
 title: Guía de Patrones GoF - C# 14 / .NET 10
 author: Chienwei82
 updated: 2026-11-23
-version: 2.2
+version: 2.3
 patterns: 20 de 23 GoF
 language: es
 -->
@@ -100,9 +100,9 @@ Antes de estudiar cada uno, estos son los conceptos transversales que aparecen e
 2. Las siguientes veces, se devuelve la misma referencia.
 3. En .NET moderno, `Lazy<T>` garantiza thread-safety sin locks explícitos.
 
-**Analogía:** El presidente de un país. Solo puede haber uno en ejercicio, y todos los ciudadanos (objetos) se dirigen a esa única figura.
+**Analogía:** El Anillo Único de *El Señor de los Anillos*. Solo puede existir uno en toda la Tierra Media, y todos los personajes (objetos) que quieren usarlo acuden a esa misma figura.
 
-**Ejemplo real del proyecto:** Una clase `AppSettings` que carga la configuración global (entorno, cadena de conexión, timeout). Usar `Lazy<T>` asegura que, aunque dos módulos la soliciten simultáneamente, solo se crea una vez.
+**Ejemplo real del proyecto:** Una clase `AnilloUnico` (el Anillo Único de *El Señor de los Anillos*) que representa el "único anillo para gobernarlo todo". Usar `Lazy<T>` asegura que, aunque Frodo y Gandalf lo soliciten a la vez, solo se forja una vez y comparten su estado (portador, invisibilidad).
 
 **Relaciones:** A menudo se usa con **Factory Method** (la factory puede ser Singleton) o **Abstract Factory**.
 
@@ -129,9 +129,9 @@ Antes de estudiar cada uno, estos son los conceptos transversales que aparecen e
 2. Llama a un método de la clase `Creator` que internamente invoca `FactoryMethod()`.
 3. El `ConcreteCreator` devuelve su `ConcreteProduct` correspondiente.
 
-**Analogía:** Una fábrica de muebles que tiene una línea de producción estándar. Las sucursales específicas (Madrid, Barcelona) deciden si usan madera de roble o pino, pero el proceso general es el mismo.
+**Analogía:** En Pokémon, el proceso de "recibir el inicial" es siempre el mismo, pero cada laboratorio/profesor regional (Oak en Kanto, Elm en Johto) decide qué Pokémon concreto entregar.
 
-**Ejemplo real del proyecto:** La app de delivery con repartidores donde `RepartidorApp` es la clase abstracta y existen `RepartidorExpress`, `RepartidorEcologico` y `RepartidorCarga`. Cada repartidor decide qué transporte concreto crear (`Moto`, `Bicicleta` o `Auto`) antes de asignar el pedido.
+**Ejemplo real del proyecto:** Pokémon. `LaboratorioPokemon` es la clase abstracta y existen `LaboratorioKanto`, `LaboratorioJohto` y `LaboratorioHoenn`. Cada laboratorio decide qué Pokémon inicial crear (`Bulbasaur`, `Cyndaquil` o `Mudkip`) antes de entregarlo al entrenador.
 
 **Relaciones:** Se combina frecuentemente con **Singleton** (la factory puede ser única) o con **Strategy** (los productos creados suelen ser estrategias intercambiables).
 
@@ -158,9 +158,9 @@ Antes de estudiar cada uno, estos son los conceptos transversales que aparecen e
 2. Pide un `Boton` y una `Ventana`.
 3. La factory concreta devuelve siempre productos del mismo tema/familia.
 
-**Analogía:** Un restaurante de comida rápida con menús para niños y adultos. El menú infantil siempre incluye: hamburguesa pequeña, papas pequeñas y juguete. El menú adulto incluye: hamburguesa grande, papas grandes y bebida. Nunca mezclas papas pequeñas con hamburguesa grande.
+**Analogía:** Las casas de Hogwarts. Cada casa tiene un set a juego —estandarte, mascota, sala común, colores—; el de Gryffindor siempre es rojo y dorado con un león, el de Slytherin verde y plateado con una serpiente. Nunca mezclas piezas de dos casas.
 
-**Ejemplo real del proyecto:** `ITemaFactory` con métodos `CrearBoton()`, `CrearVentana()` y `CrearDialogo()`. Las implementaciones `TemaClaroFactory` (BotonClaro + VentanaClara + DialogoClaro) y `TemaOscuroFactory` (BotonOscuro + VentanaOscura + DialogoOscuro) garantizan que los componentes de cada tema siempre combinen entre sí.
+**Ejemplo real del proyecto:** Las casas de Hogwarts. `ICasaHogwartsFactory` con métodos `CrearEstandarte()`, `CrearMascota()` y `CrearSalaComun()`. Las implementaciones `GryffindorFactory` (EstandarteGryffindor + MascotaGryffindor + SalaGryffindor) y `SlytherinFactory` (EstandarteSlytherin + MascotaSlytherin + SalaSlytherin) garantizan que las piezas de cada casa siempre combinen entre sí.
 
 **Relaciones:** Abstract Factory suele implementarse con **Factory Methods** (cada método de la factory es un factory method). A menudo la Abstract Factory misma es un **Singleton**.
 
@@ -188,9 +188,9 @@ Antes de estudiar cada uno, estos son los conceptos transversales que aparecen e
 3. El director llama a los pasos en orden: `ConPan()`, `ConCarne()`, `AgregarExtra()`, etc.
 4. Finalmente se llama `Construir()` para obtener el producto terminado.
 
-**Analogía:** Un chef en un restaurante. El cliente puede pedir paso a paso: base de masa, salsa, queso, pepperoni, orégano. O puede pedir "pizza pepperoni" que el chef (Director) sabe cómo armar.
+**Analogía:** Forjar un sable de luz de Star Wars. El cliente puede pedirlo pieza por pieza: empuñadura, cristal kyber, color de hoja, extras. O puede pedir "un sable Jedi" que el Director (Artífice) sabe cómo armar.
 
-**Ejemplo real del proyecto:** `ConsultaSQLBuilder` construye una `ConsultaSQL` paso a paso (Select, From, Where, OrderBy, Limit). `ConsultorDirector` tiene consultas predefinidas como `TopUsuarios()` y `VentasRecientes()`. Tras `Build()`, el builder se resetea automáticamente para poder reutilizarse.
+**Ejemplo real del proyecto:** Un sable de luz de Star Wars. `SableBuilder` construye un `SableDeLuz` paso a paso (ConEmpunadura, ConCristal, ConColor, DobleFilo, ConDescargaElectrica). `ArtificeDirector` tiene sables predefinidos como `SableJedi()`, `SableSith()` y `SableDobleFilo()`. Tras `Build()`, el builder se resetea automáticamente para poder reutilizarse.
 
 **Relaciones:** A menudo se usa junto a **Composite** (el producto final es una estructura compuesta) o **Bridge** (el producto puede usar diferentes implementaciones).
 
@@ -217,9 +217,9 @@ Antes de estudiar cada uno, estos son los conceptos transversales que aparecen e
 2. Cuando necesitas uno similar, llamas `Clone()` en vez de `new`.
 3. Ajustas las propiedades que difieren.
 
-**Analogía:** Un formulario pre-llenado. En vez de pedirle a un usuario que llene todos los campos desde cero, le das una copia de otro formulario similar y solo cambia los datos que difieren.
+**Analogía:** Los soldados clon de Star Wars. En vez de criar cada clon desde cero, Kamino copia al prototipo original; con un clon superficial el equipo se comparte, con uno profundo cada soldado queda totalmente independiente.
 
-**Ejemplo real del proyecto:** `Documento` implementa `ICloneable`. Se demuestra la diferencia entre `Clone()` (shallow copy, comparte la `List<string>` de cláusulas y el `Firmante`) y `DeepClone()` (copia profunda, todo es independiente). `Firmante` se implementó como un `record` inmutable.
+**Ejemplo real del proyecto:** Los soldados clon de Star Wars. `SoldadoClon` implementa `ICloneable`. Se demuestra la diferencia entre `Clone()` (shallow copy, comparte la `List<string>` de equipo y el `RegistroAD`) y `DeepClone()` (copia profunda, todo es independiente). `RegistroAD` se implementó como un `record` inmutable.
 
 **Relaciones:** El **Prototype** puede usarse para inicializar **Singletons** o puede ser creado por una **Factory**.
 
@@ -247,9 +247,9 @@ Antes de estudiar cada uno, estos son los conceptos transversales que aparecen e
 2. El `Adapter` implementa `Target`.
 3. Internamente, el `Adapter` convierte los datos y llama a `Adaptee`.
 
-**Analogía:** Un adaptador de corriente. Tu cargador tiene enchufe tipo A (plano), pero el hotel solo tiene tipo C (redondo). El adaptador convierte uno en otro sin modificar ni el cargador ni la toma de pared.
+**Analogía:** Un emulador que juega ROMs de consolas retro. El emulador solo conoce una interfaz común (`Jugar`); cada consola clásica (NES, arcade) tiene su propia API, y un Adapter la traduce.
 
-**Ejemplo real del proyecto:** `IPasarelaPago` es la interfaz esperada. Existen dos `Adaptees`: `StripeLike` (pasarela moderna con `Charge` en centavos) y `PaypalLegacy` (sistema antiguo con `SendPayment`). `StripeAdapter` y `PaypalAdapter` traducen las llamadas.
+**Ejemplo real del proyecto:** Un emulador retro. `IConsolaRetro` es la interfaz esperada (`Jugar(rom)`). Existen dos `Adaptees`: `ConsolaNES` (métodos `Encender()` + `InsertarCartucho()`) y `ArcadeOriginal` (`EsperarAttractMode()` + `InsertarMonedas()`). `ConsolaNesAdapter` y `ArcadeAdapter` traducen las llamadas a la interfaz común.
 
 **Relaciones:** El **Adapter** puede adaptar no solo una clase, sino todo un subsistema (convirtiéndose en un tipo de **Facade**). También se parece al **Proxy**, pero el Adapter cambia la interfaz; el Proxy mantiene la misma interfaz.
 
@@ -277,9 +277,9 @@ Antes de estudiar cada uno, estos son los conceptos transversales que aparecen e
 3. Ese resultado lo envuelves en otro `ConcreteDecorator`.
 4. Cada capa añade su funcionalidad antes/después de delegar al interior.
 
-**Analogía:** Un árbol de Navidad. El pino base es el componente. Le agregas luces (decorador), luego esferas (otro decorador), luego un ángel en la punta. Puedes quitar o cambiar cualquier capa sin tocar el pino.
+**Analogía:** Encantar un arma de un RPG. La espada base es el componente. Le agregas una runa de fuego (decorador), luego una de hielo, luego una de rayo. Puedes apilar, quitar o cambiar cualquier encantamiento sin tocar la espada.
 
-**Ejemplo real del proyecto:** `INotificador` es el componente. `EmailNotificador` es la base. `ConRetraso`, `ConReintento` y `ConBitacora` son decoradores que apilan comportamiento. Un notificador puede ser `new ConBitacora(new ConReintento(new ConRetraso(new EmailNotificador())))`.
+**Ejemplo real del proyecto:** Encantar un arma de RPG. `IArma` es el componente. `EspadaBasica` es la base (10 de daño). `EncantamientoFuego`, `EncantamientoHielo` y `EncantamientoRayo` son decoradores que suman daño y efecto. Un arma puede ser `new EncantamientoRayo(new EncantamientoHielo(new EncantamientoFuego(new EspadaBasica())))`.
 
 **Relaciones:** El **Decorator** tiene la misma estructura de objetos que **Composite** (árbol), pero el Decorator solo tiene un hijo. También se asemeja al **Proxy** (ambos envuelven objetos), pero el Proxy controla acceso, mientras el Decorator añade responsabilidades.
 
@@ -305,9 +305,9 @@ Antes de estudiar cada uno, estos son los conceptos transversales que aparecen e
 2. La `Facade` coordina múltiples llamadas internas a los subsistemas.
 3. El cliente nunca interactúa directamente con los subsistemas.
 
-**Analogía:** El mostrador de atención al cliente en un banco. Tú solo hablas con el cajero (Facade). Internamente, él consulta el sistema de cuentas, el sistema de préstamos, el sistema de seguridad y te da una respuesta única.
+**Analogía:** El "Protocolo Vengadores". Nick Fury (cliente) solo da una orden; el centro de mando (Facade) coordina arsenal, energía, defensa y comunicaciones por él, sin que Fury hable con cada subsistema.
 
-**Ejemplo real del proyecto:** `TiendaFacade` orquesta 4 subsistemas: `Inventario`, `ProcesadorPago`, `ServicioEnvio` y `ServicioNotificaciones`. El cliente llama `Comprar()` y la Facade maneja el flujo completo, devolviendo la guía o `null` si algo falla. Además incluye un constructor con inyección de dependencias para testear con mocks.
+**Ejemplo real del proyecto:** `CentroDeMando` (el "Protocolo Vengadores") orquesta 4 subsistemas: `Arsenal`, `Repulsores`, `EscudoDefensor` y `Comunicaciones`. El cliente (Nick Fury) llama `ActivarProtocolo()` y la Facade maneja el flujo completo, devolviendo el id de barrera o `null` si algo falla. Además incluye un constructor con inyección de dependencias para testear con mocks.
 
 **Relaciones:** Una **Facade** puede usar internamente **Factory Methods** para crear objetos del subsistema. Puede interactuar con **Singletons** (si los subsistemas son únicos). No transforma la interfaz como el **Adapter**, solo la simplifica.
 
@@ -334,11 +334,11 @@ Antes de estudiar cada uno, estos son los conceptos transversales que aparecen e
 2. El `Proxy` intercepta la llamada.
 3. El `Proxy` decide: devolver caché, rechazar por permisos, o delegar al `RealSubject`.
 
-**Analogía:** Un abogado. Tú (cliente) no hablas directamente con el juez (objeto real), sino con tu abogado (proxy). Él decide si tu solicitud procede, prepara la documentación y la presenta al juez.
+**Analogía:** Los archivos clasificados de S.H.I.E.L.D. Tú (cliente) no entras directo a la bóveda (objeto real): un Proxy de seguridad revisa tu credencial y uno de caché recuerda los expedientes ya consultados.
 
-**Ejemplo real del proyecto:** Se implementan dos proxies sobre `IRepositorio`:
-- `RepositorioCacheProxy`: recuerda registros ya consultados, así que la segunda consulta del mismo id es instantánea.
-- `RepositorioSeguridadProxy`: verifica el rol antes de dejar acceder a registros restringidos (`secret-*`). Muestra tanto el caso denegado (rol `user`) como el permitido (rol `admin`).
+**Ejemplo real del proyecto:** Los archivos clasificados de S.H.I.E.L.D. Se implementan dos proxies sobre `IRepositorioClasificado`:
+- `ExpedienteCacheProxy`: recuerda expedientes ya consultados, así que la segunda consulta del mismo id es instantánea.
+- `ExpedienteSeguridadProxy`: verifica la credencial (solo `director` accede a ids `nivel-10`). Muestra tanto el caso denegado (`agente`) como el permitido (`director`).
 
 **Relaciones:** El **Proxy** tiene la misma interfaz que el objeto real, a diferencia del **Adapter**. Un **Proxy** de caché se parece al **Flyweight** (ambos evitan crear objetos), pero el Proxy controla un único objeto real, mientras el Flyweight comparte muchos objetos pequeños.
 
@@ -364,9 +364,9 @@ Antes de estudiar cada uno, estos son los conceptos transversales que aparecen e
 2. Puede llamar `Operacion()` tanto en una hoja como en un compuesto.
 3. El `Composite` delega la operación a todos sus hijos y agrega los resultados.
 
-**Analogía:** Un menú de restaurante. Un platillo individual (hoja) tiene su precio. Un combo (composite) contiene platillos y otros combos. Para calcular el precio total, simplemente sumas todo, sin importar si es un platillo o un combo entero.
+**Analogía:** Los ejércitos de Poniente (Game of Thrones). Un soldado suelto (hoja) y una legión completa (composite) responden la misma pregunta ("¿cuántos hombres?"): simplemente sumas todo, sin importar si es un soldado o una legión entera.
 
-**Ejemplo real del proyecto:** `FSNode` con `FileLeaf` (hoja) y `DirectoryComposite` (composite). El composite usa LINQ (`Sum`) para calcular el tamaño total. El cliente llama `Listar()` o `GetTamano()` sin saber si es archivo o directorio, y un directorio puede contener otros directorios.
+**Ejemplo real del proyecto:** Los ejércitos de Poniente (Game of Thrones). `IUnidad` con `Soldado` (hoja) y `Legion` (composite). El composite usa LINQ (`Sum`) para contar soldados. El cliente llama `Formar()` o `ContarSoldados()` sin saber si es soldado o legión, y una legión puede contener otras legiones.
 
 **Relaciones:** El **Composite** es estructuralmente similar al **Decorator** (ambos usan composición recursiva), pero el Composite modela jerarquías parte-todo, mientras el Decorator añade responsabilidades. Frecuentemente se usa junto al **Iterator** para recorrer la estructura.
 
@@ -394,9 +394,9 @@ Antes de estudiar cada uno, estos son los conceptos transversales que aparecen e
 2. Llama a métodos de la abstracción.
 3. La abstracción delega las operaciones de bajo nivel al `Implementor`.
 
-**Analogía:** Un mismo método de cocción universal. La receta (abstracción) puede prepararse con cualquier método (implementación). Agregar un método nuevo (freidora) no requiere cambiar las recetas. Agregar una receta nueva no requiere cambiar los métodos.
+**Analogía:** Un RPG donde combinas un arma (abstracción) con un elemento mágico (implementación). Agregar un elemento nuevo (rayo) no requiere cambiar las armas; agregar un arma nueva no requiere cambiar los elementos.
 
-**Ejemplo real del proyecto:** `ChartBase` es la abstracción con subclases `ChartBarras` y `ChartLineas`. `IRenderizador` es el implementor con `RenderizadorPNG`, `RenderizadorSVG` y `RenderizadorConsola`. Un `ChartBarras` puede renderizarse con cualquier renderizador.
+**Ejemplo real del proyecto:** Un RPG de armas y elementos. `ArmaElemental` es la abstracción con subclases `Arco`, `Baston` y `EspadaElemental`. `IElementoMagico` es el implementor con `Fuego`, `Hielo` y `Rayo`. Un `Arco` puede combinar con cualquier elemento (2 dimensiones independientes: 3 + 3 = 6 clases, no 3 × 3 = 9).
 
 **Relaciones:** El **Bridge** es similar al **Adapter**, pero el Bridge desacopla desde el diseño (pre-planificado), mientras el Adapter corrige incompatibilidades existentes (post-hoc). A menudo el producto de un **Builder** usa un **Bridge** para ser independiente de su implementación.
 
@@ -424,9 +424,9 @@ Antes de estudiar cada uno, estos son los conceptos transversales que aparecen e
 3. Si no, se crea y se registra.
 4. El cliente pasa el estado extrínseco (posición, contexto) en cada llamada.
 
-**Analogía:** Un cine con 500 butacas. En vez de crear 500 objetos "Butaca" con su propio proyector, cada butaca solo guarda su fila/columna (extrínseco). El proyector, la película y la pantalla son compartidos (intrínsecos) por todas.
+**Analogía:** El ejército de droides de Star Wars. En vez de crear 1,000 objetos "Droide" con su propio modelo, cada droide solo guarda su posición (extrínseco). El modelo, el color y el diseño son compartidos (intrínsecos) por todas las unidades.
 
-**Ejemplo real del proyecto:** `TileSprite` es el flyweight con textura y color (intrínseco). `Tile` es el contexto con la posición `(x, y)` (extrínseco). `FabricaSprites` administra los tipos. Al generar 1,000 tiles solo se crean 3 instancias de `TileSprite` en memoria.
+**Ejemplo real del proyecto:** El ejército de droides de Star Wars. `ModeloDroide` es el flyweight con tipo y color (intrínseco). `Droide` es el contexto con la posición `(x, y)` (extrínseco). `FabricaDroides` administra los modelos. Al desplegar 1,000 droides solo se crean 3 instancias de `ModeloDroide` en memoria.
 
 **Relaciones:** El **Flyweight** se parece al **Singleton** (ambos controlan instancias), pero el Flyweight maneja múltiples instancias compartidas por clave. A menudo se usa dentro de **Composite** (las hojas pueden ser flyweights).
 
@@ -456,9 +456,9 @@ Antes de estudiar cada uno, estos son los conceptos transversales que aparecen e
 3. El `Context` delega el cálculo a la estrategia.
 4. En tiempo de ejecución, se puede cambiar la estrategia.
 
-**Analogía:** Estrategias de navegación en Google Maps. El destino es el mismo, pero puedes elegir: en coche (ruta más rápida), a pie (caminos peatonales), o transporte público (horarios de bus). El mapa (contexto) te muestra la ruta según la estrategia seleccionada.
+**Analogía:** Los estilos de un luchador de fighting game (como Ryu). El rival es el mismo contexto, pero puedes elegir pelear agresivo, a la defensiva o equilibrado. El mapa (personaje) cambia de estilo según la estrategia seleccionada.
 
-**Ejemplo real del proyecto:** `IEnvioStrategy` es la estrategia con implementaciones `EnvioEstandar`, `EnvioExpress` y `RecogerEnTienda`. `CalculadoraEnvio` es el contexto que permite cambiar de estrategia en tiempo de ejecución con `CambiarEstrategia()`.
+**Ejemplo real del proyecto:** Los estilos de combate de un fighting game. `IEstiloCombate` es la estrategia con implementaciones `EstiloAgresivo`, `EstiloDefensivo` y `EstiloEquilibrado`. `Luchador` (Ryu) es el contexto que permite cambiar de estilo en tiempo de ejecución con `CambiarEstilo()` según el rival.
 
 **Relaciones:** El **Strategy** es similar al **State** (ambos usan composición para cambiar comportamiento), pero el Strategy cambia algoritmos por decisión del cliente, mientras el State cambia automáticamente según el estado interno. A menudo los objetos creados por **Factory Method** son estrategias.
 
@@ -485,9 +485,9 @@ Antes de estudiar cada uno, estos son los conceptos transversales que aparecen e
 3. El `Subject` recorre su lista y llama `Notificar()` en cada observador.
 4. Cada observador reacciona según su lógica.
 
-**Analogía:** Un canal de YouTube. Tú te suscribes (observer). Cuando el creador sube un video (cambio de estado), YouTube notifica a todos los suscriptores simultáneamente. El creador no sabe cuántos suscriptores tiene ni cómo reciben la notificación.
+**Analogía:** La Batiseñal de Gotham. Cuando Gordon la enciende (cambio de estado), todos los aliados (Robin, Alfred, la Liga) se notifican simultáneamente. La Batiseñal no sabe cuántos aliados tiene ni cómo reaccionan.
 
-**Ejemplo real del proyecto:** `OrderService` es el sujeto. Existen `EmailNotifier`, `StockUpdater`, `AnalyticsLogger` y `ObservadorElectronica` (que solo reacciona a productos de electrónica). Cuando un pedido se confirma, `PedidoConfirmado()` notifica a todos los suscriptores registrados.
+**Ejemplo real del proyecto:** La Batiseñal (DC). `BatSenal` es el sujeto. Existen `Robin`, `Alfred`, `ComisionadoGordon` y `VigilanteDelJoker` (que solo reacciona a amenazas del Joker). Cuando Gordon enciende la Batiseñal, `EncenderSenal()` notifica a todos los suscriptores registrados.
 
 **Relaciones:** El **Observer** es la base del patrón **MVC** (Modelo notifica a las Vistas). En C#, los `events` y `delegates` son implementaciones nativas del patrón Observer. Frecuentemente se usa con **Mediator** (el mediator puede actuar como subject centralizado).
 
@@ -517,9 +517,9 @@ Antes de estudiar cada uno, estos son los conceptos transversales que aparecen e
 4. El comando delega al `Receiver`.
 5. Para deshacer, el `Invoker` llama `Deshacer()` usando el historial.
 
-**Analogía:** Un control remoto de TV. Cada botón es un comando. El botón "Volumen +" no sabe cómo funciona el circuito de audio de la TV; solo envía la orden. El botón "Deshacer" puede revertir la última acción.
+**Analogía:** Un videojuego con "rewind" (Prince of Persia, Braid). Cada acción (saltar, mover) es un comando. El botón de mover no sabe cómo funciona el motor del juego; solo envía la orden, y "rebobinar" puede revertir la última acción.
 
-**Ejemplo real del proyecto:** `EditorTexto` es el receiver. Existen `InsertarLinea` y `BorrarLinea`. `EditorInvoker` es el invoker con dos stacks: uno para `UNDO` y otro para `REDO`. Cada comando guarda estado suficiente para poder deshacerse.
+**Ejemplo real del proyecto:** Un videojuego con "rewind". `Personaje` es el receiver. Existen `MoverComando` y `SaltarComando`. `ControlDeJuego` es el invoker con dos stacks: uno para `UNDO` y otro para `REDO`. Cada comando guarda estado suficiente para poder rebobinar la acción.
 
 **Relaciones:** El **Command** se combina con **Memento** para guardar el estado necesario para deshacer. También se usa con **Composite** para crear macros (comandos compuestos). El **Chain of Responsibility** puede usarse para encadenar comandos.
 
@@ -546,9 +546,9 @@ Antes de estudiar cada uno, estos son los conceptos transversales que aparecen e
 3. Otros pasos son `abstract` o `virtual` (sobrescritos por subclases).
 4. Las subclases no pueden cambiar el orden ni omitir pasos obligatorios.
 
-**Analogía:** Una receta de cocina. El esqueleto es siempre: preparar ingredientes → cocinar → servir. Pero "cocinar" varía: para pasta hierve agua; para carne, dora en sartén. La estructura de la receta no cambia, solo los pasos concretos.
+**Analogía:** El "Viaje del Héroe" (monomito de Joseph Campbell). El esqueleto es siempre: llamado → pruebas → transformación → retorno. Pero "superar las pruebas" varía: Luke entrena con Yoda; Frodo cruza Mordor. La estructura no cambia, solo los pasos concretos.
 
-**Ejemplo real del proyecto:** `DataPipeline` define el flujo: `ValidarFuente` → `Extraer` → `Transformar` → `Cargar` → `NotificarListo`. Las subclases `CsvPipeline` y `JsonPipeline` implementan `Extraer`, `Transformar` y `Cargar`. `ValidarFuente` y `NotificarListo` son hooks opcionales.
+**Ejemplo real del proyecto:** El "Viaje del Héroe" (monomito). `ViajeDelHeroe` define el flujo: `RecibirLlamado` → `SuperarPruebas` → `Transformarse` → `Retornar` → `CelebrarFinal`. Las subclases `LukeSkywalker` y `FrodoBolsón` implementan `SuperarPruebas`, `Transformarse` y `Retornar`. `RecibirLlamado` y `CelebrarFinal` son hooks opcionales.
 
 **Relaciones:** El **Template Method** usa herencia para variar comportamiento, mientras **Strategy** usa composición. Son alternativas: usa Template Method cuando controlas la jerarquía; usa Strategy cuando necesitas flexibilidad total en tiempo de ejecución.
 
@@ -575,9 +575,9 @@ Antes de estudiar cada uno, estos son los conceptos transversales que aparecen e
 3. El estado actual decide si procesa la acción o la rechaza.
 4. Si es válida, el estado transiciona al `Context` a un nuevo estado.
 
-**Analogía:** Un semáforo. El semáforo (contexto) está siempre en una de tres estados: Verde, Amarillo o Rojo. Cuando está en Verde, permite avanzar y transiciona a Amarillo. Cuando está en Rojo, rechaza avanzar. El semáforo no decide la lógica; el estado actual sí.
+**Analogía:** La evolución de un Pokémon. El Pokémon (contexto) está siempre en un estado: Charmander, Charmeleon o Charizard. Cuando evoluciona, su comportamiento y ataques cambian; el objeto no decide la lógica, el estado actual sí.
 
-**Ejemplo real del proyecto:** `Pedido` es el contexto con estados: `PedidoRecibido`, `PedidoEnPreparacion`, `PedidoEnviado` y `PedidoEntregado`. Cada estado implementa `Recibir()`, `Preparar()`, `Enviar()` y `Entregar()`, y las acciones hacen que el pedido transicione de estado. El estado solo puede cambiarse a través de métodos del contexto (encapsulación protegida con `CambiarEstado()`). Los estados son singletons estáticos para evitar crear instancias innecesarias.
+**Ejemplo real del proyecto:** La evolución de un Pokémon. `Pokemon` es el contexto con estados: `CharmanderState`, `CharmeleonState` y `CharizardState`. Cada estado implementa `UsarMovimiento()` y `Evolucionar()`, y las acciones hacen que el Pokémon transicione de estado. El estado solo puede cambiarse a través de métodos del contexto (encapsulación protegida con `CambiarEstado()`). Los estados son singletons estáticos para evitar crear instancias innecesarias.
 
 **Relaciones:** El **State** es estructuralmente similar al **Strategy**, pero las transiciones entre estados suelen ser controladas por los propios estados (circular), mientras que en Strategy el cliente elige la estrategia. El **State** puede usar **Singleton** para estados sin estado propio.
 
@@ -604,9 +604,9 @@ Antes de estudiar cada uno, estos son los conceptos transversales que aparecen e
 2. Un colega quiere enviar un mensaje; en vez de contactar a otro directamente, le dice al mediator.
 3. El mediator decide a quién reenviar el mensaje.
 
-**Analogía:** Un chat grupal de WhatsApp. Ana no envía un mensaje directamente a Carlos y a María; lo manda al grupo. WhatsApp (mediator) se encarga de replicarlo a todos los miembros.
+**Analogía:** La party de una raid de WoW. El tanque no envía mensajes directamente al sanador o al DPS; lo manda al chat del grupo. El grupo (mediator) se encarga de replicarlo a todos los miembros.
 
-**Ejemplo real del proyecto:** `ChatRoom` implementa `IChatRoom`. `Usuario` es la clase base de los colegas `UsuarioNormal` y `UsuarioAdmin`. Cuando `ana.Enviar("¡Hola a todos!")`, el usuario delega a `_chat.Enviar()`. El chat itera sobre todos los registrados y llama `Recibir()` excepto al remitente.
+**Ejemplo real del proyecto:** La party de una raid de WoW. `PartyChat` implementa `IChatParty`. `MiembroParty` es la clase base de los colegas `Tanque`, `Sanador` y `DPS`. Cuando `tank.Enviar("¡Pulling the boss!")`, el miembro delega a `_party.Enviar()`. El chat itera sobre todos los registrados y llama `Recibir()` excepto al remitente.
 
 **Relaciones:** El **Mediator** a veces implementa el patrón **Observer** (la sala observa a los usuarios). A menudo reemplaza múltiples **Observers** bidireccionales. Es útil en arquitecturas MVC donde el Controller actúa como mediator entre View y Model.
 
@@ -633,9 +633,9 @@ Antes de estudiar cada uno, estos son los conceptos transversales que aparecen e
 3. El `Caretaker` guarda el memento en una pila o lista.
 4. Cuando se necesita restaurar, el `Caretaker` devuelve el memento al `Originator`.
 
-**Analogía:** Los checkpoints de un videojuego. En cualquier momento presionas "Guardar". El juego (Originator) empaqueta tu posición, vidas y puntaje en un archivo de guardado (Memento). Tú (Caretaker) guardas ese archivo en tu disco. Más tarde, eliges "Cargar" y el juego restaura exactamente ese estado.
+**Analogía:** El Pensadero de Harry Potter. En cualquier momento Dumbledore extrae un recuerdo. El mago (Originator) empaqueta su estado en un frasco (Memento). El Pensadero (Caretaker) guarda ese frasco; más tarde, te sumerges y revives el recuerdo exactamente como era.
 
-**Ejemplo real del proyecto:** `DocumentoEditor` es el originator. `DocumentoMemento` es el memento, implementado como `record` inmutable con `DateTimeOffset.UtcNow`. `HistorialVersiones` es el caretaker con un `Stack<DocumentoMemento>`. Se demuestra escribir contenido, borrarlo por accidente, y restaurar checkpoints.
+**Ejemplo real del proyecto:** El Pensadero de Harry Potter. `Mago` es el originator. `RecuerdoMemento` es el memento, implementado como `record` inmutable con `DateTimeOffset.UtcNow`. `Pensadero` es el caretaker con un `Stack<RecuerdoMemento>`. Se demuestra acumular recuerdos, sufrir un Obliviate y restaurar recuerdos del Pensadero.
 
 **Relaciones:** El **Memento** se usa frecuentemente junto al **Command** (para implementar undo). El **Caretaker** puede ser un **Singleton**.
 
@@ -663,9 +663,9 @@ Antes de estudiar cada uno, estos son los conceptos transversales que aparecen e
 3. Si sí, la procesa. Si no, la pasa al siguiente.
 4. Si nadie la procesa, se reporta como no manejada.
 
-**Analogía:** Un hospital de emergencias. Llegas con una torcedura (leve): el médico general te atiende. Llegas con un infarto (crítico): el general te deriva al cardiólogo, quien te deriva al quirófano. Cada nivel decide si puede o pasa al siguiente.
+**Analogía:** Una amenaza en el universo de superhéroes. Un carterista (leve) lo detiene el guardián local. Un villano mayor escala a un superhéroe; una invasión a los Vengadores; una amenaza apocalíptica a la Liga de la Justicia. Cada nivel decide si puede o pasa al siguiente.
 
-**Ejemplo real del proyecto:** `ManejadorTicket` es la clase abstracta con `EstablecerSiguiente()`. Existen `SoporteNivel1`, `SoporteNivel2`, `GerenteTienda` y `DirectorGeneral`. `Ticket` es un `record` inmutable que usa el enum `PrioridadTicket` (Baja, Media, Alta, Urgente). Cada nivel maneja hasta cierta prioridad.
+**Ejemplo real del proyecto:** La escalada de una amenaza entre superhéroes. `ManejadorAmenaza` es la clase abstracta con `EstablecerSiguiente()`. Existen `GuardianCiudad`, `Superheroe`, `Vengadores` y `LigaDeLaJusticia`. `Amenaza` es un `record` inmutable que usa el enum `NivelAmenaza` (Menor, Moderada, Alta, Apocaliptica). Cada nivel maneja hasta cierta gravedad.
 
 **Relaciones:** El **Chain of Responsibility** se parece al **Decorator** (ambos pasan solicitudes a lo largo de una cadena), pero el Decorator siempre delega; el Chain decide si procesa o delega. En ASP.NET Core, los middlewares forman una cadena de responsabilidad.
 

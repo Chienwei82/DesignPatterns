@@ -6,11 +6,12 @@ namespace DesignPatterns.Structural;
 /// Intención: exponer una interfaz simple que orchestre un subsistema complejo,
 /// escondiendo sus detalles internos.
 ///
-/// Analogía: recepción de un hotel: un solo punto para todo (check-in, equipaje,
-/// conserjería).
+/// Analogía: el "Protocolo Vengadores": Nick Fury no ejecuta cada sistema de
+/// la nave (armas, defensa, energía, comunicaciones) por separado; da UNA orden
+/// y la fachada coordina todos los subsistemas por él.
 ///
 /// Cuándo usarlo: cuando usar un sistema requiere llamar a varios subsistemas
-/// en orden (procesar un pedido: inventario → pago → envío → notificación).
+/// en orden.
 ///
 /// Cuándo NO usarlo: si los clientes siempre necesitan el control fino del
 /// subsistema; una fachada innecesaria es una capa más de indirección.
@@ -19,124 +20,113 @@ namespace DesignPatterns.Structural;
 /// bibliotecas de logging, sistemas de pedidos.
 /// ============================================================================
 
-// --- Subsistema complejo #1: Inventario ---
-public class Inventario
+// --- Subsistema complejo #1: Arsenal ---
+public class Arsenal
 {
-    private readonly Dictionary<string, int> _stock = new()
+    private readonly Dictionary<string, int> _armas = new()
     {
-        ["Teclado mecánico"] = 5,
-        ["Mouse gamer"] = 50,
-        ["Monitor 4K"] = 20,
-        ["Laptop"] = 8
+        ["Repulsores"] = 2,
+        ["Escudo de vibranium"] = 1,
+        ["Mjolnir"] = 1,
+        ["Arco de Ojo de Halcón"] = 3
     };
 
-    public bool VerificarDisponibilidad(string producto, int cantidad)
+    public bool VerificarArma(string arma, int cantidad)
     {
-        var disponible = _stock.GetValueOrDefault(producto, 0);
-        Console.WriteLine($"  [Inventario] {producto}: pedidos {cantidad}, disponibles {disponible}");
+        var disponible = _armas.GetValueOrDefault(arma, 0);
+        Console.WriteLine($"  [Arsenal] {arma}: pedidas {cantidad}, disponibles {disponible}");
         return disponible >= cantidad;
     }
 
-    public void Reservar(string producto, int cantidad)
+    public void Asignar(string arma, int cantidad)
     {
-        if (_stock.ContainsKey(producto))
-            _stock[producto] -= cantidad;
-        Console.WriteLine($"  [Inventario] {cantidad}x {producto} reservados. Quedan: {_stock.GetValueOrDefault(producto, 0)}");
+        if (_armas.ContainsKey(arma)) _armas[arma] -= cantidad;
+        Console.WriteLine($"  [Arsenal] {cantidad}x {arma} asignadas. Quedan: {_armas.GetValueOrDefault(arma, 0)}");
     }
 }
 
-// --- Subsistema complejo #2: Pago ---
-public class ProcesadorPago
+// --- Subsistema complejo #2: Repulsores / energía ---
+public class Repulsores
 {
-    public bool Procesar(decimal monto, string metodo)
+    public bool Cargar(decimal energia)
     {
-        Console.WriteLine($"  [Pago] Procesando ¢{monto:N2} con {metodo}...");
-        Console.WriteLine("  [Pago] ✅ Pago aprobado");
+        Console.WriteLine($"  [Energía] Cargando repulsores al {energia:N0}%...");
+        Console.WriteLine("  [Energía] ⚡ Núcleo ARC estable. Listo para disparar.");
         return true;
     }
 }
 
-// --- Subsistema complejo #3: Envío ---
-public class ServicioEnvio
+// --- Subsistema complejo #3: Defensa ---
+public class EscudoDefensor
 {
-    private static int _guiaCount = 1000;
+    private static int _barrera = 400;
 
-    public string AsignarGuia(string cliente, string direccion)
+    public string Activar(string objetivo)
     {
-        _guiaCount++;
-        var guia = $"ENV-{_guiaCount:D5}";
-        Console.WriteLine($"  [Envío] Guía {guia} asignada a {cliente}");
-        Console.WriteLine($"  [Envío] Dirección: {direccion}");
-        return guia;
+        _barrera++;
+        var id = $"BARRERA-{_barrera:D4}";
+        Console.WriteLine($"  [Defensa] Barrera {id} activada para {objetivo}");
+        Console.WriteLine($"  [Defensa] Coordenadas: {objetivo}");
+        return id;
     }
 }
 
-// --- Subsistema complejo #4: Notificaciones ---
-public class ServicioNotificaciones
+// --- Subsistema complejo #4: Comunicaciones ---
+public class Comunicaciones
 {
-    public void EnviarConfirmacion(string cliente, string guia)
+    public void AvisarAEscenario(string destinatario, string id)
     {
-        Console.WriteLine($"  [Notif] ✉️ Correo de confirmación enviado a {cliente}");
-        Console.WriteLine($"  [Notif] 📱 SMS con guía {guia} enviado");
+        Console.WriteLine($"  [Comms] 📻 Transmisión cifrada enviada a {destinatario}");
+        Console.WriteLine($"  [Comms] 📱 SMS de estado {id} enviado al equipo");
     }
 }
 
 // --- FACADE: la interfaz simple que el cliente usa ---
-public class TiendaFacade
+public class CentroDeMando
 {
-    private readonly Inventario _inventario;
-    private readonly ProcesadorPago _pago;
-    private readonly ServicioEnvio _envio;
-    private readonly ServicioNotificaciones _notificaciones;
+    private readonly Arsenal _arsenal;
+    private readonly Repulsores _repulsores;
+    private readonly EscudoDefensor _defensa;
+    private readonly Comunicaciones _comms;
 
-    // Constructor por defecto (conveniencia educativa)
-    public TiendaFacade()
-        : this(new Inventario(), new ProcesadorPago(), new ServicioEnvio(), new ServicioNotificaciones())
+    public CentroDeMando()
+        : this(new Arsenal(), new Repulsores(), new EscudoDefensor(), new Comunicaciones())
     { }
 
-    // Constructor con inyección de dependencias (desacoplamiento real)
-    public TiendaFacade(Inventario inventario, ProcesadorPago pago,
-                        ServicioEnvio envio, ServicioNotificaciones notificaciones)
+    public CentroDeMando(Arsenal arsenal, Repulsores repulsores,
+                         EscudoDefensor defensa, Comunicaciones comms)
     {
-        _inventario = inventario;
-        _pago = pago;
-        _envio = envio;
-        _notificaciones = notificaciones;
+        _arsenal = arsenal;
+        _repulsores = repulsores;
+        _defensa = defensa;
+        _comms = comms;
     }
 
-    // Un solo método que orquesta todo el proceso complejo.
-    // Devuelve la guía del pedido, o null si algo falló.
-    public string? Comprar(string cliente, string producto, int cantidad,
-                            string direccion, string metodoPago)
+    // Un solo método que orquesta todo. Devuelve la barrera, o null si falla.
+    public string? ActivarProtocolo(string objetivo, string arma, int cantidad)
     {
-        Console.WriteLine($"\n  🛒 Procesando compra de {cliente}...");
-        Console.WriteLine($"  Producto: {producto} x{cantidad}");
+        Console.WriteLine($"\n  🛡️  Protocolo Vengadores: objetivo {objetivo}...");
+        Console.WriteLine($"  Arma solicitada: {arma} x{cantidad}");
 
-        // Paso 1: Verificar inventario
-        if (!_inventario.VerificarDisponibilidad(producto, cantidad))
+        if (!_arsenal.VerificarArma(arma, cantidad))
         {
-            Console.WriteLine("  ❌ No hay stock suficiente. Compra cancelada.");
+            Console.WriteLine("  ❌ Arma no disponible. Protocolo abortado.");
             return null;
         }
 
-        // Paso 2: Reservar
-        _inventario.Reservar(producto, cantidad);
+        _arsenal.Asignar(arma, cantidad);
 
-        // Paso 3: Procesar pago
-        var subtotal = cantidad * 100m; // precio simulado
-        if (!_pago.Procesar(subtotal, metodoPago))
+        var energia = cantidad * 25m;
+        if (!_repulsores.Cargar(energia))
         {
-            Console.WriteLine("  ❌ El pago falló. Compra cancelada.");
+            Console.WriteLine("  ❌ Carga fallida. Protocolo abortado.");
             return null;
         }
 
-        // Paso 4: Asignar envío
-        var guia = _envio.AsignarGuia(cliente, direccion);
+        var id = _defensa.Activar(objetivo);
+        _comms.AvisarAEscenario("Vengadores", id);
 
-        // Paso 5: Notificar
-        _notificaciones.EnviarConfirmacion(cliente, guia);
-
-        return guia;
+        return id;
     }
 }
 
@@ -145,38 +135,31 @@ public static class FacadeDemo
     public static void Run()
     {
         Console.WriteLine("  🏛️  FACADE — Interfaz simple para subsistemas complejos\n");
-        Console.WriteLine("  Escenario: Compra online — el cliente solo llama a");
-        Console.WriteLine("  'Comprar' y el Facade orquesta 4 subsistemas\n");
+        Console.WriteLine("  Escenario: Nick Fury solo dice 'Protocolo Vengadores' y la fachada");
+        Console.WriteLine("  coordina arsenal, energía, defensa y comunicaciones\n");
 
-        var tienda = new TiendaFacade();
+        var centro = new CentroDeMando();
 
-        var guia = tienda.Comprar(
-            cliente: "María Rodríguez",
-            producto: "Teclado mecánico",
-            cantidad: 1,
-            direccion: "Escazú, Plaza Itskatzú",
-            metodoPago: "Tarjeta de crédito"
+        var id = centro.ActivarProtocolo(
+            objetivo: "Nueva York",
+            arma: "Repulsores",
+            cantidad: 1
         );
 
-        if (guia is not null)
-        {
-            Console.WriteLine($"\n  🎉 Compra completada. Guía: {guia}");
-        }
+        if (id is not null)
+            Console.WriteLine($"\n  🎉 Protocolo activo. Barrera: {id}");
 
-        // ── Compra que falla: la fachada también orquesta el camino de error ──
-        Console.WriteLine("\n  ── Compra sin stock suficiente ──");
-        tienda.Comprar(
-            cliente: "Pedro Gómez",
-            producto: "Laptop",
-            cantidad: 100,   // solo hay 8 en stock
-            direccion: "Cartago, Centro",
-            metodoPago: "PayPal"
+        // ── Protocolo que falla: la fachada orquesta el camino de error ──
+        Console.WriteLine("\n  ── Protocolo sin recursos suficientes ──");
+        centro.ActivarProtocolo(
+            objetivo: "Espacio exterior",
+            arma: "Escudo de vibranium",
+            cantidad: 5
         );
 
         Console.WriteLine();
-        Console.WriteLine("  ✅ El cliente solo ve 1 método.");
-        Console.WriteLine("     La complejidad de inventario, pago, envío y");
-        Console.WriteLine("     notificaciones queda oculta tras la fachada...");
-        Console.WriteLine("     incluso cuando la compra falla.");
+        Console.WriteLine("  ✅ El cliente ve 1 solo método: 'ActivarProtocolo'.");
+        Console.WriteLine("     La complejidad de arsenal, energía, defensa y");
+        Console.WriteLine("     comunicaciones queda oculta... incluso cuando falla.");
     }
 }

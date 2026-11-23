@@ -7,8 +7,9 @@ namespace DesignPatterns.Behavioral;
 /// objetos. Promueve el acoplamiento débil evitando que los objetos se
 /// referencien explícitamente entre sí.
 ///
-/// Analogía: torre de control: ningún piloto coordina con otro directamente;
-/// todo pasa por la torre.
+/// Analogía: la party de un MMO (World of Warcraft): el tanque, el sanador y
+/// el DPS no se hablan entre sí directamente; todo se coordina por el chat del
+/// grupo (el mediador).
 ///
 /// Cuándo usarlo: salas de chat, paneles UI que se afectan entre sí,
 /// coordinación de formularios.
@@ -21,98 +22,112 @@ namespace DesignPatterns.Behavioral;
 /// ============================================================================
 
 // --- Mediator ---
-public interface IChatRoom
+public interface IChatParty
 {
-    void Registrar(Usuario usuario);
-    void Enviar(string mensaje, Usuario remitente);
+    void Registrar(MiembroParty miembro);
+    void Enviar(string mensaje, MiembroParty remitente);
 }
 
 // --- Colega ---
-public abstract class Usuario
+public abstract class MiembroParty
 {
     public string Nombre { get; }
-    private IChatRoom? _chat;
+    public string Rol { get; }
+    private IChatParty? _party;
 
-    protected Usuario(string nombre) => Nombre = nombre;
-
-    public void UnirseAlChat(IChatRoom chat)
+    protected MiembroParty(string nombre, string rol)
     {
-        _chat = chat;
-        _chat.Registrar(this);
+        Nombre = nombre;
+        Rol = rol;
+    }
+
+    public void UnirseAParty(IChatParty party)
+    {
+        _party = party;
+        _party.Registrar(this);
     }
 
     public void Enviar(string mensaje)
     {
-        Console.WriteLine($"  [{Nombre}] >> {mensaje}");
-        _chat?.Enviar(mensaje, this);
+        Console.WriteLine($"  [{Nombre} ({Rol})] >> {mensaje}");
+        _party?.Enviar(mensaje, this);
     }
 
-    public abstract void Recibir(string mensaje, string remitente);
+    public abstract void Recibir(string mensaje, MiembroParty remitente);
 }
 
-// --- Mediador concreto: la sala de chat ---
-public class ChatRoom : IChatRoom
+// --- Mediador concreto: la party (chat del grupo) ---
+public class PartyChat : IChatParty
 {
-    private readonly List<Usuario> _usuarios = [];
-    private readonly string _nombre;
+    private readonly List<MiembroParty> _miembros = [];
 
-    public ChatRoom(string nombre) => _nombre = nombre;
-
-    public void Registrar(Usuario usuario)
+    public void Registrar(MiembroParty miembro)
     {
-        _usuarios.Add(usuario);
-        Console.WriteLine($"  [Chat '{_nombre}'] {usuario.Nombre} se unió. Total: {_usuarios.Count} usuarios");
+        _miembros.Add(miembro);
+        Console.WriteLine($"  [Party] {miembro.Nombre} ({miembro.Rol}) se unió. Total: {_miembros.Count} miembros");
     }
 
-    public void Enviar(string mensaje, Usuario remitente)
+    public void Enviar(string mensaje, MiembroParty remitente)
     {
-        foreach (var usuario in _usuarios)
+        foreach (var miembro in _miembros)
         {
-            if (usuario != remitente)
-                usuario.Recibir(mensaje, remitente.Nombre);
+            if (miembro != remitente)
+                miembro.Recibir(mensaje, remitente);
         }
     }
 }
 
 // --- Colegas concretos ---
-public class UsuarioNormal : Usuario
+public class Tanque : MiembroParty
 {
-    public UsuarioNormal(string nombre) : base(nombre) { }
-    public override void Recibir(string mensaje, string remitente) =>
-        Console.WriteLine($"    💬 [{Nombre}] Nuevo mensaje de {remitente}: \"{mensaje}\"");
+    public Tanque(string nombre) : base(nombre, "Tanque") { }
+    public override void Recibir(string mensaje, MiembroParty remitente) =>
+        Console.WriteLine($"    🛡️ [{Nombre}] Mensaje de {remitente.Nombre}: \"{mensaje}\"");
 }
 
-public class UsuarioAdmin : Usuario
+public class Sanador : MiembroParty
 {
-    public UsuarioAdmin(string nombre) : base(nombre) { }
-    public override void Recibir(string mensaje, string remitente) =>
-        Console.WriteLine($"    👑 [{Nombre}] [ADMIN] Mensaje de {remitente}: \"{mensaje}\"");
+    public Sanador(string nombre) : base(nombre, "Sanador") { }
+    public override void Recibir(string mensaje, MiembroParty remitente) =>
+        Console.WriteLine($"    💚 [{Nombre}] Mensaje de {remitente.Nombre}: \"{mensaje}\"");
+}
+
+public class DPS : MiembroParty
+{
+    public DPS(string nombre) : base(nombre, "DPS") { }
+    public override void Recibir(string mensaje, MiembroParty remitente) =>
+        Console.WriteLine($"    ⚔️ [{Nombre}] Mensaje de {remitente.Nombre}: \"{mensaje}\"");
 }
 
 public static class MediatorDemo
 {
     public static void Run()
     {
-        Console.WriteLine("  🗣️  MEDIATOR — Comunicación centralizada\n");
-        Console.WriteLine("  Escenario: Una sala de chat donde los usuarios se comunican a través del mediador\n");
+        Console.WriteLine("  🗣️  MEDIATOR — Comunicación centralizada (party de raid MMO)\n");
+        Console.WriteLine("  Escenario: Una party de World of Warcraft se coordina por el chat del grupo\n");
 
-        var chat = new ChatRoom("Sala General");
+        var party = new PartyChat();
 
-        var ana = new UsuarioNormal("Ana");
-        var admin = new UsuarioAdmin("Admin");
+        var tank = new Tanque("Thrall");
+        var heals = new Sanador("Malfurion");
+        var dps = new DPS("Illidan");
 
-        ana.UnirseAlChat(chat);
-        admin.UnirseAlChat(chat);
+        tank.UnirseAParty(party);
+        heals.UnirseAParty(party);
+        dps.UnirseAParty(party);
         Console.WriteLine();
 
-        ana.Enviar("¡Hola a todos!");
+        tank.Enviar("¡Pulling the boss en 3... 2... 1!");
         Console.WriteLine();
 
-        admin.Enviar("Bienvenidos al chat.");
+        heals.Enviar("¡Cúbranse, viene AoE!");
         Console.WriteLine();
 
-        Console.WriteLine("  ✅ Los usuarios NO se conocen entre sí.");
-        Console.WriteLine("     Todo pasa por el chat (mediator).");
-        Console.WriteLine("     Agregar/eliminar gente no rompe el código de nadie.");
+        dps.Enviar("Burn phase, all cooldowns!");
+        Console.WriteLine();
+
+        Console.WriteLine("  ✅ Los miembros NO se conocen entre sí directamente.");
+        Console.WriteLine("     Toda la coordinación pasa por la party (mediator).");
+        Console.WriteLine("     Agregar/quitar jugadores no rompe el código de nadie.");
     }
 }
