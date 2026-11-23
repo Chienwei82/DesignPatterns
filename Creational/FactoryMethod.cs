@@ -20,88 +20,82 @@ namespace DesignPatterns.Creational;
 /// ============================================================================
 
 // --- Producto abstracto ---
-public interface IPlatillo
+public interface ITransporte
 {
-    void Preparar();
+    void Entregar(string paquete);
 }
 
 // --- Productos concretos ---
-public class CostillaBBQ : IPlatillo
+public class Moto : ITransporte
 {
-    public void Preparar()
-    {
-        Console.WriteLine("  🍖 [Parrilla] Costillas BBQ con salsa ahumada");
-    }
+    public void Entregar(string paquete) =>
+        Console.WriteLine("  🏍️ [Moto] Entregando paquete por la ciudad en 20 min");
 }
 
-public class Pastel : IPlatillo
+public class Bicicleta : ITransporte
 {
-    public void Preparar()
-    {
-        Console.WriteLine("  🎂 [Pastelería] Pastel de chocolate recién horneado");
-    }
+    public void Entregar(string paquete) =>
+        Console.WriteLine("  🚲 [Bici] Entregando paquete por ciclovía en 35 min");
 }
 
-public class Limonada : IPlatillo
+public class Auto : ITransporte
 {
-    public void Preparar()
-    {
-        Console.WriteLine("  🍋 [Bar] Limonada fría con hierbabuena");
-    }
+    public void Entregar(string paquete) =>
+        Console.WriteLine("  🚗 [Auto] Entregando paquete en furgón en 25 min");
 }
 
 // --- Creator abstracto ---
-public abstract class EstacionCocina
+public abstract class RepartidorApp
 {
-    // Factory Method — cada estación decide qué crear
-    public abstract IPlatillo CrearPlatillo();
+    // Factory Method — cada repartidor decide qué transporte usar
+    public abstract ITransporte CrearTransporte();
 
-    public void ServirPedido(string cliente)
+    public void AsignarPedido(string cliente, string paquete)
     {
-        Console.WriteLine($"  Pedido de {cliente}:");
-        var platillo = CrearPlatillo();
-        platillo.Preparar();
+        Console.WriteLine($"  Pedido de {cliente}: {paquete}");
+        var transporte = CrearTransporte();
+        transporte.Entregar(paquete);
     }
 }
 
 // --- Creators concretos ---
-public class EstacionParrilla : EstacionCocina
+public class RepartidorExpress : RepartidorApp
 {
-    public override IPlatillo CrearPlatillo() => new CostillaBBQ();
+    public override ITransporte CrearTransporte() => new Moto();
 }
 
-public class EstacionPasteleria : EstacionCocina
+public class RepartidorEcologico : RepartidorApp
 {
-    public override IPlatillo CrearPlatillo() => new Pastel();
+    public override ITransporte CrearTransporte() => new Bicicleta();
 }
 
-public class EstacionBar : EstacionCocina
+public class RepartidorCarga : RepartidorApp
 {
-    public override IPlatillo CrearPlatillo() => new Limonada();
+    public override ITransporte CrearTransporte() => new Auto();
 }
 
 public static class FactoryMethodDemo
 {
     public static void Run()
     {
-        Console.WriteLine("  🏭 FACTORY METHOD — Cada estación decide qué cocinar\n");
-        Console.WriteLine("  Escenario: Cocina con estaciones especializadas\n");
+        Console.WriteLine("  🏭 FACTORY METHOD — Cada repartidor decide qué transporte usar\n");
+        Console.WriteLine("  Escenario: App de delivery con repartidores especializados\n");
 
-        var estaciones = new (string cliente, EstacionCocina estacion)[]
+        var repartos = new (string cliente, RepartidorApp repartidor)[]
         {
-            ("Mesa 1", new EstacionParrilla()),
-            ("Mesa 2", new EstacionPasteleria()),
-            ("Mesa 3", new EstacionBar())
+            ("Sofía", new RepartidorExpress()),
+            ("Diego", new RepartidorEcologico()),
+            ("Valeria", new RepartidorCarga())
         };
 
-        foreach (var (cliente, estacion) in estaciones)
+        foreach (var (cliente, repartidor) in repartos)
         {
-            estacion.ServirPedido(cliente);
+            repartidor.AsignarPedido(cliente, "Paquete estándar");
             Console.WriteLine();
         }
 
-        Console.WriteLine("  ✅ El cliente depende de la abstracción (EstacionCocina),");
-        Console.WriteLine("     no de las clases concretas. Para agregar una estación,");
+        Console.WriteLine("  ✅ El cliente depende de la abstracción (RepartidorApp),");
+        Console.WriteLine("     no de las clases concretas. Para agregar un transporte,");
         Console.WriteLine("     solo se crea otra subclase.");
     }
 }

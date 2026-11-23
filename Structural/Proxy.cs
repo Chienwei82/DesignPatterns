@@ -1,5 +1,3 @@
-using System.Diagnostics;
-
 namespace DesignPatterns.Structural;
 
 /// ============================================================================
@@ -20,61 +18,64 @@ namespace DesignPatterns.Structural;
 /// caché, llamadas remotas (gRPC).
 /// ============================================================================
 
+using System.Diagnostics;
+
 // --- Sujeto (la interfaz común) ---
-public interface IChef
+public interface IRepositorio
 {
-    string Cocinar(string plato);
+    string Obtener(string id);
 }
 
-// --- Sujeto real (costoso y lento) ---
-public class ChefReal : IChef
+// --- Sujeto real (costoso y lento: consulta a BD) ---
+public class RepositorioReal : IRepositorio
 {
-    public string Cocinar(string plato)
+    public string Obtener(string id)
     {
-        Thread.Sleep(300); // el chef estrella se toma su tiempo
-        return $"  👨🍳 {plato} preparado por el Chef Real";
+        Thread.Sleep(200); // simula una consulta lenta a base de datos
+        return $"  📦 [BD] Registro {id} - Nombre de ejemplo";
     }
 }
 
-// --- Proxy de Caché: recuerda platos ya preparados ---
-public class ProxyChefCache : IChef
+// --- Proxy de Caché: recuerda registros ya consultados ---
+public class RepositorioCacheProxy : IRepositorio
 {
-    private readonly ChefReal _real = new();
+    private readonly RepositorioReal _real = new();
     private readonly Dictionary<string, string> _cache = new();
 
-    public string Cocinar(string plato)
+    public string Obtener(string id)
     {
-        if (_cache.TryGetValue(plato, out var guardado))
+        if (_cache.TryGetValue(id, out var guardado))
         {
-            Console.WriteLine($"  [Proxy-Cache] 🟢 Ya lo teníamos: {plato}");
+            Console.WriteLine($"  [Proxy-Cache] 🟢 Cache hit: {id} (desde memoria)");
             return guardado;
         }
 
-        Console.WriteLine($"  [Proxy-Cache] 🔴 No estaba en caché: {plato}");
-        var resultado = _real.Cocinar(plato);
-        _cache[plato] = resultado;
+        Console.WriteLine($"  [Proxy-Cache] 🔴 Cache miss: {id} (consultando BD)");
+        var resultado = _real.Obtener(id);
+        _cache[id] = resultado;
         return resultado;
     }
 }
 
-// --- Proxy de Seguridad: solo el cliente VIP puede pedir el plato estrella ---
-public class ProxyChefSeguridad : IChef
+// --- Proxy de Seguridad: solo roles autorizados pueden acceder ---
+public class RepositorioSeguridadProxy : IRepositorio
 {
-    private readonly ChefReal _real = new();
-    private readonly string _rolUsuario;
+    private readonly RepositorioReal _real = new();
+    private readonly string _rol;
 
-    public ProxyChefSeguridad(string rolUsuario) => _rolUsuario = rolUsuario;
+    public RepositorioSeguridadProxy(string rol) => _rol = rol;
 
-    public string Cocinar(string plato)
+    public string Obtener(string id)
     {
-        if (plato == "Plato estrella" && _rolUsuario != "VIP")
+        // Simulación: solo 'admin' puede ver registros con id 'secret-*'
+        if (id.StartsWith("secret-") && _rol != "admin")
         {
-            Console.WriteLine($"  [Proxy-Seguridad] 🚫 '{_rolUsuario}' no puede pedir el {plato}");
-            return $"  ❌ El {plato} es solo para clientes VIP";
+            Console.WriteLine($"  [Proxy-Seguridad] 🚫 Rol '{_rol}' sin acceso a '{id}'");
+            return "  ❌ Acceso denegado";
         }
 
-        Console.WriteLine($"  [Proxy-Seguridad] ✅ Acceso permitido para '{_rolUsuario}'");
-        return _real.Cocinar(plato);
+        Console.WriteLine($"  [Proxy-Seguridad] ✅ Acceso permitido para '{_rol}'");
+        return _real.Obtener(id);
     }
 }
 
@@ -83,21 +84,21 @@ public static class ProxyDemo
     public static void Run()
     {
         Console.WriteLine("  🎭 PROXY — Control de acceso y optimización\n");
-        Console.WriteLine("  Escenario: El chef estrella es lento y exclusivo\n");
+        Console.WriteLine("  Escenario: Repositorio de datos con caché y permisos\n");
 
         // ── Proxy de Caché ──
         Console.WriteLine("  ── Proxy de Caché ──");
-        var proxyCache = new ProxyChefCache();
+        var proxyCache = new RepositorioCacheProxy();
 
         var sw = Stopwatch.StartNew();
-        var r1 = proxyCache.Cocinar("Pizza");
+        var r1 = proxyCache.Obtener("user-123");
         sw.Stop();
         Console.WriteLine($"  Resultado:{r1}");
         Console.WriteLine($"  Tiempo: {sw.ElapsedMilliseconds}ms\n");
 
-        // Segunda vez el mismo plato — cache hit (más rápido)
+        // Segunda vez el mismo registro — cache hit (más rápido)
         sw.Restart();
-        var r2 = proxyCache.Cocinar("Pizza");
+        var r2 = proxyCache.Obtener("user-123");
         sw.Stop();
         Console.WriteLine($"  Resultado:{r2}");
         Console.WriteLine($"  Tiempo: {sw.ElapsedMilliseconds}ms (mucho más rápido 🚀)\n");
@@ -105,14 +106,14 @@ public static class ProxyDemo
         // ── Proxy de Seguridad ──
         Console.WriteLine("  ── Proxy de Seguridad ──");
 
-        // Cliente normal intentando pedir el plato estrella
-        var proxyCliente = new ProxyChefSeguridad(rolUsuario: "Cliente");
-        var denegado = proxyCliente.Cocinar("Plato estrella");
+        // Usuario normal intentando acceder a recurso restringido
+        var proxyUser = new RepositorioSeguridadProxy(rol: "user");
+        var denegado = proxyUser.Obtener("secret-keys");
         Console.WriteLine($"  Resultado:{denegado}\n");
 
-        // Cliente VIP con acceso permitido
-        var proxyVip = new ProxyChefSeguridad(rolUsuario: "VIP");
-        var permitido = proxyVip.Cocinar("Plato estrella");
+        // Admin con acceso permitido
+        var proxyAdmin = new RepositorioSeguridadProxy(rol: "admin");
+        var permitido = proxyAdmin.Obtener("secret-keys");
         Console.WriteLine($"  Resultado:{permitido}");
         Console.WriteLine();
 

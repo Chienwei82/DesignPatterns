@@ -17,11 +17,11 @@ echo 7 | dotnet run   # ejecutar un patrón directamente por número
 
 | # | Patrón | Analogía |
 |---|--------|----------|
-| 1 | Singleton | El presidente del país: solo hay uno |
-| 2 | Factory Method | Fábrica de muebles; cada sucursal decide el material |
-| 3 | Abstract Factory | Menú completo por cocina: italiano o mexicano, todo combina |
-| 4 | Builder | Armar una hamburguesa por pasos (pan, carne, extras) |
-| 5 | Prototype | Fotocopia de un formulario que luego personalizas |
+| 1 | Singleton | Configuración global de la app: solo hay una |
+| 2 | Factory Method | App de delivery: cada repartidor elige su transporte |
+| 3 | Abstract Factory | Tema visual de UI: todos los componentes combinan |
+| 4 | Builder | Constructor de consultas SQL: SELECT, FROM, WHERE... |
+| 5 | Prototype | Fotocopia de un documento prellenado |
 
 ```mermaid
 graph TD
@@ -55,14 +55,14 @@ graph TD
 ### 3. Abstract Factory — familias de objetos compatibles
 
 - **Intención:** crear **familias de objetos relacionados** sin acoplarse a sus clases concretas.
-- **Analogía:** tienda de muebles con líneas completa "moderna" o "vintage": compras el set y todo combina.
-- **Cuándo usarlo:** menús completos de distintas cocinas (italiano/mexicano), temas de UI, conectores a distintas bases de datos.
+- **Analogía:** tienda de muebles con líneas "moderna" o "vintage": compras el set y todo combina. En este proyecto: un tema de UI (claro/oscuro) donde botón, ventana y diálogo combinan.
+- **Cuándo usarlo:** familias de objetos que deben usarse juntos (temas de UI, conectores a distintas bases de datos).
 - **Cuándo NO usarlo:** si solo hay **un** producto por familia (para eso es Factory Method, más simple).
 
 ### 4. Builder — construcción paso a paso
 
 - **Intención:** separar la construcción de un objeto complejo en **pasos encadenables**, evitando constructores gigantes ("constructores telescópicos").
-- **Analogía:** armar un pedido en una app de comida: eliges entradas, plato fuerte, bebida, postre... paso a paso.
+- **Analogía:** armar una hamburguesa por pasos: el mismo proceso construye variantes distintas. En este proyecto: construir una consulta SQL (SELECT/FROM/WHERE/ORDER BY/LIMIT) paso a paso.
 - **Cuándo usarlo:** objetos con muchos parámetros opcionales (consultas SQL, HTTP requests, pedidos).
 - **Cuándo NO usarlo:** con 2-3 parámetros simples; el patrón agrega más código que el problema que resuelve.
 
@@ -79,13 +79,13 @@ graph TD
 
 | # | Patrón | Analogía |
 |---|--------|----------|
-| 6 | Adapter | Adaptador de enchufe europeo → americano |
-| 7 | Decorator | Ropa: se pone encima y agrega abrigo sin cambiar a la persona |
-| 8 | Facade | Recepción de un hotel: un solo punto para todo |
-| 9 | Proxy | Tarjeta de crédito: intermediario antes de tocar tu dinero |
-| 10 | Composite | Carpeta que contiene archivos y otras carpetas |
-| 11 | Bridge | Receta (casera/gourmet) independiente del método de cocción |
-| 12 | Flyweight | Un solo molde de bebida para servir mil comandas |
+| 6 | Adapter | Pasarela de pago: Stripe ↔ PayPal con la misma interfaz |
+| 7 | Decorator | Notificaciones: email + retraso + reintento + bitácora |
+| 8 | Facade | Compra online: un solo método orquesta 4 subsistemas |
+| 9 | Proxy | Repositorio de datos: caché + permisos antes de la BD |
+| 10 | Composite | Sistema de archivos: archivos y directorios |
+| 11 | Bridge | Gráficos × renderizadores (PNG/SVG/Consola) |
+| 12 | Flyweight | Juego 2D: 1,000 tiles con 3 sprites compartidos |
 
 ```mermaid
 graph TD
@@ -135,7 +135,7 @@ graph TD
 ### 10. Composite — árboles parte-todo
 
 - **Intención:** tratar **objetos individuales y composiciones de objetos de forma uniforme** (estructura de árbol).
-- **Analogía:** menú: un platillo y un combo entero responden la misma pregunta ("¿cuánto cuesta?").
+- **Analogía:** sistema de archivos: un archivo y una carpeta completa responden la misma pregunta ("¿cuánto ocupa?").
 - **Cuándo usarlo:** sistemas de archivos, menús, orgánigramas, árboles de componentes UI.
 - **Cuándo NO usarlo:** si la estructura nunca es anidada (solo hay hojas), el árbol es innecesario.
 
@@ -149,7 +149,7 @@ graph TD
 ### 12. Flyweight — compartir objetos en gran cantidad
 
 - **Intención:** compartir el estado **intrínseco** (común) entre miles de objetos, dejando lo **extrínseco** (posición) en el cliente.
-- **Analogía:** un solo molde de limonada reutilizado para servir mil comandas en mesas distintas.
+- **Analogía:** un solo molde reutilizado para servir mil porciones. En este proyecto: un mismo sprite de tile compartido por miles de casillas de un mapa 2D.
 - **Cuándo usarlo:** muchísimos objetos similares en memoria (tiles de videojuegos, caracteres de un documento).
 - **Cuándo NO usarlo:** con pocos objetos o cuando no hay nada compartible; la factory complica sin beneficio.
 
@@ -159,14 +159,14 @@ graph TD
 
 | # | Patrón | Analogía |
 |---|--------|----------|
-| 13 | Strategy | Elegir la ruta: auto, bici o caminar |
-| 14 | Observer | Suscripción a un canal de YouTube |
-| 15 | Command | Pedidos en una cocina: se encolan y se pueden anular |
-| 16 | Template Method | Receta de cocina: pasos fijos, ingredientes variables |
-| 17 | State | Estado de ánimo: cambia cómo reaccionas |
-| 18 | Mediator | Torre de control: nadie coordina con nadie directamente |
-| 19 | Memento | Guardar la pizza a medio armar por si la arruinas |
-| 20 | Chain of Responsibility | La queja escala del mesero al dueño |
+| 13 | Strategy | Envío: Estándar, Express o Recoger en tienda |
+| 14 | Observer | Eventos de dominio: OrderService notifica a suscriptores |
+| 15 | Command | Editor de texto: insertar y borrar líneas con undo/redo |
+| 16 | Template Method | Pipeline de datos: Extraer → Transformar → Cargar |
+| 17 | State | Ciclo de vida de un pedido: Recibido → Enviado → Entregado |
+| 18 | Mediator | Chat room: todos hablan a través del mediador |
+| 19 | Memento | Editor con checkpoints: guardar y restaurar versiones |
+| 20 | Chain of Responsibility | Soporte: Nivel 1 → Nivel 2 → Gerente → Director |
 
 ```mermaid
 graph TD
@@ -203,7 +203,7 @@ graph TD
 ### 15. Command — solicitudes como objetos
 
 - **Intención:** encapsular una solicitud como objeto: se puede **parametrizar, encolar y deshacer** (undo/redo).
-- **Analogía:** pedir en un restaurante: el mesero escribe el pedido (comando), el cocinero lo ejecuta; el pedido se puede anular.
+- **Analogía:** pedir en un restaurante: el mesero anota el pedido (comando), el cocinero lo ejecuta; se puede anular. En este proyecto: un editor de texto donde insertar/borrar líneas son comandos con undo/redo.
 - **Cuándo usarlo:** undo/redo (Ctrl+Z), colas de trabajos, macros, logging de acciones.
 - **Cuándo NO usarlo:** si la operación nunca se deshace, encola ni parametriza, una llamada directa es más simple.
 
@@ -211,7 +211,7 @@ graph TD
 
 - **Intención:** definir la **estructura fija** del algoritmo en la clase base; las subclases rellenan pasos concretos.
 - **Analogía:** receta de pan: los pasos son fijos (mezclar, amasar, hornear); el tipo de harina lo eliges tú.
-- **Cuándo usarlo:** pipelines con pasos comunes que varían en el detalle (preparar pizza/sushi/pasta).
+- **Cuándo usarlo:** pipelines con pasos comunes que varían en el detalle (procesar CSV/JSON, generar reportes).
 - **Cuándo NO usarlo:** si cada implementación difiere mucho en el flujo, mejor composición (Strategy).
 
 ### 17. State — comportamiento según el estado
@@ -238,7 +238,7 @@ graph TD
 ### 20. Chain of Responsibility — cadena de manejadores
 
 - **Intención:** pasar una solicitud por una **cadena de manejadores**; cada uno la procesa o la pasa al siguiente.
-- **Analogía:** una queja en el restaurante: el mesero intenta resolverla; si no puede, escala al jefe de cocina, luego al gerente y por último al dueño.
+- **Analogía:** una queja en el restaurante: el mesero intenta resolverla; si no puede, escala al jefe de cocina, luego al gerente y por último al dueño. En este proyecto: un ticket de soporte que escala Nivel 1 → Nivel 2 → Gerente → Director.
 - **Cuándo usarlo:** middleware, validaciones encadenadas, escalado de aprobaciones.
 - **Cuándo NO usarlo:** si siempre sabes quién maneja la solicitud, un `switch` o llamada directa es más claro.
 

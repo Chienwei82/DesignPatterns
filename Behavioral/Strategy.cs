@@ -21,61 +21,54 @@ namespace DesignPatterns.Behavioral;
 /// ============================================================================
 
 // --- Strategy ---
-public interface IEstrategiaDescuento
+public interface IEnvioStrategy
 {
     string Nombre { get; }
-    decimal Calcular(decimal subtotal);
+    decimal Calcular(decimal subtotal, decimal pesoKg);
 }
 
 // --- Estrategias concretas ---
-public class SinDescuento : IEstrategiaDescuento
+public class EnvioEstandar : IEnvioStrategy
 {
-    public string Nombre => "Sin descuento";
-    public decimal Calcular(decimal subtotal) => 0;
+    public string Nombre => "Estándar (5-7 días)";
+    public decimal Calcular(decimal subtotal, decimal pesoKg) => subtotal * 0.05m + pesoKg * 0.5m;
 }
 
-public class HappyHour : IEstrategiaDescuento
+public class EnvioExpress : IEnvioStrategy
 {
-    public string Nombre => "Happy Hour (20%)";
-    public decimal Calcular(decimal subtotal) => subtotal * 0.20m;
+    public string Nombre => "Express (1-2 días)";
+    public decimal Calcular(decimal subtotal, decimal pesoKg) => subtotal * 0.15m + pesoKg * 1.0m;
 }
 
-public class ClienteVip : IEstrategiaDescuento
+public class RecogerEnTienda : IEnvioStrategy
 {
-    public string Nombre => "Cliente VIP (15%)";
-    public decimal Calcular(decimal subtotal) => subtotal * 0.15m;
-}
-
-public class MenuDelDia : IEstrategiaDescuento
-{
-    public string Nombre => "Menú del día (10%)";
-    public decimal Calcular(decimal subtotal) => subtotal * 0.10m;
+    public string Nombre => "Recoger en tienda (gratis)";
+    public decimal Calcular(decimal subtotal, decimal pesoKg) => 0m;
 }
 
 // --- Context ---
-public class CajaRegistradora
+public class CalculadoraEnvio
 {
-    private IEstrategiaDescuento _estrategia;
+    private IEnvioStrategy _estrategia;
 
-    public CajaRegistradora(IEstrategiaDescuento estrategia) => _estrategia = estrategia;
+    public CalculadoraEnvio(IEnvioStrategy estrategia) => _estrategia = estrategia;
 
     // Clave del patrón: cambiar la estrategia en tiempo de ejecución
-    public void CambiarEstrategia(IEstrategiaDescuento nuevaEstrategia)
+    public void CambiarEstrategia(IEnvioStrategy nuevaEstrategia)
     {
         Console.WriteLine($"  ↪ Cambiando estrategia: {_estrategia.Nombre} → {nuevaEstrategia.Nombre}");
         _estrategia = nuevaEstrategia;
     }
 
-    public void Cobrar(string platillo, decimal precio)
+    public void Cotizar(string producto, decimal subtotal, decimal pesoKg)
     {
-        var descuento = _estrategia.Calcular(precio);
-        var total = precio - descuento;
+        var costo = _estrategia.Calcular(subtotal, pesoKg);
 
-        Console.WriteLine($"  Platillo: {platillo}");
-        Console.WriteLine($"  Precio base:  ¢{precio,10:N2}");
-        Console.WriteLine($"  Descuento ({_estrategia.Nombre}): ¢{descuento,10:N2}");
+        Console.WriteLine($"  Producto: {producto}");
+        Console.WriteLine($"  Subtotal:   ¢{subtotal,10:N2}");
+        Console.WriteLine($"  Envío ({_estrategia.Nombre}): ¢{costo,10:N2}");
         Console.WriteLine("  ─────────────────────────");
-        Console.WriteLine($"  TOTAL:        ¢{total,10:N2}");
+        Console.WriteLine($"  TOTAL:      ¢{subtotal + costo,10:N2}");
     }
 }
 
@@ -84,31 +77,26 @@ public static class StrategyDemo
     public static void Run()
     {
         Console.WriteLine("  🧠 STRATEGY — Algoritmos intercambiables\n");
-        Console.WriteLine("  Escenario: La caja aplica descuentos según el cliente\n");
+        Console.WriteLine("  Escenario: La app calcula el costo de envío según el método elegido\n");
 
-        var caja = new CajaRegistradora(new SinDescuento());
+        var calc = new CalculadoraEnvio(new EnvioEstandar());
 
-        Console.WriteLine("  ── Cuenta #1: cliente cualquiera ──");
-        caja.Cobrar("Pizza margarita", 9_500m);
+        Console.WriteLine("  ── Envío #1: método estándar ──");
+        calc.Cotizar("Teclado mecánico", 5000m, 1.5m);
         Console.WriteLine();
 
-        caja.CambiarEstrategia(new HappyHour());
-        Console.WriteLine("  ── Cuenta #2: son las 5 p.m. ──");
-        caja.Cobrar("Hamburguesa monstruosa", 12_000m);
+        calc.CambiarEstrategia(new EnvioExpress());
+        Console.WriteLine("  ── Envío #2: el cliente paga por rapidez ──");
+        calc.Cotizar("Monitor 4K", 15000m, 5.0m);
         Console.WriteLine();
 
-        caja.CambiarEstrategia(new ClienteVip());
-        Console.WriteLine("  ── Cuenta #3: cliente VIP ──");
-        caja.Cobrar("Corte de carne", 28_000m);
+        calc.CambiarEstrategia(new RecogerEnTienda());
+        Console.WriteLine("  ── Envío #3: recoger en tienda ──");
+        calc.Cotizar("Laptop gaming", 45000m, 2.5m);
         Console.WriteLine();
 
-        caja.CambiarEstrategia(new MenuDelDia());
-        Console.WriteLine("  ── Cuenta #4: menú del día ──");
-        caja.Cobrar("Casado del día", 6_500m);
-        Console.WriteLine();
-
-        Console.WriteLine("  ✅ Sin Strategy: if/else por cada tipo de descuento.");
-        Console.WriteLine("     Con Strategy: cada descuento es una clase separada.");
+        Console.WriteLine("  ✅ Sin Strategy: if/else por cada tipo de envío.");
+        Console.WriteLine("     Con Strategy: cada método de envío es una clase separada.");
         Console.WriteLine("     Fácil de extender — solo agregas una clase más.");
     }
 }

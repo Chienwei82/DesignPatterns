@@ -19,35 +19,36 @@ namespace DesignPatterns.Creational;
 /// ============================================================================
 
 // --- Versión thread-safe con Lazy<T> (segura con hilos concurrentes) ---
-public sealed class DespensaCentral
+public sealed class AppSettings
 {
-    private static readonly Lazy<DespensaCentral> _instancia =
-        new(() => new DespensaCentral());
+    private static readonly Lazy<AppSettings> _instancia =
+        new(() => new AppSettings());
 
-    public static DespensaCentral Instancia => _instancia.Value;
+    public static AppSettings Instancia => _instancia.Value;
 
     // Constructor privado: nadie más puede crear otra instancia
-    private DespensaCentral()
+    private AppSettings()
     {
-        Console.WriteLine("  [DespensaCentral] Abriendo la única despensa del restaurante...");
-        CargarInventario();
+        Console.WriteLine("  [AppSettings] Cargando la configuración global de la app...");
+        CargarValores();
     }
 
-    public string Encargada { get; private set; } = "";
-    public int Tomates { get; private set; }
-    public int Quesos { get; private set; }
+    public string Entorno { get; private set; } = "";
+    public string CadenaConexion { get; private set; } = "";
+    public int TimeoutSegundos { get; private set; }
 
-    private void CargarInventario()
+    private void CargarValores()
     {
-        Encargada = "Doña Marta";
-        Tomates = 40;
-        Quesos = 25;
+        Entorno = "Producción";
+        CadenaConexion = "Server=db.local;Database=App;Integrated Security=true";
+        TimeoutSegundos = 30;
     }
 
-    public void MostrarInventario()
+    public void Mostrar()
     {
-        Console.WriteLine($"  Encargada: {Encargada}");
-        Console.WriteLine($"  Inventario: {Tomates} tomates, {Quesos} quesos");
+        Console.WriteLine($"  Entorno:       {Entorno}");
+        Console.WriteLine($"  Conexión:      {CadenaConexion}");
+        Console.WriteLine($"  Timeout:       {TimeoutSegundos} s");
     }
 }
 
@@ -55,22 +56,22 @@ public static class SingletonDemo
 {
     public static void Run()
     {
-        Console.WriteLine("  📦 SINGLETON — Una sola despensa para todo el restaurante\n");
+        Console.WriteLine("  ⚙️ SINGLETON — Una sola configuración para toda la app\n");
 
         // Primera llamada → crea la instancia
-        Console.WriteLine("  1. El primer cocinero entra a la despensa:");
-        var despensa1 = DespensaCentral.Instancia;
-        despensa1.MostrarInventario();
+        Console.WriteLine("  1. El módulo de logging pide la configuración:");
+        var config1 = AppSettings.Instancia;
+        config1.Mostrar();
 
         Console.WriteLine();
-        Console.WriteLine("  2. Otro cocinero entra a la despensa:");
-        var despensa2 = DespensaCentral.Instancia;
-        Console.WriteLine($"     Encuentra a la misma encargada: {despensa2.Encargada}");
+        Console.WriteLine("  2. El módulo de datos pide la configuración:");
+        var config2 = AppSettings.Instancia;
+        Console.WriteLine($"     Encuentra el mismo entorno: {config2.Entorno}");
 
         Console.WriteLine();
-        Console.WriteLine($"  3. ¿Es la misma despensa? {ReferenceEquals(despensa1, despensa2)}");
+        Console.WriteLine($"  3. ¿Es la misma instancia? {ReferenceEquals(config1, config2)}");
         Console.WriteLine();
-        Console.WriteLine("  ✅ Conclusión: Solo existe UNA despensa. Todos los cocineros");
-        Console.WriteLine("     ven el mismo inventario, sin duplicar recursos.");
+        Console.WriteLine("  ✅ Conclusión: Solo existe UNA configuración. Todos los módulos");
+        Console.WriteLine("     leen los mismos valores, sin duplicar estado en memoria.");
     }
 }

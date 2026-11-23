@@ -8,7 +8,9 @@ namespace DesignPatterns.Behavioral;
 /// eslabón. Desacopla al emisor del receptor.
 ///
 /// Analogía: una queja en el restaurante: el mesero intenta resolverla; si no
-/// puede, escala al jefe de cocina, luego al gerente y por último al dueño.
+/// puede, escala al jefe de cocina, luego al gerente y por último al dueño. En
+/// este proyecto: un ticket de soporte que escala Nivel 1 → Nivel 2 → Gerente
+/// → Director.
 ///
 /// Cuándo usarlo: middleware, validaciones encadenadas, escalado de aprobaciones.
 ///
@@ -16,88 +18,88 @@ namespace DesignPatterns.Behavioral;
 /// o llamada directa es más claro.
 ///
 /// USO REAL: Middleware en ASP.NET Core, filtros de validación, aprobaciones
-/// jerárquicas, soporte técnico escalable, manejo de quejas en un restaurante.
+/// jerárquicas, soporte técnico escalable.
 /// ============================================================================
 
 // --- Handler abstracto ---
-public abstract class ManejadorQueja
+public abstract class ManejadorTicket
 {
-    protected ManejadorQueja? _siguiente;
+    protected ManejadorTicket? _siguiente;
 
-    public void EstablecerSiguiente(ManejadorQueja siguiente) => _siguiente = siguiente;
+    public void EstablecerSiguiente(ManejadorTicket siguiente) => _siguiente = siguiente;
 
-    public virtual void Manejar(Queja queja)
+    public virtual void Manejar(Ticket ticket)
     {
         if (_siguiente != null)
-            _siguiente.Manejar(queja);
+            _siguiente.Manejar(ticket);
         else
-            Console.WriteLine($"    ❌ Queja #{queja.Id}: NADIE pudo atender '{queja.Motivo}'");
+            Console.WriteLine($"    ❌ Ticket #{ticket.Id}: NADIE pudo atender '{ticket.Asunto}'");
     }
 }
 
-public enum GravedadQueja
+public enum PrioridadTicket
 {
-    Molestia = 1,
-    Reclamo,
-    Grave,
-    Catastrofe
+    Baja = 1,
+    Media,
+    Alta,
+    Urgente
 }
 
-public record Queja(int Id, string Motivo, GravedadQueja Gravedad);
+public record Ticket(int Id, string Asunto, PrioridadTicket Prioridad);
 
 // --- Handlers concretos ---
-public class AtencionMesero : ManejadorQueja
+public class SoporteNivel1 : ManejadorTicket
 {
-    public override void Manejar(Queja queja)
+    public override void Manejar(Ticket ticket)
     {
-        if (queja.Gravedad <= GravedadQueja.Molestia)
+        if (ticket.Prioridad <= PrioridadTicket.Baja)
         {
-            Console.WriteLine($"    ✅ [Mesero] Queja #{queja.Id}: '{queja.Motivo}' resuelta (cambia el plato)");
+            Console.WriteLine($"    ✅ [Nivel 1] Ticket #{ticket.Id}: '{ticket.Asunto}' resuelto (FAQ)");
         }
         else
         {
-            Console.WriteLine($"    ⏩ [Mesero] Queja #{queja.Id}: Escalando al Jefe de Cocina...");
-            base.Manejar(queja);
+            Console.WriteLine($"    ⏩ [Nivel 1] Ticket #{ticket.Id}: Escalando al Nivel 2...");
+            base.Manejar(ticket);
         }
     }
 }
 
-public class JefeDeCocina : ManejadorQueja
+public class SoporteNivel2 : ManejadorTicket
 {
-    public override void Manejar(Queja queja)
+    public override void Manejar(Ticket ticket)
     {
-        if (queja.Gravedad <= GravedadQueja.Reclamo)
+        if (ticket.Prioridad <= PrioridadTicket.Media)
         {
-            Console.WriteLine($"    ✅ [Jefe de Cocina] Queja #{queja.Id}: '{queja.Motivo}' resuelta (rehace el platillo)");
+            Console.WriteLine($"    ✅ [Nivel 2] Ticket #{ticket.Id}: '{ticket.Asunto}' resuelto (técnico)");
         }
         else
         {
-            Console.WriteLine($"    ⏩ [Jefe de Cocina] Queja #{queja.Id}: Escalando al Gerente...");
-            base.Manejar(queja);
+            Console.WriteLine($"    ⏩ [Nivel 2] Ticket #{ticket.Id}: Escalando al Gerente...");
+            base.Manejar(ticket);
         }
     }
 }
 
-public class Gerente : ManejadorQueja
+public class GerenteTienda : ManejadorTicket
 {
-    public override void Manejar(Queja queja)
+    public override void Manejar(Ticket ticket)
     {
-        if (queja.Gravedad <= GravedadQueja.Grave)
+        if (ticket.Prioridad <= PrioridadTicket.Alta)
         {
-            Console.WriteLine($"    ✅ [Gerente] Queja #{queja.Id}: '{queja.Motivo}' resuelta (compensa al cliente)");
+            Console.WriteLine($"    ✅ [Gerente] Ticket #{ticket.Id}: '{ticket.Asunto}' resuelto (decisión gerencial)");
         }
         else
         {
-            Console.WriteLine($"    ⏩ [Gerente] Queja #{queja.Id}: Escalando al Dueño...");
-            base.Manejar(queja);
+            Console.WriteLine($"    ⏩ [Gerente] Ticket #{ticket.Id}: Escalando al Director...");
+            base.Manejar(ticket);
         }
     }
 }
 
-public class Dueno : ManejadorQueja
+public class DirectorGeneral : ManejadorTicket
 {
-    public override void Manejar(Queja queja) =>
-        Console.WriteLine($"    ✅ [Dueño] Queja #{queja.Id}: '{queja.Motivo}' atendida personalmente por el Dueño");
+    public override void Manejar(Ticket ticket) =>
+        Console.WriteLine($"    ✅ [Director] Ticket #{ticket.Id}: '{ticket.Asunto}' atendido personalmente por el Director");
 }
 
 public static class ChainOfResponsibilityDemo
@@ -105,36 +107,36 @@ public static class ChainOfResponsibilityDemo
     public static void Run()
     {
         Console.WriteLine("  🔗 CHAIN OF RESPONSIBILITY — Cadena de manejadores\n");
-        Console.WriteLine("  Escenario: Las quejas escalan según su gravedad\n");
+        Console.WriteLine("  Escenario: Los tickets de soporte escalan según su prioridad\n");
 
         // Construir la cadena
-        var mesero = new AtencionMesero();
-        var jefe = new JefeDeCocina();
-        var gerente = new Gerente();
-        var dueno = new Dueno();
+        var nivel1 = new SoporteNivel1();
+        var nivel2 = new SoporteNivel2();
+        var gerente = new GerenteTienda();
+        var director = new DirectorGeneral();
 
-        mesero.EstablecerSiguiente(jefe);
-        jefe.EstablecerSiguiente(gerente);
-        gerente.EstablecerSiguiente(dueno);
+        nivel1.EstablecerSiguiente(nivel2);
+        nivel2.EstablecerSiguiente(gerente);
+        gerente.EstablecerSiguiente(director);
 
-        // Quejas de prueba
-        var quejas = new Queja[]
+        // Tickets de prueba
+        var tickets = new Ticket[]
         {
-            new(101, "La mesa está sucia", GravedadQueja.Molestia),
-            new(102, "El platillo llegó frío", GravedadQueja.Reclamo),
-            new(103, "La comida estaba en mal estado", GravedadQueja.Grave),
-            new(104, "¡Se incendió la cocina!", GravedadQueja.Catastrofe),
+            new(101, "No puedo iniciar sesión", PrioridadTicket.Baja),
+            new(102, "Error al cargar el carrito", PrioridadTicket.Media),
+            new(103, "Página caída en producción", PrioridadTicket.Alta),
+            new(104, "¡Fuga de datos críticos!", PrioridadTicket.Urgente),
         };
 
-        foreach (var queja in quejas)
+        foreach (var ticket in tickets)
         {
-            Console.WriteLine($"  ── Queja #{queja.Id} ({queja.Gravedad}): {queja.Motivo} ──");
-            mesero.Manejar(queja);
+            Console.WriteLine($"  ── Ticket #{ticket.Id} ({ticket.Prioridad}): {ticket.Asunto} ──");
+            nivel1.Manejar(ticket);
             Console.WriteLine();
         }
 
-        Console.WriteLine("  ✅ Cada nivel decide si puede resolverla o pasa al siguiente.");
-        Console.WriteLine("     El cliente no sabe QUIÉN la resolverá.");
+        Console.WriteLine("  ✅ Cada nivel decide si puede resolverlo o pasa al siguiente.");
+        Console.WriteLine("     El cliente no sabe QUIÉN lo resolverá.");
         Console.WriteLine("     Se pueden reordenar, agregar o quitar niveles sin tocar al cliente.");
     }
 }

@@ -20,50 +20,58 @@ namespace DesignPatterns.Structural;
 /// ============================================================================
 
 // --- Componente abstracto ---
-public interface IPastel
+public interface INotificador
 {
-    string GetDescripcion();
-    decimal GetPrecio();
+    void Enviar(string mensaje);
 }
 
 // --- Componente concreto ---
-public class PastelVainilla : IPastel
+public class EmailNotificador : INotificador
 {
-    public string GetDescripcion() => "Pastel de vainilla";
-    public decimal GetPrecio() => 8000m;
+    public void Enviar(string mensaje) =>
+        Console.WriteLine($"  [Email] ✉️ Enviando: '{mensaje}'");
 }
 
 // --- Decorador base ---
-public abstract class PastelDecorator : IPastel
+public abstract class NotificadorDecorator : INotificador
 {
-    protected readonly IPastel _pastel;
+    protected readonly INotificador _notificador;
 
-    protected PastelDecorator(IPastel pastel) => _pastel = pastel;
+    protected NotificadorDecorator(INotificador notificador) => _notificador = notificador;
 
-    public virtual string GetDescripcion() => _pastel.GetDescripcion();
-    public virtual decimal GetPrecio() => _pastel.GetPrecio();
+    public virtual void Enviar(string mensaje) => _notificador.Enviar(mensaje);
 }
 
 // --- Decoradores concretos ---
-public class ConGlaseado : PastelDecorator
+public class ConRetraso : NotificadorDecorator
 {
-    public ConGlaseado(IPastel pastel) : base(pastel) { }
-    public override string GetDescripcion() => $"{_pastel.GetDescripcion()} + glaseado de fresa";
-    public override decimal GetPrecio() => _pastel.GetPrecio() + 1500m;
+    public ConRetraso(INotificador notificador) : base(notificador) { }
+    public override void Enviar(string mensaje)
+    {
+        Console.WriteLine("  [Retraso] ⏳ Esperando 1s antes de enviar...");
+        Thread.Sleep(100);
+        base.Enviar(mensaje);
+    }
 }
 
-public class ConChispas : PastelDecorator
+public class ConReintento : NotificadorDecorator
 {
-    public ConChispas(IPastel pastel) : base(pastel) { }
-    public override string GetDescripcion() => $"{_pastel.GetDescripcion()} + chispas de chocolate";
-    public override decimal GetPrecio() => _pastel.GetPrecio() + 800m;
+    public ConReintento(INotificador notificador) : base(notificador) { }
+    public override void Enviar(string mensaje)
+    {
+        Console.WriteLine("  [Reintento] 🔁 Reintentando hasta 3 veces...");
+        base.Enviar(mensaje);
+    }
 }
 
-public class ConVelitas : PastelDecorator
+public class ConBitacora : NotificadorDecorator
 {
-    public ConVelitas(IPastel pastel) : base(pastel) { }
-    public override string GetDescripcion() => $"{_pastel.GetDescripcion()} + velitas de cumpleaños";
-    public override decimal GetPrecio() => _pastel.GetPrecio() + 500m;
+    public ConBitacora(INotificador notificador) : base(notificador) { }
+    public override void Enviar(string mensaje)
+    {
+        Console.WriteLine($"  [Bitácora] 📝 Registrando envío: '{mensaje}'");
+        base.Enviar(mensaje);
+    }
 }
 
 public static class DecoratorDemo
@@ -71,36 +79,40 @@ public static class DecoratorDemo
     public static void Run()
     {
         Console.WriteLine("  🎄 DECORATOR — Añadir funcionalidad dinámicamente\n");
-        Console.WriteLine("  Escenario: Pastelería — decora el pastel con extras\n");
+        Console.WriteLine("  Escenario: Notificaciones por email con extras\n");
 
-        // Pastel básico
-        IPastel pastel = new PastelVainilla();
-        Mostrar(pastel, "Base");
+        // Notificador básico
+        INotificador notificador = new EmailNotificador();
+        Mostrar(notificador, "Base");
 
         // Vamos decorando paso a paso
-        pastel = new ConGlaseado(pastel);
-        Mostrar(pastel, "+ glaseado");
+        notificador = new ConRetraso(notificador);
+        Mostrar(notificador, "+ retraso");
 
-        pastel = new ConChispas(pastel);
-        Mostrar(pastel, "+ chispas");
+        notificador = new ConReintento(notificador);
+        Mostrar(notificador, "+ reintento");
 
-        pastel = new ConVelitas(pastel);
-        Mostrar(pastel, "+ velitas");
+        notificador = new ConBitacora(notificador);
+        Mostrar(notificador, "+ bitácora");
 
         Console.WriteLine();
-        Console.WriteLine($"  🧾 TOTAL: {pastel.GetDescripcion(),-45} ¢{pastel.GetPrecio(),6:N0}");
+        Console.WriteLine($"  🧾 Resultado: {notificador.GetType().Name}");
         Console.WriteLine();
 
-        // Otra combinación (chispas + velitas, sin glaseado)
-        Console.WriteLine("  ── Otra combinación: Pastel + chispas + velitas ──");
-        IPastel otro = new ConVelitas(new ConChispas(new PastelVainilla()));
-        Console.WriteLine($"  {otro.GetDescripcion(),-45} ¢{otro.GetPrecio(),6:N0}");
+        // Otra combinación (solo bitácora + reintento)
+        Console.WriteLine("  ── Otra combinación: Base + bitácora + reintento ──");
+        INotificador otro = new ConReintento(new ConBitacora(new EmailNotificador()));
+        Mostrar(otro, "Otra");
         Console.WriteLine();
 
         Console.WriteLine("  ✅ Los decoradores se pueden combinar en cualquier orden.");
         Console.WriteLine("     No necesitas crear N clases por cada combinación posible.");
     }
 
-    static void Mostrar(IPastel p, string etiqueta) =>
-        Console.WriteLine($"  {etiqueta,-12} {p.GetDescripcion(),-45} ¢{p.GetPrecio(),6:N0}");
+    static void Mostrar(INotificador n, string etiqueta)
+    {
+        Console.WriteLine($"  [{etiqueta}]");
+        n.Enviar("Tu pedido ha sido confirmado");
+        Console.WriteLine();
+    }
 }

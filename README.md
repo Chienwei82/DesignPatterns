@@ -29,26 +29,26 @@ Una aplicación de consola interactiva en **.NET 10** que demuestra **20 de los 
 
 | # | Patrón | Categoría | Intención en una frase | Analogía |
 |---|--------|-----------|------------------------|----------|
-| 1 | Singleton | Creacional | Una sola instancia global, punto de acceso único | El presidente del país: solo hay uno |
-| 2 | Factory Method | Creacional | Delegar la creación de objetos a subclases | Franquicia de muebles: cada taller elige el material |
-| 3 | Abstract Factory | Creacional | Crear familias de objetos compatibles | Menú completo por cocina: todo combina |
-| 4 | Builder | Creacional | Construcción paso a paso de objetos complejos | Armar una hamburguesa por pasos |
-| 5 | Prototype | Creacional | Clonar objetos existentes en vez de crear desde cero | Fotocopia de un formulario prellenado |
-| 6 | Adapter | Estructural | Hacer compatibles interfaces incompatibles | Adaptador de enchufe europeo → americano |
-| 7 | Decorator | Estructural | Añadir responsabilidades dinámicamente | Vestirse en capas: camiseta, suéter, abrigo |
-| 8 | Facade | Estructural | Interfaz simple sobre un subsistema complejo | Recepción de un hotel: un solo punto para todo |
-| 9 | Proxy | Estructural | Controlar el acceso a un objeto | Tarjeta de crédito: intermediario antes del dinero |
-| 10 | Composite | Estructural | Tratar individuales y compuestos de forma uniforme | Carpeta con archivos y subcarpetas |
-| 11 | Bridge | Estructural | Separar abstracción de implementación | Receta × método de cocción: dos perillas independientes |
-| 12 | Flyweight | Estructural | Compartir objetos en gran cantidad | Un solo molde de bebida para mil comandas |
-| 13 | Strategy | Comportamiento | Algoritmos intercambiables en tiempo de ejecución | Auto, bici o bus: mismo destino, medio distinto |
-| 14 | Observer | Comportamiento | Notificar a suscriptores cuando cambia el estado | Canal de YouTube: te suscribes y recibes videos |
-| 15 | Command | Comportamiento | Encapsular solicitudes como objetos (undo/redo) | Pedido en restaurante: se anota, se ejecuta, se anula |
-| 16 | Template Method | Comportamiento | Esqueleto fijo de algoritmo, pasos variables | Receta de pan: pasos fijos, harina variable |
-| 17 | State | Comportamiento | Cambiar comportamiento según el estado interno | Botón del teléfono: actúa distinto según el estado |
-| 18 | Mediator | Comportamiento | Comunicación centralizada mediante intermediario | Torre de control: nadie habla con nadie directamente |
-| 19 | Memento | Comportamiento | Guardar y restaurar estado sin romper encapsulamiento | Guardar partida en un videojuego |
-| 20 | Chain of Responsibility | Comportamiento | Pasar una solicitud por una cadena de manejadores | Queja que escala: mesero → jefe → gerente → dueño |
+| 1 | Singleton | Creacional | Una sola instancia global, punto de acceso único | Configuración global de la app: solo hay una |
+| 2 | Factory Method | Creacional | Delegar la creación de objetos a subclases | App de delivery: cada repartidor elige su transporte |
+| 3 | Abstract Factory | Creacional | Crear familias de objetos compatibles | Tema visual de UI: todos los componentes combinan |
+| 4 | Builder | Creacional | Construcción paso a paso de objetos complejos | Constructor de consultas SQL: SELECT, FROM, WHERE... |
+| 5 | Prototype | Creacional | Clonar objetos existentes en vez de crear desde cero | Fotocopia de un documento prellenado |
+| 6 | Adapter | Estructural | Hacer compatibles interfaces incompatibles | Pasarela de pago: Stripe ↔ PayPal con la misma interfaz |
+| 7 | Decorator | Estructural | Añadir responsabilidades dinámicamente | Notificaciones: email + retraso + reintento + bitácora |
+| 8 | Facade | Estructural | Interfaz simple sobre un subsistema complejo | Compra online: un solo método orquesta 4 subsistemas |
+| 9 | Proxy | Estructural | Controlar el acceso a un objeto | Repositorio de datos: caché + permisos antes de la BD |
+| 10 | Composite | Estructural | Tratar individuales y compuestos de forma uniforme | Sistema de archivos: archivos y directorios |
+| 11 | Bridge | Estructural | Separar abstracción de implementación | Gráficos × renderizadores (PNG/SVG/Consola) |
+| 12 | Flyweight | Estructural | Compartir objetos en gran cantidad | Juego 2D: 1,000 tiles con 3 sprites compartidos |
+| 13 | Strategy | Comportamiento | Algoritmos intercambiables en tiempo de ejecución | Envío: Estándar, Express o Recoger en tienda |
+| 14 | Observer | Comportamiento | Notificar a suscriptores cuando cambia el estado | Eventos de dominio: OrderService notifica a suscriptores |
+| 15 | Command | Comportamiento | Encapsular solicitudes como objetos (undo/redo) | Editor de texto: insertar y borrar líneas con undo/redo |
+| 16 | Template Method | Comportamiento | Esqueleto fijo de algoritmo, pasos variables | Pipeline de datos: Extraer → Transformar → Cargar |
+| 17 | State | Comportamiento | Cambiar comportamiento según el estado interno | Ciclo de vida de un pedido: Recibido → Enviado → Entregado |
+| 18 | Mediator | Comportamiento | Comunicación centralizada mediante intermediario | Chat room: todos hablan a través del mediador |
+| 19 | Memento | Comportamiento | Guardar y restaurar estado sin romper encapsulamiento | Editor con checkpoints: guardar y restaurar versiones |
+| 20 | Chain of Responsibility | Comportamiento | Pasar una solicitud por una cadena de manejadores | Soporte: Nivel 1 → Nivel 2 → Gerente → Director |
 
 ---
 
@@ -160,42 +160,47 @@ flowchart TD
 
 ```mermaid
 classDiagram
-    class DespensaCentral {
-        - static DespensaCentral _instancia
-        - Lazy<DespensaCentral> _lazy
-        + static DespensaCentral Instancia
-        - DespensaCentral()
-        + string ObtenerProducto(string nombre)
+    class AppSettings {
+        - static AppSettings _instancia
+        - Lazy<AppSettings> _lazy
+        + static AppSettings Instancia
+        - AppSettings()
+        + void Mostrar()
     }
-    class Cocina {
+    class ModuloLogging {
+        + void Inicializar()
         + void Preparar()
     }
-    Cocia --> DespensaCentral : usa la única instancia
+    ModuloLogging --> AppSettings : usa la única instancia
+    ModuloDatos --> AppSettings : usa la única instancia
 ```
 
 ### Strategy — algoritmos intercambiables
 
 ```mermaid
 classDiagram
-    class IPagoStrategy {
+    class IEnvioStrategy {
         <<interface>>
-        + Pagar(monto: decimal)
+        + decimal Calcular(subtotal, pesoKg)
     }
-    class PagoTarjeta {
-        + Pagar(monto: decimal)
+    class EnvioEstandar {
+        + decimal Calcular(subtotal, pesoKg)
     }
-    class PagoEfectivo {
-        + Pagar(monto: decimal)
+    class EnvioExpress {
+        + decimal Calcular(subtotal, pesoKg)
     }
-    class ContextoPago {
-        - IPagoStrategy _estrategia
-        + EstablecerEstrategia(estrategia: IPagoStrategy)
-        + ProcesarPago(monto: decimal)
+    class RecogerEnTienda {
+        + decimal Calcular(subtotal, pesoKg)
     }
-
-    IPagoStrategy <|.. PagoTarjeta
-    IPagoStrategy <|.. PagoEfectivo
-    ContextoPago o-- IPagoStrategy : usa
+    class CalculadoraEnvio {
+        - IEnvioStrategy _estrategia
+        + CambiarEstrategia(estrategia)
+        + Cotizar(producto, subtotal, pesoKg)
+    }
+    IEnvioStrategy <|.. EnvioEstandar
+    IEnvioStrategy <|.. EnvioExpress
+    IEnvioStrategy <|.. RecogerEnTienda
+    CalculadoraEnvio o-- IEnvioStrategy : usa
 ```
 
 ---

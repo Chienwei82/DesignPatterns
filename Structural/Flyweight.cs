@@ -7,8 +7,9 @@ namespace DesignPatterns.Structural;
 /// dividiendo el estado en intrínseco (compartido) y extrínseco
 /// (proporcionado por el cliente/contexto).
 ///
-/// Analogía: un solo molde de limonada reutilizado para servir mil comandas en
-/// mesas distintas.
+/// Analogía: un solo molde reutilizado para servir mil porciones en mesas
+/// distintas. En este proyecto: un mismo sprite de tile compartido por miles
+/// de casillas de un mapa 2D.
 ///
 /// Cuándo usarlo: muchísimos objetos similares en memoria (tiles de
 /// videojuegos, caracteres de un documento).
@@ -20,56 +21,57 @@ namespace DesignPatterns.Structural;
 /// tiles en videojuegos, iconos en mapas, caché de objetos.
 /// ============================================================================
 
-// --- Flyweight: la bebida compartida (estado intrínseco) ---
-public class TipoBebida
+// --- Flyweight: el tile compartido (estado intrínseco) ---
+public class TileSprite
 {
-    public string Nombre { get; }
-    public decimal Precio { get; }
+    public string Textura { get; }
     public string Color { get; }
 
-    public TipoBebida(string nombre, decimal precio, string color)
+    public TileSprite(string textura, string color)
     {
-        Nombre = nombre;
-        Precio = precio;
+        Textura = textura;
         Color = color;
     }
 
-    public void Servir(int mesa) =>
-        Console.WriteLine($"    🥤 {Nombre} ({Color}) para la mesa {mesa}");
+    public void Dibujar(int x, int y) =>
+        Console.WriteLine($"    🎮 [{Textura} {Color}] en ({x}, {y})");
 }
 
 // --- Flyweight Factory: administra y reutiliza los flyweights ---
-public class FabricaBebidas
+public class FabricaSprites
 {
-    private readonly Dictionary<string, TipoBebida> _tipos = new();
+    private readonly Dictionary<string, TileSprite> _tipos = new();
 
-    public TipoBebida ObtenerTipo(string nombre, decimal precio, string color)
+    public TileSprite ObtenerSprite(string textura, string color)
     {
-        if (!_tipos.TryGetValue(nombre, out var tipo))
+        var clave = $"{textura}:{color}";
+        if (!_tipos.TryGetValue(clave, out var sprite))
         {
-            tipo = new TipoBebida(nombre, precio, color);
-            _tipos[nombre] = tipo;
-            Console.WriteLine($"  [Factory] Nuevo tipo de bebida creado: {nombre}");
+            sprite = new TileSprite(textura, color);
+            _tipos[clave] = sprite;
+            Console.WriteLine($"  [Factory] Nuevo sprite creado: {clave}");
         }
-        return tipo;
+        return sprite;
     }
 
     public int TiposCreados => _tipos.Count;
 }
 
-// --- Contexto: cada comanda apunta a una mesa (extrínseco) ---
-public class Comanda
+// --- Contexto: cada tile apunta a una posición (extrínseco) ---
+public class Tile
 {
-    private readonly TipoBebida _bebida;
-    private readonly int _mesa;
+    private readonly TileSprite _sprite;
+    private readonly int _x;
+    private readonly int _y;
 
-    public Comanda(TipoBebida bebida, int mesa)
+    public Tile(TileSprite sprite, int x, int y)
     {
-        _bebida = bebida;
-        _mesa = mesa;
+        _sprite = sprite;
+        _x = x;
+        _y = y;
     }
 
-    public void Servir() => _bebida.Servir(_mesa);
+    public void Dibujar() => _sprite.Dibujar(_x, _y);
 }
 
 public static class FlyweightDemo
@@ -77,39 +79,39 @@ public static class FlyweightDemo
     public static void Run()
     {
         Console.WriteLine("  🍃 FLYWEIGHT — Compartir objetos en gran cantidad\n");
-        Console.WriteLine("  Escenario: Un restaurante con miles de comandas de bebida\n");
+        Console.WriteLine("  Escenario: Un juego 2D con miles de tiles del mismo tipo\n");
 
-        var fabrica = new FabricaBebidas();
-        var comandas = new List<Comanda>();
+        var fabrica = new FabricaSprites();
+        var tiles = new List<Tile>();
         var random = new Random(42);
 
-        // Solo 3 tipos de bebida, pero miles de comandas
-        var tipos = new (string nombre, decimal precio, string color)[]
+        // Solo 3 tipos de tile, pero 1,000 tiles en el mapa
+        var tipos = new (string textura, string color)[]
         {
-            ("Limonada", 1500m, "amarillo"),
-            ("Café frío", 2000m, "marrón"),
-            ("Agua mineral", 1000m, "transparente")
+            ("pasto", "verde"),
+            ("arena", "amarillo"),
+            ("agua", "azul")
         };
 
-        Console.WriteLine("  Levantando 1,000 comandas...\n");
+        Console.WriteLine("  Generando 1,000 tiles del mapa...\n");
         for (int i = 0; i < 1000; i++)
         {
-            var (nombre, precio, color) = tipos[i % 3];
-            var bebida = fabrica.ObtenerTipo(nombre, precio, color);
-            comandas.Add(new Comanda(bebida, random.Next(1, 50)));
+            var (textura, color) = tipos[i % 3];
+            var sprite = fabrica.ObtenerSprite(textura, color);
+            tiles.Add(new Tile(sprite, random.Next(0, 100), random.Next(0, 100)));
         }
 
         Console.WriteLine("  📊 Resultado:");
-        Console.WriteLine($"     Comandas levantadas: {comandas.Count}");
-        Console.WriteLine($"     Tipos de bebida únicos en memoria: {fabrica.TiposCreados}");
-        Console.WriteLine($"     Memoria ahorrada: ~{(1 - (double)fabrica.TiposCreados / comandas.Count) * 100:F1}%");
+        Console.WriteLine($"     Tiles creados: {tiles.Count}");
+        Console.WriteLine($"     Sprites únicos en memoria: {fabrica.TiposCreados}");
+        Console.WriteLine($"     Memoria ahorrada: ~{(1 - (double)fabrica.TiposCreados / tiles.Count) * 100:F1}%");
         Console.WriteLine();
 
-        Console.WriteLine("  Muestra de comandas:");
-        for (int i = 0; i < 5; i++) comandas[i].Servir();
+        Console.WriteLine("  Muestra de tiles:");
+        for (int i = 0; i < 5; i++) tiles[i].Dibujar();
         Console.WriteLine();
 
         Console.WriteLine("  ✅ Flyweight evita crear 1,000 objetos idénticos.");
-        Console.WriteLine("     Solo se crean 3 tipos compartidos + 1,000 contextos ligeros.");
+        Console.WriteLine("     Solo se crean 3 sprites compartidos + 1,000 contextos ligeros.");
     }
 }

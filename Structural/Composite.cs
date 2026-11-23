@@ -7,8 +7,8 @@ namespace DesignPatterns.Structural;
 /// uniforme. Los objetos se organizan en un árbol (parte-todo) y el cliente
 /// trata hojas y compuestos de la misma forma.
 ///
-/// Analogía: un menú: un platillo y un combo entero responden la misma
-/// pregunta ("¿cuánto cuesta?").
+/// Analogía: un sistema de archivos: un archivo y una carpeta completa responden
+/// la misma pregunta ("¿cuánto ocupa?").
 ///
 /// Cuándo usarlo: sistemas de archivos, menús, organigramas, árboles de
 /// componentes UI.
@@ -21,69 +21,64 @@ namespace DesignPatterns.Structural;
 /// ============================================================================
 
 // --- Componente ---
-public interface IElementoMenu
+public interface FSNode
 {
     string Nombre { get; }
-    decimal GetPrecioTotal();
-    int GetCalorias();
-    void Mostrar(int indentacion = 0);
+    int GetTamano();
+    void Listar(int indentacion = 0);
 }
 
-// --- Hoja: un platillo individual ---
-public class PlatilloMenu : IElementoMenu
+// --- Hoja: un archivo individual ---
+public class FileLeaf : FSNode
 {
     public string Nombre { get; }
-    public decimal Precio { get; }
-    public int Calorias { get; }
+    public int Tamano { get; }
 
-    public PlatilloMenu(string nombre, decimal precio, int calorias)
+    public FileLeaf(string nombre, int tamano)
     {
         Nombre = nombre;
-        Precio = precio;
-        Calorias = calorias;
+        Tamano = tamano;
     }
 
-    public decimal GetPrecioTotal() => Precio;
-    public int GetCalorias() => Calorias;
+    public int GetTamano() => Tamano;
 
-    public void Mostrar(int indentacion = 0)
+    public void Listar(int indentacion = 0)
     {
         var indent = new string(' ', indentacion * 3);
-        Console.WriteLine($"{indent}🍽️  {Nombre} — ¢{Precio:N0} ({Calorias} kcal)");
+        Console.WriteLine($"{indent}📄 {Nombre} ({Tamano} KB)");
     }
 }
 
-// --- Compuesto: un combo que contiene platillos u otros combos ---
-public class ComboMenu : IElementoMenu
+// --- Compuesto: un directorio que contiene archivos u otros directorios ---
+public class DirectoryComposite : FSNode
 {
     public string Nombre { get; }
-    private readonly List<IElementoMenu> _items = [];
+    private readonly List<FSNode> _hijos = [];
 
-    public ComboMenu(string nombre) => Nombre = nombre;
+    public DirectoryComposite(string nombre) => Nombre = nombre;
 
-    public void Agregar(IElementoMenu elemento)
+    public void Agregar(FSNode nodo)
     {
-        _items.Add(elemento);
-        Console.WriteLine($"  [Combo {Nombre}] + {elemento.Nombre}");
+        _hijos.Add(nodo);
+        Console.WriteLine($"  [Dir {Nombre}] + {nodo.Nombre}");
     }
 
-    public void Remover(IElementoMenu elemento)
+    public void Remover(FSNode nodo)
     {
-        _items.Remove(elemento);
-        Console.WriteLine($"  [Combo {Nombre}] - {elemento.Nombre}");
+        _hijos.Remove(nodo);
+        Console.WriteLine($"  [Dir {Nombre}] - {nodo.Nombre}");
     }
 
     // El compuesto delega a sus hijos y suma resultados (LINQ)
-    public decimal GetPrecioTotal() => _items.Sum(i => i.GetPrecioTotal());
-    public int GetCalorias() => _items.Sum(i => i.GetCalorias());
+    public int GetTamano() => _hijos.Sum(h => h.GetTamano());
 
-    public void Mostrar(int indentacion = 0)
+    public void Listar(int indentacion = 0)
     {
         var indent = new string(' ', indentacion * 3);
-        Console.WriteLine($"{indent}📦 {Nombre} — ¢{GetPrecioTotal():N0}, {GetCalorias()} kcal");
+        Console.WriteLine($"{indent}📁 {Nombre}/ ({GetTamano()} KB)");
 
-        foreach (var item in _items)
-            item.Mostrar(indentacion + 1);
+        foreach (var hijo in _hijos)
+            hijo.Listar(indentacion + 1);
     }
 }
 
@@ -92,49 +87,48 @@ public static class CompositeDemo
     public static void Run()
     {
         Console.WriteLine("  🌳 COMPOSITE — Estructuras árbol parte-todo\n");
-        Console.WriteLine("  Escenario: Menú del restaurante con combos dentro de combos\n");
+        Console.WriteLine("  Escenario: Sistema de archivos con directorios dentro de directorios\n");
 
-        // ── Hojas: platillos ──
-        var pizza = new PlatilloMenu("Pizza margarita", 9500m, 800);
-        var ensalada = new PlatilloMenu("Ensalada césar", 4500m, 250);
-        var pasta = new PlatilloMenu("Pasta alfredo", 7500m, 700);
-        var sopa = new PlatilloMenu("Sopa de tomate", 3500m, 180);
-        var helado = new PlatilloMenu("Helado de vainilla", 2500m, 300);
-        var cafe = new PlatilloMenu("Café expreso", 1800m, 5);
+        // ── Hojas: archivos ──
+        var readme = new FileLeaf("README.md", 12);
+        var config = new FileLeaf("config.json", 4);
+        var imagen = new FileLeaf("foto.png", 2048);
+        var video = new FileLeaf("video.mp4", 15360);
+        var codigo = new FileLeaf("Program.cs", 28);
+        var log = new FileLeaf("app.log", 512);
 
-        // ── Combos (compuestos) ──
-        var comboInfantil = new ComboMenu("Combo Infantil");
-        comboInfantil.Agregar(pasta);
-        comboInfantil.Agregar(helado);
+        // ── Directorios (compuestos) ──
+        var docs = new DirectoryComposite("Documentos");
+        docs.Agregar(readme);
+        docs.Agregar(config);
 
-        var comboPareja = new ComboMenu("Combo Pareja");
-        comboPareja.Agregar(pizza);
-        comboPareja.Agregar(ensalada);
-        comboPareja.Agregar(sopa);
+        var media = new DirectoryComposite("Media");
+        media.Agregar(imagen);
+        media.Agregar(video);
 
-        var comboFamiliar = new ComboMenu("Combo Familiar");
-        comboFamiliar.Agregar(comboPareja);
-        comboFamiliar.Agregar(comboInfantil);
-        comboFamiliar.Agregar(cafe);
+        var proyecto = new DirectoryComposite("Proyecto");
+        proyecto.Agregar(docs);
+        proyecto.Agregar(media);
+        proyecto.Agregar(codigo);
+        proyecto.Agregar(log);
 
-        // ── Mostrar menú completo ──
-        Console.WriteLine("  Menú completo:\n");
-        comboFamiliar.Mostrar();
+        // ── Mostrar estructura completa ──
+        Console.WriteLine("  Estructura de archivos:\n");
+        proyecto.Listar();
         Console.WriteLine();
-        Console.WriteLine($"  💰 Precio total: ¢{comboFamiliar.GetPrecioTotal():N0}");
-        Console.WriteLine($"  🔥 Calorías totales: {comboFamiliar.GetCalorias()}");
+        Console.WriteLine($"  💾 Tamaño total: {proyecto.GetTamano():N0} KB");
         Console.WriteLine();
 
         // El compuesto también permite quitar elementos
-        Console.WriteLine("  ── Quitamos el café del combo familiar ──");
-        comboFamiliar.Remover(cafe);
+        Console.WriteLine("  ── Quitamos el log del proyecto ──");
+        proyecto.Remover(log);
         Console.WriteLine();
-        comboFamiliar.Mostrar();
+        proyecto.Listar();
         Console.WriteLine();
-        Console.WriteLine($"  💰 Precio total ahora: ¢{comboFamiliar.GetPrecioTotal():N0}");
+        Console.WriteLine($"  💾 Tamaño total ahora: {proyecto.GetTamano():N0} KB");
         Console.WriteLine();
 
-        Console.WriteLine("  ✅ GetPrecioTotal() funciona igual para un platillo o un combo.");
+        Console.WriteLine("  ✅ GetTamano() funciona igual para un archivo o un directorio.");
         Console.WriteLine("     El cliente no necesita saber si es hoja o compuesto.");
     }
 }

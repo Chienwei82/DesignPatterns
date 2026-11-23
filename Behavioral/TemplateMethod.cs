@@ -11,7 +11,7 @@ namespace DesignPatterns.Behavioral;
 /// el tipo de harina lo eliges tú.
 ///
 /// Cuándo usarlo: pipelines con pasos comunes que varían en el detalle
-/// (preparar pizza/sushi/pasta).
+/// (procesar CSV/JSON, generar reportes).
 ///
 /// Cuándo NO usarlo: si cada implementación difiere mucho en el flujo, mejor
 /// composición (Strategy).
@@ -21,110 +21,94 @@ namespace DesignPatterns.Behavioral;
 /// ============================================================================
 
 // --- Clase abstracta con Template Method ---
-public abstract class RecetaBase
+public abstract class DataPipeline
 {
     // Template Method: define la estructura del algoritmo. No es virtual ni
     // abstract, por lo que las subclases NO pueden sobrescribirlo.
-    public void Preparar(string nombrePlato)
+    public void Procesar(string fuente)
     {
-        Console.WriteLine("\n  ⚙️  Iniciando preparación...\n");
+        Console.WriteLine("\n  ⚙️  Iniciando pipeline de datos...\n");
 
         // Paso 1: Validar (hook opcional)
-        if (!ValidarPedido(nombrePlato))
+        if (!ValidarFuente(fuente))
         {
-            Console.WriteLine("  ❌ Pedido inválido. Abortando.");
+            Console.WriteLine("  ❌ Fuente inválida. Abortando.");
             return;
         }
 
-        // Paso 2: Reunir ingredientes (varía según la receta)
-        var ingredientes = ReunirIngredientes();
+        // Paso 2: Extraer (varía según la fuente)
+        var datos = Extraer(fuente);
 
-        // Paso 3: Cocinar (varía según la receta)
-        Cocinar(ingredientes);
+        // Paso 3: Transformar (varía según la fuente)
+        Transformar(datos);
 
-        // Paso 4: Emplatar (varía según la receta)
-        Emplatar(ingredientes);
+        // Paso 4: Cargar (varía según la fuente)
+        Cargar(datos);
 
         // Paso 5: Notificar (hook opcional)
-        NotificarListo(nombrePlato);
+        NotificarListo(fuente);
 
-        Console.WriteLine("  ✅ Preparación completada.\n");
+        Console.WriteLine("  ✅ Procesamiento completado.\n");
     }
 
     // Pasos abstractos — las subclases DEBEN implementarlos
-    protected abstract string ReunirIngredientes();
-    protected abstract void Cocinar(string ingredientes);
-    protected abstract void Emplatar(string ingredientes);
+    protected abstract string Extraer(string fuente);
+    protected abstract void Transformar(string datos);
+    protected abstract void Cargar(string datos);
 
     // Paso con implementación por defecto (común a todos)
-    protected virtual bool ValidarPedido(string nombrePlato)
+    protected virtual bool ValidarFuente(string fuente)
     {
-        if (string.IsNullOrEmpty(nombrePlato))
+        if (string.IsNullOrEmpty(fuente))
         {
-            Console.WriteLine("  [Validación] No hay nombre de platillo");
+            Console.WriteLine("  [Validación] No hay fuente especificada");
             return false;
         }
-        Console.WriteLine($"  [Validación] Pedido válido: {nombrePlato}");
+        Console.WriteLine($"  [Validación] Fuente válida: {fuente}");
         return true;
     }
 
     // Hook — las subclases PUEDEN sobrescribirlo, pero no es obligatorio
-    protected virtual void NotificarListo(string nombrePlato)
+    protected virtual void NotificarListo(string fuente)
     {
-        Console.WriteLine($"  [Notificación] '{nombrePlato}' listo para servir.");
+        Console.WriteLine($"  [Notificación] Proceso desde '{fuente}' listo.");
     }
 }
 
-// --- Subclase concreta: Pizza ---
-public class RecetaPizza : RecetaBase
+// --- Subclase concreta: CSV Pipeline ---
+public class CsvPipeline : DataPipeline
 {
-    protected override string ReunirIngredientes()
+    protected override string Extraer(string fuente)
     {
-        Console.WriteLine("  [Pizza] Reuniendo masa, tomate y queso");
-        return "masa, tomate, queso";
+        Console.WriteLine("  [CSV] Leyendo archivo .csv...");
+        return "datos CSV: id,nombre,valor\n1,Ana,100\n2,Luis,200";
     }
 
-    protected override void Cocinar(string ingredientes) =>
-        Console.WriteLine($"  [Pizza] Horneando {ingredientes} a 250°C por 12 min");
+    protected override void Transformar(string datos) =>
+        Console.WriteLine($"  [CSV] Convirtiendo a JSON: {datos}\n  → JSON generado");
 
-    protected override void Emplatar(string ingredientes) =>
-        Console.WriteLine("  [Pizza] Cortando en 8 porciones y sirviendo en tabla");
+    protected override void Cargar(string datos) =>
+        Console.WriteLine("  [CSV] Cargando en base de datos SQL...");
 }
 
-// --- Subclase concreta: Sushi ---
-public class RecetaSushi : RecetaBase
+// --- Subclase concreta: JSON API Pipeline ---
+public class JsonPipeline : DataPipeline
 {
-    protected override string ReunirIngredientes()
+    protected override string Extraer(string fuente)
     {
-        Console.WriteLine("  [Sushi] Reuniendo arroz, salmón y algas");
-        return "arroz, salmón, algas";
+        Console.WriteLine("  [JSON] Consumiendo API REST...");
+        return "{\"status\":200,\"data\":[...]}";
     }
 
-    protected override void Cocinar(string ingredientes) =>
-        Console.WriteLine($"  [Sushi] Sin cocción: armando rollos con {ingredientes}");
+    protected override void Transformar(string datos) =>
+        Console.WriteLine($"  [JSON] Validando schema JSON: {datos}\n  → Schema OK");
 
-    protected override void Emplatar(string ingredientes) =>
-        Console.WriteLine("  [Sushi] Sirviendo en plato frío con wasabi y jengibre");
+    protected override void Cargar(string datos) =>
+        Console.WriteLine("  [JSON] Guardando en almacén NoSQL (MongoDB)...");
 
-    // Hook sobrescrito: el sushi tiene su propia notificación
-    protected override void NotificarListo(string nombrePlato) =>
-        Console.WriteLine($"  [Sushi] 🍣 '{nombrePlato}' listo. ¡Consumir de inmediato!");
-}
-
-// --- Subclase concreta: Pasta ---
-public class RecetaPasta : RecetaBase
-{
-    protected override string ReunirIngredientes()
-    {
-        Console.WriteLine("  [Pasta] Reuniendo pasta y salsa alfredo");
-        return "pasta, salsa alfredo";
-    }
-
-    protected override void Cocinar(string ingredientes) =>
-        Console.WriteLine($"  [Pasta] Hirviendo {ingredientes} por 8 min");
-
-    protected override void Emplatar(string ingredientes) =>
-        Console.WriteLine("  [Pasta] Sirviendo en plato hondo con parmesano");
+    // Hook sobrescrito: el pipeline JSON tiene su propia notificación
+    protected override void NotificarListo(string fuente) =>
+        Console.WriteLine($"  [JSON] 🍣 '{fuente}' procesado. ¡Listo para consumir!");
 }
 
 public static class TemplateMethodDemo
@@ -132,20 +116,19 @@ public static class TemplateMethodDemo
     public static void Run()
     {
         Console.WriteLine("  📋 TEMPLATE METHOD — Esqueleto de algoritmo\n");
-        Console.WriteLine("  Escenario: Preparación de recetas (Pizza/Sushi/Pasta)\n");
+        Console.WriteLine("  Escenario: Pipelines de procesamiento de datos (CSV/JSON)\n");
         Console.WriteLine("  El flujo es siempre el mismo, pero cada paso varía");
 
-        var recetas = new (string nombre, RecetaBase receta)[]
+        var pipelines = new (string nombre, DataPipeline pipeline)[]
         {
-            ("Pizza margarita", new RecetaPizza()),
-            ("Sushi de salmón", new RecetaSushi()),
-            ("Pasta alfredo", new RecetaPasta()),
+            ("CSV de ventas", new CsvPipeline()),
+            ("API de productos", new JsonPipeline()),
         };
 
-        foreach (var (nombre, receta) in recetas)
+        foreach (var (nombre, pipeline) in pipelines)
         {
-            Console.WriteLine($"\n  ══ Preparando: {nombre} ══");
-            receta.Preparar(nombre);
+            Console.WriteLine($"\n  ══ Procesando: {nombre} ══");
+            pipeline.Procesar(nombre);
         }
 
         Console.WriteLine("  ✅ El Template Method define el QUÉ y el ORDEN.");

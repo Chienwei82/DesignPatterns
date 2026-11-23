@@ -8,7 +8,8 @@ namespace DesignPatterns.Behavioral;
 /// operaciones reversibles (undo/redo).
 ///
 /// Analogía: pedir en un restaurante: el mesero escribe el pedido (comando),
-/// el cocinero lo ejecuta; el pedido se puede anular.
+/// el cocinero lo ejecuta; el pedido se puede anular. En este proyecto: un
+/// editor de texto donde cada inserción/borrado es un comando con undo/redo.
 ///
 /// Cuándo usarlo: undo/redo (Ctrl+Z), colas de trabajos, macros, logging de
 /// acciones.
@@ -22,86 +23,86 @@ namespace DesignPatterns.Behavioral;
 /// ============================================================================
 
 // --- Command ---
-public interface IComandoComanda
+public interface IComando
 {
     string Nombre { get; }
     void Ejecutar();
     void Deshacer();
 }
 
-// --- Receiver: la comanda real del restaurante ---
-public class Comanda
+// --- Receiver: el editor de texto real ---
+public class EditorTexto
 {
-    private readonly List<string> _platillos = [];
+    private readonly List<string> _lineas = [];
 
-    public void Agregar(string platillo)
+    public void AgregarLinea(string texto)
     {
-        _platillos.Add(platillo);
-        Console.WriteLine($"    ➕ Anotado: \"{platillo}\"");
+        _lineas.Add(texto);
+        Console.WriteLine($"    ➕ Línea agregada: \"{texto}\"");
     }
 
-    public string Quitar()
+    public string QuitarLinea()
     {
-        if (_platillos.Count == 0)
+        if (_lineas.Count == 0)
         {
-            Console.WriteLine("    ⚠️  La comanda está vacía");
+            Console.WriteLine("    ⚠️  El editor está vacío");
             return "";
         }
 
-        var ultimo = _platillos[^1];
-        _platillos.RemoveAt(_platillos.Count - 1);
-        Console.WriteLine($"    ➖ Tachado: \"{ultimo}\"");
-        return ultimo;
+        var ultima = _lineas[^1];
+        _lineas.RemoveAt(_lineas.Count - 1);
+        Console.WriteLine($"    ➖ Línea eliminada: \"{ultima}\"");
+        return ultima;
     }
 
     public void Mostrar()
     {
-        var texto = _platillos.Count > 0 ? string.Join(", ", _platillos) : "(vacía)";
-        Console.WriteLine($"    ── Comanda actual: {texto}");
+        var texto = _lineas.Count > 0 ? string.Join(" | ", _lineas) : "(vacío)";
+        Console.WriteLine($"    ── Editor actual: {texto}");
     }
 }
 
 // --- Commands concretos ---
-public class ComandoAgregar : IComandoComanda
+public class InsertarLinea : IComando
 {
-    private readonly Comanda _comanda;
-    private readonly string _platillo;
-    public string Nombre => $"Agregar \"{_platillo}\"";
+    private readonly EditorTexto _editor;
+    private readonly string _texto;
+    public string Nombre => $"Insertar \"{_texto}\"";
 
-    public ComandoAgregar(Comanda comanda, string platillo)
+    public InsertarLinea(EditorTexto editor, string texto)
     {
-        _comanda = comanda;
-        _platillo = platillo;
+        _editor = editor;
+        _texto = texto;
     }
 
-    public void Ejecutar() => _comanda.Agregar(_platillo);
-    public void Deshacer() => _comanda.Quitar();
+    public void Ejecutar() => _editor.AgregarLinea(_texto);
+    public void Deshacer() => _editor.QuitarLinea();
 }
 
-public class ComandoQuitar : IComandoComanda
+public class BorrarLinea : IComando
 {
-    private readonly Comanda _comanda;
-    private string _platilloQuitado = "";
-    public string Nombre => "Quitar último platillo";
+    private readonly EditorTexto _editor;
+    private string _lineaBorrada = "";
+    public string Nombre => "Borrar última línea";
 
-    public ComandoQuitar(Comanda comanda) => _comanda = comanda;
+    public BorrarLinea(EditorTexto editor) => _editor = editor;
 
-    public void Ejecutar() => _platilloQuitado = _comanda.Quitar();
+    public void Ejecutar() => _lineaBorrada = _editor.QuitarLinea();
 
     public void Deshacer()
     {
-        if (!string.IsNullOrEmpty(_platilloQuitado))
-            _comanda.Agregar(_platilloQuitado);
+        if (!string.IsNullOrEmpty(_lineaBorrada))
+            _editor.AgregarLinea(_lineaBorrada);
     }
 }
 
 // --- Invoker: maneja el historial y la ejecución ---
-public class MeseroComandas
+public class EditorInvoker
 {
-    private readonly Stack<IComandoComanda> _historial = new();
-    private readonly Stack<IComandoComanda> _rehacer = new();
+    private readonly Stack<IComando> _historial = new();
+    private readonly Stack<IComando> _rehacer = new();
 
-    public void Ejecutar(IComandoComanda comando)
+    public void Ejecutar(IComando comando)
     {
         Console.WriteLine($"  ▶️ Ejecutando: {comando.Nombre}");
         comando.Ejecutar();
@@ -143,33 +144,33 @@ public static class CommandDemo
     public static void Run()
     {
         Console.WriteLine("  🎮 COMMAND — Comandos como objetos (con UNDO/REDO)\n");
-        Console.WriteLine("  Escenario: El mesero anota y corrige la comanda\n");
+        Console.WriteLine("  Escenario: Un editor de texto donde el usuario inserta y borra líneas\n");
 
-        var comanda = new Comanda();
-        var mesero = new MeseroComandas();
+        var editor = new EditorTexto();
+        var invoker = new EditorInvoker();
 
-        mesero.Ejecutar(new ComandoAgregar(comanda, "Pizza margarita"));
-        comanda.Mostrar();
+        invoker.Ejecutar(new InsertarLinea(editor, "línea 1: Hola mundo"));
+        editor.Mostrar();
         Console.WriteLine();
 
-        mesero.Ejecutar(new ComandoAgregar(comanda, "Ensalada césar"));
-        mesero.Ejecutar(new ComandoAgregar(comanda, "Jugo natural"));
-        comanda.Mostrar();
+        invoker.Ejecutar(new InsertarLinea(editor, "línea 2: Este es un ejemplo"));
+        invoker.Ejecutar(new InsertarLinea(editor, "línea 3: de patrón Command"));
+        editor.Mostrar();
         Console.WriteLine();
 
-        Console.WriteLine("  ── Deshacer último platillo ──");
-        mesero.Deshacer();
-        comanda.Mostrar();
+        Console.WriteLine("  ── Deshacer última línea ──");
+        invoker.Deshacer();
+        editor.Mostrar();
         Console.WriteLine();
 
         Console.WriteLine("  ── Deshacer otra vez ──");
-        mesero.Deshacer();
-        comanda.Mostrar();
+        invoker.Deshacer();
+        editor.Mostrar();
         Console.WriteLine();
 
         Console.WriteLine("  ── Rehacer ──");
-        mesero.Rehacer();
-        comanda.Mostrar();
+        invoker.Rehacer();
+        editor.Mostrar();
         Console.WriteLine();
 
         Console.WriteLine("  ✅ Cada comando es un objeto que sabe ejecutarse y deshacerse.");

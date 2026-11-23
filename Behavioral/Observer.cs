@@ -21,92 +21,97 @@ namespace DesignPatterns.Behavioral;
 /// ============================================================================
 
 // --- Sujeto (observable) ---
-public interface IPublicadorPedidos
+public interface IOrderService
 {
-    void Suscribir(IObservadorPedido observador);
-    void Desuscribir(IObservadorPedido observador);
-    void Notificar(string platillo, string mesa);
+    void Suscribir(IOrderObserver observador);
+    void Desuscribir(IOrderObserver observador);
+    void Notificar(string orderId, string producto);
 }
 
 // --- Observador ---
-public interface IObservadorPedido
+public interface IOrderObserver
 {
     string Nombre { get; }
-    void RecibirPedido(string platillo, string mesa);
+    void Recibir(string orderId, string producto);
 }
 
 // --- Sujeto concreto ---
-public class Cocina : IPublicadorPedidos
+public class OrderService : IOrderService
 {
-    private readonly List<IObservadorPedido> _suscriptores = [];
+    private readonly List<IOrderObserver> _suscriptores = [];
 
-    public void Suscribir(IObservadorPedido observador)
+    public void Suscribir(IOrderObserver observador)
     {
         _suscriptores.Add(observador);
-        Console.WriteLine($"  🍳 [Cocina] {observador.Nombre} se suscribió a los pedidos");
+        Console.WriteLine($"  📦 [OrderService] {observador.Nombre} se suscribió a los eventos");
     }
 
-    public void Desuscribir(IObservadorPedido observador)
+    public void Desuscribir(IOrderObserver observador)
     {
         _suscriptores.Remove(observador);
-        Console.WriteLine($"  🍳 [Cocina] {observador.Nombre} canceló su suscripción");
+        Console.WriteLine($"  📦 [OrderService] {observador.Nombre} canceló su suscripción");
     }
 
-    public void Notificar(string platillo, string mesa)
+    public void Notificar(string orderId, string producto)
     {
         Console.WriteLine($"    Avisando a {_suscriptores.Count} suscriptor(es)...");
 
         foreach (var suscriptor in _suscriptores)
-            suscriptor.RecibirPedido(platillo, mesa);
+            suscriptor.Recibir(orderId, producto);
 
         Console.WriteLine();
     }
 
-    // La cocina terminó un platillo
-    public void PedidoListo(string platillo, string mesa)
+    // El servicio termina de procesar un pedido
+    public void PedidoConfirmado(string orderId, string producto)
     {
-        Console.WriteLine($"\n  🔔 COCINA: {platillo} listo para la mesa {mesa}");
-        Notificar(platillo, mesa);
+        Console.WriteLine($"\n  🔔 ORDER SERVICE: Pedido #{orderId} confirmado — {producto}");
+        Notificar(orderId, producto);
     }
 }
 
 // --- Observadores concretos ---
-public class MeseroNotificador : IObservadorPedido
+public class EmailNotifier : IOrderObserver
 {
     public string Nombre { get; }
-    public MeseroNotificador(string nombre) => Nombre = nombre;
-    public void RecibirPedido(string platillo, string mesa) =>
-        Console.WriteLine($"    🏃 [{Nombre}] Llevando {platillo} a la mesa {mesa}");
+    public EmailNotifier(string nombre) => Nombre = nombre;
+    public void Recibir(string orderId, string producto) =>
+        Console.WriteLine($"    ✉️ [{Nombre}] Enviando email: Tu pedido #{orderId} está confirmado");
 }
 
-public class PantallaSalon : IObservadorPedido
+public class StockUpdater : IOrderObserver
 {
-    public string Nombre => "Pantalla del salón";
-    public void RecibirPedido(string platillo, string mesa) =>
-        Console.WriteLine($"    🖥️  [Pantalla] Mostrando: \"{platillo} → mesa {mesa}\"");
+    public string Nombre => "Actualizador de stock";
+    public void Recibir(string orderId, string producto) =>
+        Console.WriteLine($"    📦 [Stock] Descontando 1 unidad de '{producto}' del inventario");
 }
 
-public class AppCliente : IObservadorPedido
+public class AnalyticsLogger : IOrderObserver
 {
     public string Nombre { get; }
-    public AppCliente(string nombre) => Nombre = nombre;
-    public void RecibirPedido(string platillo, string mesa) =>
-        Console.WriteLine($"    📱 [App de {Nombre}] Notificación: \"{platillo} va en camino\"");
+    public AnalyticsLogger(string nombre) => Nombre = nombre;
+    public void Recibir(string orderId, string producto) =>
+        Console.WriteLine($"    📊 [Analytics] Registrando evento: order_confirmed #{orderId}");
 }
 
-// --- Observador con filtro (solo le interesan los postres) ---
-public class ObservadorDePostres : IObservadorPedido
+// --- Observador con filtro (solo le interesan los productos de electrónica) ---
+public class ObservadorElectronica : IOrderObserver
 {
-    public string Nombre => "Chef de postres";
+    public string Nombre => "Departamento de electrónica";
 
-    public void RecibirPedido(string platillo, string mesa)
+    public void Recibir(string orderId, string producto)
     {
-        if (!platillo.Contains("Pastel") && !platillo.Contains("Helado"))
+        var esElectronica = producto.Contains("Teclado") ||
+                            producto.Contains("Mouse") ||
+                            producto.Contains("Monitor") ||
+                            producto.Contains("Laptop");
+
+        if (!esElectronica)
         {
-            Console.WriteLine($"    🔇 [{Nombre}] Ignora '{platillo}' (no es postre)");
+            Console.WriteLine($"    🔇 [{Nombre}] Ignora '{producto}' (no es electrónica)");
             return;
         }
-        Console.WriteLine($"    🍰 [{Nombre}] ¡Postre para la mesa {mesa}: {platillo}!");
+        Console.WriteLine($"    🔌 [{Nombre}] ¡Producto de electrónica vendido: {producto}!");
     }
 }
 
@@ -115,30 +120,30 @@ public static class ObserverDemo
     public static void Run()
     {
         Console.WriteLine("  👁️  OBSERVER — Suscripción y notificación en tiempo real\n");
-        Console.WriteLine("  Escenario: La cocina avisa cuando un pedido está listo\n");
+        Console.WriteLine("  Escenario: El servicio de pedidos avisa cuando se confirma una orden\n");
 
-        var cocina = new Cocina();
+        var service = new OrderService();
 
-        var luis = new MeseroNotificador("Luis");
-        var pantalla = new PantallaSalon();
-        var app = new AppCliente("María");
-        var postres = new ObservadorDePostres();
+        var email = new EmailNotifier("Email");
+        var stock = new StockUpdater();
+        var analytics = new AnalyticsLogger("Analytics");
+        var electronica = new ObservadorElectronica();
 
-        cocina.Suscribir(luis);
-        cocina.Suscribir(pantalla);
-        cocina.Suscribir(app);
-        cocina.Suscribir(postres);
+        service.Suscribir(email);
+        service.Suscribir(stock);
+        service.Suscribir(analytics);
+        service.Suscribir(electronica);
         Console.WriteLine();
 
-        cocina.PedidoListo("Pizza margarita", "Mesa 4");
-        cocina.PedidoListo("Pastel de chocolate", "Mesa 2");
+        service.PedidoConfirmado("ORD-001", "Teclado mecánico");
+        service.PedidoConfirmado("ORD-002", "Camiseta básica");
 
-        cocina.Desuscribir(app);
+        service.Desuscribir(analytics);
         Console.WriteLine();
 
-        cocina.PedidoListo("Ensalada césar", "Mesa 7");
+        service.PedidoConfirmado("ORD-003", "Mouse gamer");
 
         Console.WriteLine("  ✅ Observer desacopla el emisor de los receptores.");
-        Console.WriteLine("     Nuevos canales se agregan sin modificar la cocina.");
+        Console.WriteLine("     Nuevos canales se agregan sin modificar el OrderService.");
     }
 }

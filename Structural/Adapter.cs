@@ -18,63 +18,61 @@ namespace DesignPatterns.Structural;
 /// legacy, normalización de datos de distintos proveedores.
 /// ============================================================================
 
-// --- Target: la interfaz que espera nuestra cocina ---
-public interface IProveedorIngredientes
+// --- Target: la interfaz que espera nuestra app ---
+public interface IPasarelaPago
 {
-    bool Entregar(string ingrediente, decimal kilos);
+    bool Cobrar(decimal monto, string moneda);
 }
 
-// --- Adaptee: proveedor moderno con otra interfaz ---
-public class ProveedorInternacional
+// --- Adaptee: pasarela moderna con otra interfaz ---
+public class StripeLike
 {
-    public string Deliver(string item, double weightKg, string unit)
+    public string Charge(double amountCents, string currencyCode)
     {
-        var codigo = Guid.NewGuid().ToString("N").ToUpper();
-        return $"INTL-{codigo[..9]}";
+        var id = Guid.NewGuid().ToString("N").ToUpper();
+        return $"stripe-{id[..12]}";
     }
 }
 
-// --- Adapter: traduce IProveedorIngredientes -> ProveedorInternacional ---
-public class ProveedorInternacionalAdapter : IProveedorIngredientes
+// --- Adapter: traduce IPasarelaPago -> StripeLike ---
+public class StripeAdapter : IPasarelaPago
 {
-    private readonly ProveedorInternacional _proveedor;
+    private readonly StripeLike _stripe;
 
-    public ProveedorInternacionalAdapter(ProveedorInternacional proveedor) => _proveedor = proveedor;
+    public StripeAdapter(StripeLike stripe) => _stripe = stripe;
 
-    public bool Entregar(string ingrediente, decimal kilos)
+    public bool Cobrar(decimal monto, string moneda)
     {
-        Console.WriteLine("  [Adapter] Traduciendo el pedido al formato internacional...");
+        Console.WriteLine("  [StripeAdapter] Convirtiendo monto a centavos...");
 
-        var guia = _proveedor.Deliver(ingrediente.ToLower(), (double)kilos, "kg");
+        var id = _stripe.Charge((double)(monto * 100), moneda.ToLower());
 
-        Console.WriteLine($"  [Adapter] Entrega confirmada con guía {guia}");
-        return !string.IsNullOrEmpty(guia);
+        Console.WriteLine($"  [StripeAdapter] Cobro confirmado con id {id}");
+        return !string.IsNullOrEmpty(id);
     }
 }
 
-// --- Adaptee: distribuidor legacy (sistema antiguo) ---
-public class ProveedorLegacy
+// --- Adaptee: pasarela legacy (sistema antiguo) ---
+public class PaypalLegacy
 {
-    public string EnviarMercancia(string ingredienteEncriptado, string kilosTexto)
+    public string SendPayment(string amountTexto, string currency)
     {
-        return $"LEGACY-{DateTime.Now.Ticks}";
+        return $"pp-legacy-{DateTime.Now.Ticks}";
     }
 }
 
-// --- Adapter: traduce IProveedorIngredientes -> ProveedorLegacy ---
-public class ProveedorLegacyAdapter : IProveedorIngredientes
+// --- Adapter: traduce IPasarelaPago -> PaypalLegacy ---
+public class PaypalAdapter : IPasarelaPago
 {
-    private readonly ProveedorLegacy _legacy;
+    private readonly PaypalLegacy _legacy;
 
-    public ProveedorLegacyAdapter(ProveedorLegacy legacy) => _legacy = legacy;
+    public PaypalAdapter(PaypalLegacy legacy) => _legacy = legacy;
 
-    public bool Entregar(string ingrediente, decimal kilos)
+    public bool Cobrar(decimal monto, string moneda)
     {
-        var ingredienteEncriptado = Convert.ToBase64String(
-            System.Text.Encoding.UTF8.GetBytes(ingrediente));
-        var kilosTexto = kilos.ToString("F2");
-        var guia = _legacy.EnviarMercancia(ingredienteEncriptado, kilosTexto);
-        Console.WriteLine($"  [LegacyAdapter] Entrega legacy confirmada: {guia}");
+        var montoTexto = monto.ToString("F2");
+        var id = _legacy.SendPayment(montoTexto, moneda);
+        Console.WriteLine($"  [PaypalAdapter] Cobro legacy confirmado: {id}");
         return true;
     }
 }
@@ -84,25 +82,25 @@ public static class AdapterDemo
     public static void Run()
     {
         Console.WriteLine("  🔌 ADAPTER — Interfaces incompatibles → compatibles\n");
-        Console.WriteLine("  Escenario: La cocina pide ingredientes a proveedores distintos\n");
+        Console.WriteLine("  Escenario: La app cobra a través de distintas pasarelas de pago\n");
 
-        // La cocina solo conoce IProveedorIngredientes
-        var proveedores = new List<(string nombre, IProveedorIngredientes proveedor)>
+        // La app solo conoce IPasarelaPago
+        var pasarelas = new List<(string nombre, IPasarelaPago pasarela)>
         {
-            ("Internacional (Adapter)", new ProveedorInternacionalAdapter(new ProveedorInternacional())),
-            ("Legacy (Adapter)", new ProveedorLegacyAdapter(new ProveedorLegacy()))
+            ("Stripe (Adapter)", new StripeAdapter(new StripeLike())),
+            ("PayPal Legacy (Adapter)", new PaypalAdapter(new PaypalLegacy()))
         };
 
-        foreach (var (nombre, proveedor) in proveedores)
+        foreach (var (nombre, pasarela) in pasarelas)
         {
-            Console.WriteLine($"  ── Proveedor: {nombre} ──");
-            var resultado = proveedor.Entregar("Tomate", 12.5m);
-            Console.WriteLine($"  Resultado: {(resultado ? "✅ Entregado" : "❌ Falló")}");
+            Console.WriteLine($"  ── Pasarela: {nombre} ──");
+            var resultado = pasarela.Cobrar(49.99m, "USD");
+            Console.WriteLine($"  Resultado: {(resultado ? "✅ Cobrado" : "❌ Falló")}");
             Console.WriteLine();
         }
 
-        Console.WriteLine("  ✅ El Adapter permite que la cocina use cualquier");
-        Console.WriteLine("     proveedor sin modificar su código.");
+        Console.WriteLine("  ✅ El Adapter permite que la app use cualquier");
+        Console.WriteLine("     pasarela sin modificar su código.");
         Console.WriteLine("     Solo se necesita un nuevo Adapter por cada proveedor.");
     }
 }

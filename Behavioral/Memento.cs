@@ -19,78 +19,65 @@ namespace DesignPatterns.Behavioral;
 /// ============================================================================
 
 // --- Memento: almacena el estado (inmutable desde fuera) ---
-public record EstadoPizza(string Masa, string Salsa, List<string> Ingredientes, bool Horneada, DateTimeOffset GuardadoEn);
+public record DocumentoMemento(string Titulo, string Contenido, DateTimeOffset GuardadoEn);
 
 // --- Originator: el objeto cuyo estado se guarda ---
-public class PizzaEnProgreso
+public class DocumentoEditor
 {
-    public string Masa { get; set; } = "masa fina";
-    public string Salsa { get; set; } = "salsa de tomate";
-    public List<string> Ingredientes { get; set; } = [];
-    public bool Horneada { get; set; }
+    public string Titulo { get; set; } = "Sin título";
+    public string Contenido { get; set; } = "";
 
-    public EstadoPizza Guardar()
+    public DocumentoMemento Guardar()
     {
-        Console.WriteLine("  💾 Guardando el avance de la pizza...");
-        // Copiamos la lista para que el memento sea una foto real
-        return new EstadoPizza(Masa, Salsa, [.. Ingredientes], Horneada, DateTimeOffset.UtcNow);
+        Console.WriteLine("  💾 Guardando el estado del documento...");
+        return new DocumentoMemento(Titulo, Contenido, DateTimeOffset.UtcNow);
     }
 
-    public void Restaurar(EstadoPizza estado)
+    public void Restaurar(DocumentoMemento estado)
     {
-        Console.WriteLine($"  ⏪ Restaurando pizza desde {estado.GuardadoEn:HH:mm:ss}Z...");
-        Masa = estado.Masa;
-        Salsa = estado.Salsa;
-        Ingredientes = [.. estado.Ingredientes];
-        Horneada = estado.Horneada;
+        Console.WriteLine($"  ⏪ Restaurando documento desde {estado.GuardadoEn:HH:mm:ss}Z...");
+        Titulo = estado.Titulo;
+        Contenido = estado.Contenido;
     }
 
     public void Mostrar()
     {
-        var ing = Ingredientes.Count > 0 ? string.Join(", ", Ingredientes) : "(ninguno)";
-        var estado = Horneada ? "horneada" : "cruda";
-        Console.WriteLine($"    🍕 {Masa} + {Salsa} + [{ing}] ({estado})");
+        var preview = Contenido.Length > 50 ? Contenido[..50] + "..." : Contenido;
+        Console.WriteLine($"    📄 [{Titulo}] {preview}");
     }
 
-    public void AgregarIngrediente(string ingrediente)
+    public void Escribir(string texto)
     {
-        Ingredientes.Add(ingrediente);
-        Console.WriteLine($"    ➕ Agregado: {ingrediente}");
+        Contenido += texto;
+        Console.WriteLine($"    ➕ Agregado: \"{texto}\"");
     }
 
-    public void Hornear()
+    public void BorrarTodo()
     {
-        Horneada = true;
-        Console.WriteLine("    🔥 ¡Pizza al horno!");
-    }
-
-    public void Arruinar()
-    {
-        Ingredientes.Clear();
-        Horneada = true;
-        Console.WriteLine("    💥 ¡Se cayó la pizza al piso y se quemó!");
+        Contenido = "";
+        Console.WriteLine("    🗑️ Contenido borrado");
     }
 }
 
 // --- Caretaker: administra los mementos (historial de guardados) ---
-public class GestorRecetas
+public class HistorialVersiones
 {
-    private readonly Stack<EstadoPizza> _checkpoints = new();
+    private readonly Stack<DocumentoMemento> _versiones = new();
 
-    public void Guardar(EstadoPizza estado)
+    public void Guardar(DocumentoMemento estado)
     {
-        _checkpoints.Push(estado);
-        Console.WriteLine($"    📚 Checkpoints guardados: {_checkpoints.Count}");
+        _versiones.Push(estado);
+        Console.WriteLine($"    📚 Versiones guardadas: {_versiones.Count}");
     }
 
-    public EstadoPizza? Deshacer()
+    public DocumentoMemento? Restaurar()
     {
-        if (_checkpoints.Count == 0)
+        if (_versiones.Count == 0)
         {
-            Console.WriteLine("    ⚠️  No hay checkpoints guardados");
+            Console.WriteLine("    ⚠️  No hay versiones guardadas");
             return null;
         }
-        return _checkpoints.Pop();
+        return _versiones.Pop();
     }
 }
 
@@ -99,52 +86,54 @@ public static class MementoDemo
     public static void Run()
     {
         Console.WriteLine("  💾 MEMENTO — Guardar y restaurar estado sin romper encapsulamiento\n");
-        Console.WriteLine("  Escenario: Guardas la pizza a medio armar por si la arruinas\n");
+        Console.WriteLine("  Escenario: Un editor de documentos donde guardas versiones por si arruinas el contenido\n");
 
-        var pizza = new PizzaEnProgreso();
-        var gestor = new GestorRecetas();
+        var doc = new DocumentoEditor();
+        var historial = new HistorialVersiones();
 
         // Inicio
-        Console.WriteLine("  ── Empezamos la pizza ──");
-        pizza.Mostrar();
-        gestor.Guardar(pizza.Guardar());
+        Console.WriteLine("  ── Empezamos el documento ──");
+        doc.Titulo = "Informe mensual";
+        doc.Contenido = "Introducción...";
+        doc.Mostrar();
+        historial.Guardar(doc.Guardar());
         Console.WriteLine();
 
-        // Agregamos ingredientes
-        Console.WriteLine("  ── Agregando ingredientes ──");
-        pizza.AgregarIngrediente("queso");
-        pizza.AgregarIngrediente("pepperoni");
-        pizza.Mostrar();
-        gestor.Guardar(pizza.Guardar());
+        // Agregamos contenido
+        Console.WriteLine("  ── Agregando secciones ──");
+        doc.Escribir("Sección 1: Resultados");
+        doc.Escribir("Sección 2: Análisis");
+        doc.Mostrar();
+        historial.Guardar(doc.Guardar());
         Console.WriteLine();
 
         // Se arruina
-        Console.WriteLine("  ── ¡Desastre en la cocina! ──");
-        pizza.Arruinar();
-        pizza.Mostrar();
+        Console.WriteLine("  ── ¡Desastre! Borraste todo por accidente ──");
+        doc.BorrarTodo();
+        doc.Mostrar();
         Console.WriteLine();
 
         // Restaurar al último checkpoint
         Console.WriteLine("  ── Restaurando el último checkpoint ──");
-        var checkpoint = gestor.Deshacer();
+        var checkpoint = historial.Restaurar();
         if (checkpoint is not null)
         {
-            pizza.Restaurar(checkpoint);
-            pizza.Mostrar();
+            doc.Restaurar(checkpoint);
+            doc.Mostrar();
         }
         Console.WriteLine();
 
         // Restaurar al inicio
         Console.WriteLine("  ── Restaurando al inicio ──");
-        var inicio = gestor.Deshacer();
+        var inicio = historial.Restaurar();
         if (inicio is not null)
         {
-            pizza.Restaurar(inicio);
-            pizza.Mostrar();
+            doc.Restaurar(inicio);
+            doc.Mostrar();
         }
         Console.WriteLine();
 
-        Console.WriteLine("  ✅ El memento encapsula el estado sin exponer la Pizza.");
-        Console.WriteLine("     El Gestor (Caretaker) nunca modifica el estado directamente.");
+        Console.WriteLine("  ✅ El memento encapsula el estado sin exponer el Documento.");
+        Console.WriteLine("     El Historial (Caretaker) nunca modifica el estado directamente.");
     }
 }
